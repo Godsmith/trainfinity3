@@ -1,0 +1,48 @@
+[gd_scene load_steps=2 format=3 uid="uid://rq8dlyspro46"]
+
+[ext_resource type="Script" uid="uid://d12gcorahcjrx" path="res://scenes/track.gd" id="1_s1rm4"]
+
+[node name="Track" type="Node2D"]
+script = ExtResource("1_s1rm4")
+
+[node name="Sleeper1" type="Line2D" parent="."]
+position = Vector2(-6, -5)
+points = PackedVector2Array(0, 0, 0, 10)
+width = 2.0
+default_color = Color(0.316029, 0.210545, 0.0370625, 1)
+
+[node name="Sleeper2" type="Line2D" parent="."]
+position = Vector2(-3, -5)
+points = PackedVector2Array(0, 0, 0, 10)
+width = 2.0
+default_color = Color(0.316029, 0.210545, 0.0370625, 1)
+
+[node name="Sleeper3" type="Line2D" parent="."]
+position = Vector2(0, -5)
+points = PackedVector2Array(0, 0, 0, 10)
+width = 2.0
+default_color = Color(0.316029, 0.210545, 0.0370625, 1)
+
+[node name="Sleeper4" type="Line2D" parent="."]
+position = Vector2(3, -5)
+points = PackedVector2Array(0, 0, 0, 10)
+width = 2.0
+default_color = Color(0.316029, 0.210545, 0.0370625, 1)
+
+[node name="Sleeper5" type="Line2D" parent="."]
+position = Vector2(6, -5)
+points = PackedVector2Array(0, 0, 0, 10)
+width = 2.0
+default_color = Color(0.316029, 0.210545, 0.0370625, 1)
+
+[node name="Rail1" type="Line2D" parent="."]
+position = Vector2(-8, 2)
+points = PackedVector2Array(0, -4, 16, -4)
+width = 1.0
+default_color = Color(0.74978, 0.74978, 0.74978, 1)
+
+[node name="Rail2" type="Line2D" parent="."]
+position = Vector2(-8, 2)
+points = PackedVector2Array(0, 0, 16, 0)
+width = 1.0
+default_color = Color(0.74902, 0.74902, 0.74902, 1)
