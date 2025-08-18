@@ -9,7 +9,7 @@ enum GUI_STATE {NONE, TRACK}
 var gui_state := GUI_STATE.NONE
 var ghost_tracks: Array[Track] = []
 var tracks: Array[Track] = []
-var ghost_track_positions: Array[Vector2] = []
+var ghost_track_tile_positions: Array[Vector2] = []
 
 var track_scene = preload("res://scenes/track.tscn")
 
@@ -36,22 +36,27 @@ func _input(event: InputEvent) -> void:
 		$GhostTrack.position = snap_to_grid(get_local_mouse_position())
 		if is_left_mouse_button_held_down:
 			if gui_state == GUI_STATE.TRACK and is_left_mouse_button_held_down:
-				var new_ghost_track_positions = _positions_between(start_track_location, snap_to_grid(get_local_mouse_position()))
-				if new_ghost_track_positions != ghost_track_positions:
-					_show_ghost_track(new_ghost_track_positions)
+				var new_ghost_track_tile_positions = _positions_between(start_track_location, snap_to_grid(get_local_mouse_position()))
+				if new_ghost_track_tile_positions != ghost_track_tile_positions:
+					_show_ghost_track(new_ghost_track_tile_positions)
 					
 		if is_right_mouse_button_held_down:
 			var camera = get_viewport().get_camera_2d()
 			camera.position -= event.get_relative() / SCALE_FACTOR
 
 func _show_ghost_track(positions: Array[Vector2]):
-	ghost_track_positions = positions
+	
+	ghost_track_tile_positions = positions
 	for ghost_track in ghost_tracks:
 		ghost_track.queue_free()
 	ghost_tracks.clear()
-	for position in ghost_track_positions:
-		var ghost_track = $GhostTrack.duplicate()
+	for i in len(ghost_track_tile_positions) - 1:
+		var pos1 = ghost_track_tile_positions[i]
+		var pos2 = ghost_track_tile_positions[i+1]
+		var position = pos1.lerp(pos2, 0.5)
+		var ghost_track: Track = $GhostTrack.duplicate()
 		ghost_track.position = position
+		ghost_track.align(pos1, pos2)
 		ghost_tracks.append(ghost_track)
 		$".".add_child(ghost_track)
 	
