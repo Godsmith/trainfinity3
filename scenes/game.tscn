@@ -515,7 +515,7 @@ loop = false
 script = ExtResource("2_lnu2h")
 
 [node name="Train" parent="Path2D/PathFollow2D" instance=ExtResource("2_yqjtg")]
-position = Vector2(-36, 3.33786e-06)
+position = Vector2(16, 32)
 rotation = 3.14159
 script = SubResource("GDScript_lbhrr")
 
@@ -525,20 +525,21 @@ script = SubResource("GDScript_lbhrr")
 offset_right = 89.0
 offset_bottom = 31.0
 
-[node name="RailButton" type="Button" parent="CanvasLayer/HBoxContainer"]
+[node name="TrackButton" type="Button" parent="CanvasLayer/HBoxContainer"]
 layout_mode = 2
 toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
-text = "Rail"
+text = "Track"
 
-[node name="Button2" type="Button" parent="CanvasLayer/HBoxContainer"]
+[node name="StationButton" type="Button" parent="CanvasLayer/HBoxContainer"]
 layout_mode = 2
 toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
-text = "Hello"
+text = "Station"
 
 [node name="GhostTrack" parent="." instance=ExtResource("5_iywne")]
 modulate = Color(1, 1, 1, 0.501961)
 position = Vector2(-88, 104)
 
-[connection signal="toggled" from="CanvasLayer/HBoxContainer/RailButton" to="." method="_on_railbutton_toggled"]
+[connection signal="toggled" from="CanvasLayer/HBoxContainer/TrackButton" to="." method="_on_trackbutton_toggled"]
+[connection signal="toggled" from="CanvasLayer/HBoxContainer/StationButton" to="." method="_on_stationbutton_toggled"]

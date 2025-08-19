@@ -3,6 +3,6 @@
 [node name="Train" type="Node2D"]
 
 [node name="Polygon2D" type="Polygon2D" parent="."]
-position = Vector2(0, -2)
-polygon = PackedVector2Array(-20, 20, 20, 20, 40, 0, 20, -20, -20, -20)
+position = Vector2(-7, 0)
+polygon = PackedVector2Array(2.00306, 4.28353, 10.5701, 4.28353, 14.8536, 0, 10.5701, -4.28353, 2.00306, -4.28353)
 uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
