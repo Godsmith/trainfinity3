@@ -1,11 +1,16 @@
-[gd_scene load_steps=2 format=3 uid="uid://b2t1f8rkw52mt"]
+[gd_scene load_steps=3 format=3 uid="uid://b2t1f8rkw52mt"]
 
 [ext_resource type="Script" uid="uid://bw0hnr0olk1oj" path="res://scenes/train.gd" id="1_68jl8"]
 
-[node name="Train" type="PathFollow2D"]
+[sub_resource type="Curve2D" id="Curve2D_68jl8"]
+
+[node name="Train" type="Path2D"]
+curve = SubResource("Curve2D_68jl8")
 script = ExtResource("1_68jl8")
 
-[node name="Polygon2D" type="Polygon2D" parent="."]
-position = Vector2(-7, 0)
-polygon = PackedVector2Array(2.00306, 4.28353, 10.5701, 4.28353, 14.8536, 0, 10.5701, -4.28353, 2.00306, -4.28353)
+[node name="PathFollow2D" type="PathFollow2D" parent="."]
+loop = false
+
+[node name="Polygon2D" type="Polygon2D" parent="PathFollow2D"]
+polygon = PackedVector2Array(-6, 4, 4, 4, 8, 0, 4, -4, -6, -4)
 uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)

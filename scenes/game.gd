@@ -14,8 +14,11 @@ var astar = AStar2D.new()
 var track_scene = preload("res://scenes/track.tscn")
 const STATION = preload("res://scenes/station.tscn")
 const TRAIN = preload("res://scenes/train.tscn")
+const TRACK = preload("res://scenes/track.tscn")
 var astar_id_from_position = {}
 var selected_station: Station = null
+@onready var ghost_track = $GhostTrack
+@onready var ghost_station = $GhostStation
 
 
 
@@ -40,10 +43,12 @@ func _unhandled_input(event: InputEvent) -> void:
 				_create_station(snap_to_grid(get_local_mouse_position()))
 	
 	if event is InputEventMouseMotion:
-		$GhostTrack.position = snap_to_grid(get_local_mouse_position())
+		var mouse_position = snap_to_grid(get_local_mouse_position())
+		ghost_track.position = mouse_position
+		ghost_station.position = mouse_position
 		if is_left_mouse_button_held_down:
 			if gui_state == GUI_STATE.TRACK and is_left_mouse_button_held_down:
-				var new_ghost_track_tile_positions = _positions_between(start_track_location, snap_to_grid(get_local_mouse_position()))
+				var new_ghost_track_tile_positions = _positions_between(start_track_location, mouse_position)
 				if new_ghost_track_tile_positions != ghost_track_tile_positions:
 					_show_ghost_track(new_ghost_track_tile_positions)
 					
@@ -83,9 +88,8 @@ func _create_station(position: Vector2):
 func _station_clicked(station: Station):
 	if gui_state == GUI_STATE.TRAIN1:
 		var id1 = astar_id_from_position[station.position.round()]
-		for other_station: Station in get_tree().get_nodes_in_group("stations"):
+		for other_station: Station in _real_stations():
 			station.modulate = Color(1,1,1,1)
-		for other_station: Station in get_tree().get_nodes_in_group("stations"):
 			if other_station != station:
 				var id2 = astar_id_from_position[other_station.position.round()]
 				if astar.get_point_path(id1, id2):
@@ -97,21 +101,13 @@ func _station_clicked(station: Station):
 		var id2 = astar_id_from_position[station.position.round()]
 		var point_path = astar.get_point_path(id1, id2)
 		if point_path:
-			var path = Path2D.new()
-			var curve = Curve2D.new()
-			for p in point_path:
-				curve.add_point(p)
-			path.curve = curve
 			var train = TRAIN.instantiate()
-			add_child(path)
-			path.add_child(train)
-			
-			
+			train.set_path(point_path)
+			add_child(train)
 			gui_state == GUI_STATE.NONE
 	
 
 func _show_ghost_track(positions: Array[Vector2]):
-	
 	ghost_track_tile_positions = positions
 	for ghost_track in ghost_tracks:
 		ghost_track.queue_free()
@@ -120,7 +116,7 @@ func _show_ghost_track(positions: Array[Vector2]):
 		var pos1 = ghost_track_tile_positions[i]
 		var pos2 = ghost_track_tile_positions[i+1]
 		var position = pos1.lerp(pos2, 0.5)
-		var ghost_track: Track = $GhostTrack.duplicate()
+		var ghost_track: Track = ghost_track.duplicate()
 		ghost_track.position = position
 		ghost_track.align(pos1, pos2)
 		ghost_tracks.append(ghost_track)
@@ -152,8 +148,21 @@ func _on_stationbutton_toggled(toggled_on: bool) -> void:
 	_change_gui_state(GUI_STATE.STATION if toggled_on else GUI_STATE.NONE)
 		
 func _change_gui_state(new_state: GUI_STATE):
+	ghost_track.visible = false
+	ghost_station.visible = false
+	for station: Station in _real_stations():
+		station.modulate = Color(1,1,1,1)
+		
+	if new_state == GUI_STATE.TRACK:
+		ghost_track.visible = true
+	elif new_state == GUI_STATE.STATION:
+		ghost_station.visible = true
+		
 	gui_state = new_state
-	$GhostTrack.visible = (new_state == GUI_STATE.TRACK)
+	
+func _real_stations() -> Array:
+	return get_tree().get_nodes_in_group("stations").filter(func(station): return !station.is_ghost)
+	
 
 
 func _on_trainbutton_toggled(toggled_on: bool) -> void:
