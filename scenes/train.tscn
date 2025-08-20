@@ -1,6 +1,9 @@
-[gd_scene format=3 uid="uid://b2t1f8rkw52mt"]
+[gd_scene load_steps=2 format=3 uid="uid://b2t1f8rkw52mt"]
 
-[node name="Train" type="Node2D"]
+[ext_resource type="Script" uid="uid://bw0hnr0olk1oj" path="res://scenes/train.gd" id="1_68jl8"]
+
+[node name="Train" type="PathFollow2D"]
+script = ExtResource("1_68jl8")
 
 [node name="Polygon2D" type="Polygon2D" parent="."]
 position = Vector2(-7, 0)
