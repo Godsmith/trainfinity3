@@ -22,3 +22,7 @@ func _extend_length():
 	$Sleeper6.visible = true
 	$LongRail1.visible = true
 	$LongRail2.visible = true
+
+func set_ghost_status(is_ghostly: bool):
+	modulate = Color(1,1,1,0.5) if is_ghostly else Color(1,1,1,1)
+

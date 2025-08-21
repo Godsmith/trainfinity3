@@ -27,12 +27,14 @@ func snap_to_grid(position: Vector2) -> Vector2:
 	return Vector2(round(position.x/TILE_SIZE)*TILE_SIZE, round(position.y/TILE_SIZE)*TILE_SIZE)
 
 
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			is_left_mouse_button_held_down = event.is_pressed()
 			if gui_state == GUI_STATE.TRACK:
 				start_track_location = snap_to_grid(get_local_mouse_position())
+				ghost_track.visible = false
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			is_right_mouse_button_held_down = event.is_pressed()
 		elif event.button_index == MOUSE_BUTTON_WHEEL_UP and not event.is_echo():
@@ -44,6 +46,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		match gui_state:
 			GUI_STATE.TRACK:
 				_create_track()
+				ghost_track.visible = true
 			GUI_STATE.STATION:
 				_create_station(snap_to_grid(get_local_mouse_position()))
 	
@@ -65,7 +68,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func _create_track():
 	for ghost_track in ghost_tracks:
 		tracks.append(ghost_track)
-		ghost_track.modulate = Color(1,1,1,1)
+		ghost_track.set_ghost_status(false)
 	var ids = []
 	for i in len(ghost_track_tile_positions):
 		var position = ghost_track_tile_positions[i]
@@ -122,7 +125,8 @@ func _show_ghost_track(positions: Array[Vector2]):
 		var pos1 = ghost_track_tile_positions[i]
 		var pos2 = ghost_track_tile_positions[i+1]
 		var position = pos1.lerp(pos2, 0.5)
-		var ghost_track: Track = ghost_track.duplicate()
+		var ghost_track := TRACK.instantiate()
+		ghost_track.set_ghost_status(true)
 		ghost_track.position = position
 		ghost_track.align(pos1, pos2)
 		ghost_tracks.append(ghost_track)
