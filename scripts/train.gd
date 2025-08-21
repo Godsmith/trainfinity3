@@ -6,10 +6,6 @@ var speed = 20
 var last_progress = 0.0
 @onready var path_follow := $PathFollow2D
 @onready var polygon := $PathFollow2D/Polygon2D
-
-func _ready():
-	print("hello from train")
-	pass
 	
 func _process(delta):
 	loop_movement(delta)
