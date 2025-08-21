@@ -4,20 +4,29 @@ class_name Track
 
 signal track_clicked(station: Track)
 
-func align(pos1: Vector2, pos2: Vector2):
+const TRACK = preload("res://scenes/track.tscn")
+
+var pos1: Vector2
+var pos2: Vector2
+
+static func create(pos1: Vector2, pos2: Vector2) -> Track:
+	var track: Track = TRACK.instantiate()
+	track.pos1 = pos1
+	track.pos2 = pos2
 	if pos2.y == pos1.y:
 		pass
 	elif pos2.x == pos1.x:
-		rotate(PI/2)
+		track.rotate(PI/2)
 	elif pos2.y > pos1.y and pos2.x > pos1.x:
-		rotate(PI/4)
-		_extend_length()
+		track.rotate(PI/4)
+		track._extend_length()
 	elif pos2.y < pos1.y and pos2.x < pos1.x:
-		rotate(PI/4)
-		_extend_length()
+		track.rotate(PI/4)
+		track._extend_length()
 	else:
-		rotate(PI*3/4)
-		_extend_length()
+		track.rotate(PI*3/4)
+		track._extend_length()
+	return track
 
 func _extend_length():
 	$Sleeper5.visible = true

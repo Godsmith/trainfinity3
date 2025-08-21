@@ -121,10 +121,9 @@ func _show_ghost_track(positions: Array[Vector2]):
 		var pos1 = ghost_track_tile_positions[i]
 		var pos2 = ghost_track_tile_positions[i+1]
 		var position = pos1.lerp(pos2, 0.5)
-		var ghost_track := TRACK.instantiate()
+		var ghost_track := Track.create(pos1, pos2)
 		ghost_track.set_ghost_status(true)
 		ghost_track.position = position
-		ghost_track.align(pos1, pos2)
 		ghost_tracks.append(ghost_track)
 		$".".add_child(ghost_track)
 
@@ -143,7 +142,6 @@ func _create_track():
 		ids.append(astar_id_from_position[position])
 	for i in range(1, len(ids)):
 		astar.connect_points(ids[i-1], ids[i])
-		print_debug("connected " + str(ids[i]) + " with " + str(ids[i-1]))
 	ghost_tracks.clear()
 
 func _add_position_to_astar(position):
@@ -154,6 +152,8 @@ func _add_position_to_astar(position):
 
 func _track_clicked(track: Track):
 	if gui_state == GUI_STATE.DESTROY:
+		astar.disconnect_points(astar_id_from_position[track.pos1], astar_id_from_position[track.pos2])
+		tracks.erase(track.position_rotation())
 		track.queue_free()
 	
 ##################################################################
