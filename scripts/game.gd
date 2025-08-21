@@ -10,7 +10,6 @@ var ghost_tracks: Array[Track] = []
 var tracks: Array[Track] = []
 var ghost_track_tile_positions: Array[Vector2] = []
 var astar = AStar2D.new()
-var track_scene = preload("res://scenes/track.tscn")
 const STATION = preload("res://scenes/station.tscn")
 const TRAIN = preload("res://scenes/train.tscn")
 const TRACK = preload("res://scenes/track.tscn")
