@@ -136,6 +136,7 @@ func _create_track():
 		else:
 			tracks[ghost_track.position_rotation()] = ghost_track
 			ghost_track.set_ghost_status(false)
+			ghost_track.track_clicked.connect(_track_clicked)
 	var ids = []
 	for position in ghost_track_tile_positions:
 		_add_position_to_astar(position)
@@ -150,6 +151,10 @@ func _add_position_to_astar(position):
 		var id = astar.get_available_point_id()
 		astar_id_from_position[position] = id
 		astar.add_point(id, position)
+
+func _track_clicked(track: Track):
+	if gui_state == GUI_STATE.DESTROY:
+		track.queue_free()
 	
 ##################################################################
 

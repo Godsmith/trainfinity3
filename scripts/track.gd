@@ -2,6 +2,8 @@ extends Node2D
 
 class_name Track
 
+signal track_clicked(station: Track)
+
 func align(pos1: Vector2, pos2: Vector2):
 	if pos2.y == pos1.y:
 		pass
@@ -30,3 +32,6 @@ func position_rotation() -> Vector3i:
 	# makes a direction of 45 degrees equal to a direction of 225 degrees
 	return Vector3i(roundi(position.x), roundi(position.y), roundi(rotation_degrees) % 180)
 	
+func _on_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		track_clicked.emit(self)
