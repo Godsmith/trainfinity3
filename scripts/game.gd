@@ -3,7 +3,7 @@ extends Node2D
 const TILE_SIZE := 16
 const TILE := Vector2(TILE_SIZE, TILE_SIZE)
 const SCALE_FACTOR := 2  # Don't remember where I set this
-enum GUI_STATE {NONE, TRACK, STATION, TRAIN1, TRAIN2}
+enum GUI_STATE {NONE, TRACK, STATION, TRAIN1, TRAIN2, DESTROY}
 
 const STATION = preload("res://scenes/station.tscn")
 const TRAIN = preload("res://scenes/train.tscn")
@@ -158,7 +158,13 @@ func _on_trackbutton_toggled(toggled_on: bool) -> void:
 
 func _on_stationbutton_toggled(toggled_on: bool) -> void:
 	_change_gui_state(GUI_STATE.STATION if toggled_on else GUI_STATE.NONE)
-		
+
+func _on_trainbutton_toggled(toggled_on: bool) -> void:
+	_change_gui_state(GUI_STATE.TRAIN1 if toggled_on else GUI_STATE.NONE)
+
+func _on_destroybutton_toggled(toggled_on: bool) -> void:
+	_change_gui_state(GUI_STATE.DESTROY if toggled_on else GUI_STATE.NONE)
+
 func _change_gui_state(new_state: GUI_STATE):
 	ghost_track.visible = false
 	ghost_station.visible = false
@@ -171,9 +177,6 @@ func _change_gui_state(new_state: GUI_STATE):
 		ghost_station.visible = true
 		
 	gui_state = new_state
-
-func _on_trainbutton_toggled(toggled_on: bool) -> void:
-	_change_gui_state(GUI_STATE.TRAIN1 if toggled_on else GUI_STATE.NONE)
 
 ###################################################################
 
@@ -204,4 +207,6 @@ func _station_clicked(station: Station):
 			train.set_path(point_path)
 			add_child(train)
 			gui_state == GUI_STATE.NONE
+	elif gui_state == GUI_STATE.DESTROY:
+		station.queue_free()
 	
