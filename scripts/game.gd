@@ -1,6 +1,7 @@
 extends Node2D
 
 const TILE_SIZE := 16
+const TILE := Vector2(TILE_SIZE, TILE_SIZE)
 const SCALE_FACTOR := 2  # Don't remember where I set this
 enum GUI_STATE {NONE, TRACK, STATION, TRAIN1, TRAIN2}
 
@@ -31,9 +32,7 @@ var selected_station: Station = null
 
 func _real_stations() -> Array:
 	return get_tree().get_nodes_in_group("stations").filter(func(station): return !station.is_ghost)
-	
-func _snap_to_grid(position: Vector2) -> Vector2:
-	return Vector2(round(position.x/TILE_SIZE)*TILE_SIZE, round(position.y/TILE_SIZE)*TILE_SIZE)
+
 
 func _positions_between(start: Vector2, stop: Vector2) -> Array[Vector2]:
 	# start and stop must be on the grid.
@@ -57,7 +56,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			is_left_mouse_button_held_down = event.is_pressed()
 			if gui_state == GUI_STATE.TRACK:
-				start_track_location = _snap_to_grid(get_local_mouse_position())
+				start_track_location = get_local_mouse_position().snapped(TILE)
 				ghost_track.visible = false
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			is_right_mouse_button_held_down = event.is_pressed()
@@ -72,10 +71,10 @@ func _unhandled_input(event: InputEvent) -> void:
 				_create_track()
 				ghost_track.visible = true
 			GUI_STATE.STATION:
-				_create_station(_snap_to_grid(get_local_mouse_position()))
+				_create_station(get_local_mouse_position().snapped(TILE))
 	
 	if event is InputEventMouseMotion:
-		var mouse_position = _snap_to_grid(get_local_mouse_position())
+		var mouse_position = get_local_mouse_position().snapped(TILE)
 		ghost_track.position = mouse_position
 		ghost_station.position = mouse_position
 		if is_left_mouse_button_held_down:
@@ -131,7 +130,7 @@ func _show_ghost_track(positions: Array[Vector2]):
 
 func _create_track():
 	for ghost_track in ghost_tracks:
-		var position = _snap_to_grid(ghost_track.position)
+		var position = ghost_track.position.snapped(TILE)
 		if ghost_track.position_rotation() in tracks:
 			ghost_track.queue_free()
 		else:
