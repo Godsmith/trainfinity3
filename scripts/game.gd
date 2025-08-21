@@ -17,7 +17,8 @@ var is_right_mouse_button_held_down := false
 
 var start_track_location := Vector2()
 var ghost_tracks: Array[Track] = []
-var tracks: Array[Track] = []
+# The keys are provided by Track.position_rotation()
+var tracks: Dictionary[Vector3i, Track] = {}
 var ghost_track_tile_positions: Array[Vector2] = []
 
 var astar = AStar2D.new()
@@ -33,6 +34,22 @@ func _real_stations() -> Array:
 	
 func _snap_to_grid(position: Vector2) -> Vector2:
 	return Vector2(round(position.x/TILE_SIZE)*TILE_SIZE, round(position.y/TILE_SIZE)*TILE_SIZE)
+
+func _positions_between(start: Vector2, stop: Vector2) -> Array[Vector2]:
+	# start and stop must be on the grid.
+	var out: Array[Vector2] = []
+	var x = start.x
+	var y = start.y
+	var dx_sign = sign(stop.x - start.x)
+	var dy_sign = sign(stop.y - start.y)
+	out.append(start)
+	while x != stop.x or y != stop.y:
+		if x != stop.x:
+			x += TILE_SIZE * dx_sign
+		if y != stop.y:
+			y += TILE_SIZE * dy_sign
+		out.append(Vector2(x,y))
+	return out
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -94,6 +111,8 @@ func _add_position_to_astar(position):
 		astar.add_point(id, position)
 		#print_debug("position " + str(position) + " added as id " + str(id))
 	
+#######################################################################
+
 func _show_ghost_track(positions: Array[Vector2]):
 	ghost_track_tile_positions = positions
 	for ghost_track in ghost_tracks:
@@ -109,24 +128,30 @@ func _show_ghost_track(positions: Array[Vector2]):
 		ghost_track.align(pos1, pos2)
 		ghost_tracks.append(ghost_track)
 		$".".add_child(ghost_track)
+
+func _create_track():
+	for ghost_track in ghost_tracks:
+		var position = _snap_to_grid(ghost_track.position)
+		if ghost_track.position_rotation() in tracks:
+			ghost_track.queue_free()
+		else:
+			tracks[ghost_track.position_rotation()] = ghost_track
+			ghost_track.set_ghost_status(false)
+	var ids = []
+	for position in ghost_track_tile_positions:
+		_add_position_to_astar(position)
+		ids.append(astar_id_from_position[position])
+	for i in range(1, len(ids)):
+		astar.connect_points(ids[i-1], ids[i])
+		print_debug("connected " + str(ids[i]) + " with " + str(ids[i-1]))
+	ghost_tracks.clear()
+
+func _add_position_to_astar(position):
+	if not position in astar_id_from_position:
+		var id = astar.get_available_point_id()
+		astar_id_from_position[position] = id
+		astar.add_point(id, position)
 	
-		
-func _positions_between(start: Vector2, stop: Vector2) -> Array[Vector2]:
-	# start and stop must be on the grid.
-	var out: Array[Vector2] = []
-	var x = start.x
-	var y = start.y
-	var dx_sign = sign(stop.x - start.x)
-	var dy_sign = sign(stop.y - start.y)
-	out.append(start)
-	while x != stop.x or y != stop.y:
-		if x != stop.x:
-			x += TILE_SIZE * dx_sign
-		if y != stop.y:
-			y += TILE_SIZE * dy_sign
-		out.append(Vector2(x,y))
-	return out
-		
 ##################################################################
 
 func _on_trackbutton_toggled(toggled_on: bool) -> void:

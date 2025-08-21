@@ -25,4 +25,8 @@ func _extend_length():
 
 func set_ghost_status(is_ghostly: bool):
 	modulate = Color(1,1,1,0.5) if is_ghostly else Color(1,1,1,1)
-
+		
+func position_rotation() -> Vector3i:
+	# makes a direction of 45 degrees equal to a direction of 225 degrees
+	return Vector3i(roundi(position.x), roundi(position.y), roundi(rotation_degrees) % 180)
+	
