@@ -1,7 +1,6 @@
 extends Node2D
 
 const TILE_SIZE := 16
-const SCALE_FACTOR := 2  # Don't remember where I set this
 var is_left_mouse_button_held_down := false
 var is_right_mouse_button_held_down := false
 var start_track_location := Vector2()
@@ -20,6 +19,8 @@ var selected_station: Station = null
 @onready var ghost_track = $GhostTrack
 @onready var ghost_station = $GhostStation
 
+@onready var camera = $Camera2D
+
 
 
 func snap_to_grid(position: Vector2) -> Vector2:
@@ -32,8 +33,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			is_left_mouse_button_held_down = event.is_pressed()
 			if gui_state == GUI_STATE.TRACK:
 				start_track_location = snap_to_grid(get_local_mouse_position())
-		if event.button_index == MOUSE_BUTTON_RIGHT:
+		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			is_right_mouse_button_held_down = event.is_pressed()
+		elif event.button_index == MOUSE_BUTTON_WHEEL_UP and not event.is_echo():
+			camera.zoom_camera(1.1)
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and not event.is_echo():
+			camera.zoom_camera(1/1.1)
 	
 	if event is InputEventMouseButton and event.is_released() and event.button_index == MOUSE_BUTTON_LEFT:
 		match gui_state:
@@ -54,8 +59,9 @@ func _unhandled_input(event: InputEvent) -> void:
 					
 		if is_right_mouse_button_held_down:
 			var camera = get_viewport().get_camera_2d()
-			camera.position -= event.get_relative() / SCALE_FACTOR
-			
+			camera.position -= event.get_relative() / camera.zoom.x
+
+
 func _create_track():
 	for ghost_track in ghost_tracks:
 		tracks.append(ghost_track)
