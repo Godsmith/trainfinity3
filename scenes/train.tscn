@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://b2t1f8rkw52mt"]
 
-[ext_resource type="Script" uid="uid://bw0hnr0olk1oj" path="res://scenes/train.gd" id="1_68jl8"]
+[ext_resource type="Script" uid="uid://bw0hnr0olk1oj" path="res://scripts/train.gd" id="1_68jl8"]
 
 [sub_resource type="Curve2D" id="Curve2D_68jl8"]
 
