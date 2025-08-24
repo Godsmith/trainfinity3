@@ -87,29 +87,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			var camera = get_viewport().get_camera_2d()
 			camera.position -= event.get_relative() / camera.zoom.x
 			
-#######################################################################
-			
-func _create_track():
-	for ghost_track in ghost_tracks:
-		tracks.append(ghost_track)
-		ghost_track.set_ghost_status(false)
-	var ids = []
-	for i in len(ghost_track_tile_positions):
-		var position = ghost_track_tile_positions[i]
-		_add_position_to_astar(position)
-		ids.append(astar_id_from_position[position])
-	for i in range(1, len(ids)):
-		astar.connect_points(ids[i-1], ids[i])
-		print_debug("connected " + str(ids[i]) + " with " + str(ids[i-1]))
-	ghost_tracks.clear()
-	
-func _add_position_to_astar(position):
-	if not position in astar_id_from_position:
-		var id = astar.get_available_point_id()
-		astar_id_from_position[position] = id
-		astar.add_point(id, position)
-		#print_debug("position " + str(position) + " added as id " + str(id))
-	
+
 #######################################################################
 
 func _show_ghost_track(positions: Array[Vector2]):
