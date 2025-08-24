@@ -1,8 +1,11 @@
-[gd_scene load_steps=3 format=3 uid="uid://b2t1f8rkw52mt"]
+[gd_scene load_steps=4 format=3 uid="uid://b2t1f8rkw52mt"]
 
 [ext_resource type="Script" uid="uid://bw0hnr0olk1oj" path="res://scripts/train.gd" id="1_68jl8"]
 
 [sub_resource type="Curve2D" id="Curve2D_68jl8"]
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_68jl8"]
+polygon = PackedVector2Array(-0.257391, 0.111548, 9.74261, 0.111548, 13.7426, 4.11155, 9.74261, 8.11155, -0.257391, 8.11155)
 
 [node name="Train" type="Path2D"]
 curve = SubResource("Curve2D_68jl8")
@@ -12,5 +15,10 @@ script = ExtResource("1_68jl8")
 loop = false
 
 [node name="Polygon2D" type="Polygon2D" parent="PathFollow2D"]
+color = Color(0.57449, 0, 0.120777, 1)
 polygon = PackedVector2Array(-6, 4, 4, 4, 8, 0, 4, -4, -6, -4)
 uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="PathFollow2D/Polygon2D"]
+position = Vector2(-5.74261, -4.11155)
+occluder = SubResource("OccluderPolygon2D_68jl8")
