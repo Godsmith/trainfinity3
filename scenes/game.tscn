@@ -55,16 +55,16 @@ toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "Train"
 
-[node name="Polygon2D" type="Polygon2D" parent="."]
-z_index = -1
-color = Color(0.314105, 0.268899, 0.268889, 1)
-polygon = PackedVector2Array(-128, -96, -128, 160, 208, 160, 208, -96)
-
 [node name="DestroyButton" type="Button" parent="CanvasLayer/HBoxContainer"]
 layout_mode = 2
 toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "Destroy"
+
+[node name="Polygon2D" type="Polygon2D" parent="."]
+z_index = -1
+color = Color(0.314105, 0.268899, 0.268889, 1)
+polygon = PackedVector2Array(-128, -96, -128, 160, 208, 160, 208, -96)
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(38, 20)

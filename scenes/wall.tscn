@@ -1,6 +1,7 @@
 [gd_scene load_steps=2 format=3 uid="uid://ddwk7q8585at4"]
 
 [sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_uvhfp"]
+cull_mode = 2
 polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8, -8, -8)
 
 [node name="Wall" type="Node2D"]

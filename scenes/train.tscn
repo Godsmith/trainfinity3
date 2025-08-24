@@ -5,6 +5,7 @@
 [sub_resource type="Curve2D" id="Curve2D_68jl8"]
 
 [sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_68jl8"]
+cull_mode = 2
 polygon = PackedVector2Array(-0.257391, 0.111548, 9.74261, 0.111548, 13.7426, 4.11155, 9.74261, 8.11155, -0.257391, 8.11155)
 
 [node name="Train" type="Path2D"]
