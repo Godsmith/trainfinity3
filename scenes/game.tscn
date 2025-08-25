@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://bdv5fulluq6xw"]
+[gd_scene load_steps=13 format=3 uid="uid://bdv5fulluq6xw"]
 
 [ext_resource type="Script" uid="uid://cbs73qrun6sj4" path="res://scripts/game.gd" id="1_lbhrr"]
 [ext_resource type="Script" uid="uid://d070mqp5unjky" path="res://scripts/camera_2d.gd" id="2_p57ef"]
@@ -7,6 +7,8 @@
 [ext_resource type="PackedScene" uid="uid://b1064yqqmy7mf" path="res://scenes/station.tscn" id="6_p57ef"]
 [ext_resource type="PackedScene" uid="uid://cxgimf5dgovcu" path="res://scenes/light.tscn" id="7_gee14"]
 [ext_resource type="PackedScene" uid="uid://ddwk7q8585at4" path="res://scenes/wall.tscn" id="7_u5sy4"]
+[ext_resource type="Script" uid="uid://bk3wlpgvcqbqe" path="res://scripts/ore.gd" id="8_0tnpc"]
+[ext_resource type="PackedScene" uid="uid://c2ywi6j0mxjc5" path="res://scenes/ore.tscn" id="9_vtaks"]
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_lbhrr"]
 
@@ -98,14 +100,13 @@ position = Vector2(-64, 80)
 [node name="CanvasModulate" type="CanvasModulate" parent="."]
 color = Color(0.125911, 0.125911, 0.125911, 1)
 
-[node name="Light3" parent="." instance=ExtResource("7_gee14")]
-position = Vector2(-48, -32)
-
 [node name="Light" parent="." instance=ExtResource("7_gee14")]
-position = Vector2(-64, 32)
+position = Vector2(-48, -32)
+script = ExtResource("8_0tnpc")
+ore_type = 0
 
-[node name="Light2" parent="." instance=ExtResource("7_gee14")]
-position = Vector2(-16, 112)
+[node name="Ore" parent="." instance=ExtResource("9_vtaks")]
+position = Vector2(-16, 16)
 
 [connection signal="toggled" from="CanvasLayer/HBoxContainer/TrackButton" to="." method="_on_trackbutton_toggled"]
 [connection signal="toggled" from="CanvasLayer/HBoxContainer/StationButton" to="." method="_on_stationbutton_toggled"]
