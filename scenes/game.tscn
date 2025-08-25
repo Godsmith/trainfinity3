@@ -61,8 +61,9 @@ text = "Destroy"
 
 [node name="Polygon2D" type="Polygon2D" parent="."]
 z_index = -1
+position = Vector2(-16, 0)
 color = Color(0.314105, 0.268899, 0.268889, 1)
-polygon = PackedVector2Array(-128, -96, -128, 160, 208, 160, 208, -96)
+polygon = PackedVector2Array(-1008, -1024, -1008, 959.32, -1008, 1024, 1040, 1024, 1040, -1024)
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(38, 20)
@@ -101,7 +102,7 @@ position = Vector2(-64, 80)
 color = Color(0.125911, 0.125911, 0.125911, 1)
 
 [node name="Light" parent="." instance=ExtResource("7_gee14")]
-position = Vector2(-48, -32)
+position = Vector2(-32, -16)
 script = ExtResource("8_0tnpc")
 ore_type = 0
 

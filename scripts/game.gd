@@ -1,5 +1,6 @@
 extends Node2D
 
+const GRID_SIZE := 32
 const TILE_SIZE := 16
 const TILE := Vector2(TILE_SIZE, TILE_SIZE)
 const SCALE_FACTOR := 2  # Don't remember where I set this
@@ -9,6 +10,8 @@ const STATION = preload("res://scenes/station.tscn")
 const TRAIN = preload("res://scenes/train.tscn")
 const TRACK = preload("res://scenes/track.tscn")
 const LIGHT = preload("res://scenes/light.tscn")
+const WALL = preload("res://scenes/wall.tscn")
+const ORE = preload("res://scenes/ore.tscn")
 
 @onready var ghost_track = $GhostTrack
 @onready var ghost_station = $GhostStation
@@ -31,6 +34,8 @@ var astar_id_from_position = {}
 
 var selected_station: Station = null
 
+@export_range(0.0, 1.0) var wall_chance: float = 0.4
+@export_range(0.0, 1.0) var ore_chance: float = 0.2
 
 func _real_stations() -> Array:
 	return get_tree().get_nodes_in_group("stations").filter(func(station): return !station.is_ghost)
@@ -51,6 +56,27 @@ func _positions_between(start: Vector2, stop: Vector2) -> Array[Vector2]:
 			y += TILE_SIZE * dy_sign
 		out.append(Vector2(x,y))
 	return out
+
+
+func _ready():
+	_generate_map()
+
+
+func _generate_map():
+	randomize()
+
+	for x in range(-GRID_SIZE/2, GRID_SIZE):
+		for y in range(-GRID_SIZE/2, GRID_SIZE):
+			if randf() < wall_chance:
+				var wall = WALL.instantiate()
+				wall.position = Vector2(x, y) * TILE_SIZE
+				add_child(wall)
+
+				# maybe add ore inside this wall
+				if randf() < ore_chance:
+					var ore = ORE.instantiate()
+					ore.position = Vector2.ZERO   # relative to wall
+					wall.add_child(ore)
 
 
 func _unhandled_input(event: InputEvent) -> void:
