@@ -3,14 +3,16 @@ extends Node2D
 const TILE_SIZE := 16
 const TILE := Vector2(TILE_SIZE, TILE_SIZE)
 const SCALE_FACTOR := 2  # Don't remember where I set this
-enum GUI_STATE {NONE, TRACK, STATION, TRAIN1, TRAIN2, DESTROY}
+enum GUI_STATE {NONE, TRACK, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY}
 
 const STATION = preload("res://scenes/station.tscn")
 const TRAIN = preload("res://scenes/train.tscn")
 const TRACK = preload("res://scenes/track.tscn")
+const LIGHT = preload("res://scenes/light.tscn")
 
 @onready var ghost_track = $GhostTrack
 @onready var ghost_station = $GhostStation
+@onready var ghost_light = $GhostLight
 
 var gui_state := GUI_STATE.NONE
 var is_left_mouse_button_held_down := false
@@ -72,11 +74,14 @@ func _unhandled_input(event: InputEvent) -> void:
 				ghost_track.visible = true
 			GUI_STATE.STATION:
 				_create_station(get_local_mouse_position().snapped(TILE))
+			GUI_STATE.LIGHT:
+				_create_light(get_local_mouse_position().snapped(TILE))
 	
 	if event is InputEventMouseMotion:
 		var mouse_position = get_local_mouse_position().snapped(TILE)
 		ghost_track.position = mouse_position
 		ghost_station.position = mouse_position
+		ghost_light.position = mouse_position
 		if is_left_mouse_button_held_down:
 			if gui_state == GUI_STATE.TRACK and is_left_mouse_button_held_down:
 				var new_ghost_track_tile_positions = _positions_between(start_track_location, mouse_position)
@@ -144,13 +149,18 @@ func _on_stationbutton_toggled(toggled_on: bool) -> void:
 
 func _on_trainbutton_toggled(toggled_on: bool) -> void:
 	_change_gui_state(GUI_STATE.TRAIN1 if toggled_on else GUI_STATE.NONE)
+	
+func _on_light_button_toggled(toggled_on: bool) -> void:
+	_change_gui_state(GUI_STATE.LIGHT if toggled_on else GUI_STATE.NONE)
 
 func _on_destroybutton_toggled(toggled_on: bool) -> void:
 	_change_gui_state(GUI_STATE.DESTROY if toggled_on else GUI_STATE.NONE)
 
+
 func _change_gui_state(new_state: GUI_STATE):
 	ghost_track.visible = false
 	ghost_station.visible = false
+	ghost_light.visible = false
 	for station: Station in _real_stations():
 		station.modulate = Color(1,1,1,1)
 		
@@ -158,6 +168,8 @@ func _change_gui_state(new_state: GUI_STATE):
 		ghost_track.visible = true
 	elif new_state == GUI_STATE.STATION:
 		ghost_station.visible = true
+	elif new_state == GUI_STATE.LIGHT:
+		ghost_light.visible = true
 		
 	gui_state = new_state
 
@@ -193,3 +205,14 @@ func _station_clicked(station: Station):
 	elif gui_state == GUI_STATE.DESTROY:
 		station.queue_free()
 	
+###################################################################
+
+func _create_light(position: Vector2):
+	var light = LIGHT.instantiate()
+	light.position = position
+	light.light_clicked.connect(_light_clicked)
+	add_child(light)
+
+func _light_clicked(light: Light):
+	if gui_state == GUI_STATE.DESTROY:
+		light.queue_free()

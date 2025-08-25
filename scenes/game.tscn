@@ -1,10 +1,11 @@
-[gd_scene load_steps=12 format=3 uid="uid://bdv5fulluq6xw"]
+[gd_scene load_steps=11 format=3 uid="uid://bdv5fulluq6xw"]
 
 [ext_resource type="Script" uid="uid://cbs73qrun6sj4" path="res://scripts/game.gd" id="1_lbhrr"]
 [ext_resource type="Script" uid="uid://d070mqp5unjky" path="res://scripts/camera_2d.gd" id="2_p57ef"]
 [ext_resource type="PackedScene" uid="uid://b2t1f8rkw52mt" path="res://scenes/train.tscn" id="2_yqjtg"]
 [ext_resource type="PackedScene" uid="uid://rq8dlyspro46" path="res://scenes/track.tscn" id="5_iywne"]
 [ext_resource type="PackedScene" uid="uid://b1064yqqmy7mf" path="res://scenes/station.tscn" id="6_p57ef"]
+[ext_resource type="PackedScene" uid="uid://cxgimf5dgovcu" path="res://scenes/light.tscn" id="7_gee14"]
 [ext_resource type="PackedScene" uid="uid://ddwk7q8585at4" path="res://scenes/wall.tscn" id="7_u5sy4"]
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_lbhrr"]
@@ -14,17 +15,6 @@ _data = {
 "points": PackedVector2Array(0, 0, 0, 0, 80, -32, 0, 0, 0, 0, -16, -32)
 }
 point_count = 2
-
-[sub_resource type="Gradient" id="Gradient_p57ef"]
-colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_u5sy4"]
-gradient = SubResource("Gradient_p57ef")
-width = 256
-height = 256
-fill = 1
-fill_from = Vector2(0.5, 0.5)
-fill_to = Vector2(0.8, 0.8)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_0tnpc"]
 
@@ -55,6 +45,12 @@ toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "Train"
 
+[node name="LightButton" type="Button" parent="CanvasLayer/HBoxContainer"]
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_lbhrr")
+text = "Light"
+
 [node name="DestroyButton" type="Button" parent="CanvasLayer/HBoxContainer"]
 layout_mode = 2
 toggle_mode = true
@@ -82,6 +78,10 @@ modulate = Color(1, 1, 1, 0.501961)
 position = Vector2(-96, 56)
 is_ghost = true
 
+[node name="GhostLight" parent="." instance=ExtResource("7_gee14")]
+visible = false
+position = Vector2(-96, -64)
+
 [node name="Train" parent="." instance=ExtResource("2_yqjtg")]
 curve = SubResource("Curve2D_lbhrr")
 
@@ -91,11 +91,6 @@ position = Vector2(0, 16)
 [node name="Wall2" parent="." instance=ExtResource("7_u5sy4")]
 position = Vector2(-16, 16)
 
-[node name="PointLight2D" type="PointLight2D" parent="."]
-position = Vector2(-48, -16)
-shadow_enabled = true
-texture = SubResource("GradientTexture2D_u5sy4")
-
 [node name="Sprite2D" type="Sprite2D" parent="."]
 material = SubResource("ShaderMaterial_0tnpc")
 position = Vector2(-64, 80)
@@ -103,7 +98,17 @@ position = Vector2(-64, 80)
 [node name="CanvasModulate" type="CanvasModulate" parent="."]
 color = Color(0.125911, 0.125911, 0.125911, 1)
 
+[node name="Light3" parent="." instance=ExtResource("7_gee14")]
+position = Vector2(-48, -32)
+
+[node name="Light" parent="." instance=ExtResource("7_gee14")]
+position = Vector2(-64, 32)
+
+[node name="Light2" parent="." instance=ExtResource("7_gee14")]
+position = Vector2(-16, 112)
+
 [connection signal="toggled" from="CanvasLayer/HBoxContainer/TrackButton" to="." method="_on_trackbutton_toggled"]
 [connection signal="toggled" from="CanvasLayer/HBoxContainer/StationButton" to="." method="_on_stationbutton_toggled"]
 [connection signal="toggled" from="CanvasLayer/HBoxContainer/TrainButton" to="." method="_on_trainbutton_toggled"]
+[connection signal="toggled" from="CanvasLayer/HBoxContainer/LightButton" to="." method="_on_light_button_toggled"]
 [connection signal="toggled" from="CanvasLayer/HBoxContainer/DestroyButton" to="." method="_on_destroybutton_toggled"]

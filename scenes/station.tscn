@@ -4,7 +4,7 @@
 
 [sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_rod8h"]
 cull_mode = 2
-polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8, -8, -8)
+polygon = PackedVector2Array(-8, -4, -0.0468216, -8, 8, -4, 8, 8, -8, 8)
 
 [node name="Station" type="Node2D" groups=["stations"]]
 script = ExtResource("1_rod8h")
