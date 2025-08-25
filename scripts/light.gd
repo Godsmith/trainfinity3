@@ -5,9 +5,9 @@ class_name Light
 signal light_clicked(station: Light)
 
 @export var is_ghost := false
-@export var jitter_offset := 1.25
+@export var jitter_offset := 0.75
 @export var jitter_speed := 12.0
-@export var flicker_offset := 0.05
+@export var flicker_intensity := 0.05
 
 @onready var light := $PointLight2D
 
@@ -31,4 +31,4 @@ func jitter() -> void:
 			randf_range(-jitter_offset, jitter_offset)
 	)
 	light.position = p
-	light.energy = initial_energy + randf_range(-flicker_offset, flicker_offset)
+	light.energy = initial_energy + randf_range(-flicker_intensity, flicker_intensity)
