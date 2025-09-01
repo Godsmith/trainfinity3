@@ -42,11 +42,14 @@ var astar = AStar2D.new()
 var astar_id_from_position = {}
 
 @onready var camera = $Camera2D
+@onready var gui: Gui = $Gui
 
 var selected_station: Station = null
 
 @export_range(0.0, 1.0) var wall_chance: float = 0.3
 @export_range(0.0, 1.0) var ore_chance: float = 0.1
+
+var money := 0
 
 func _real_stations() -> Array:
 	return get_tree().get_nodes_in_group("stations").filter(func(station): return !station.is_ghost)
@@ -277,8 +280,14 @@ func _on_timer_timeout():
 ######################################################################
 	
 func _on_train_reaches_end(train: Train):
+	for factory in get_tree().get_nodes_in_group("factories"):
+		if Global.is_orthogonally_adjacent(factory.get_global_position(), 
+										   Vector2i(train.get_train_position())):
+			money += train.ore
+			gui.show_money(money)
+			train.ore = 0
+			
 	for station in _real_stations():
 		if Vector2i(station.global_position) == Vector2i(train.get_train_position()):
 			train.ore += station.ore
 			station.remove_all_ore()
-	pass

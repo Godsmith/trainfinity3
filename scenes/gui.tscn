@@ -1,8 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://vyo6h6rte1xu"]
+[gd_scene load_steps=3 format=3 uid="uid://vyo6h6rte1xu"]
+
+[ext_resource type="Script" uid="uid://dwohiu6xowsay" path="res://scenes/gui.gd" id="1_efmwq"]
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_lbhrr"]
 
 [node name="Gui" type="CanvasLayer"]
+script = ExtResource("1_efmwq")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 offset_right = 89.0
@@ -38,3 +41,7 @@ layout_mode = 2
 toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "Destroy"
+
+[node name="Money" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "$0"
