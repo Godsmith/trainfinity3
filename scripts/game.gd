@@ -1,5 +1,5 @@
 # Possible improvements
-# - range of stations (start with 1)
+# - range of stations (start with 1) - though it looks ugly when they are too far from ore
 # - number of trains (start with 1)
 
 # Between rounds
@@ -9,9 +9,10 @@
 
 extends Node2D
 
+class_name Game
+
 const GRID_SIZE := 32
-const TILE_SIZE := 16
-const TILE := Vector2(TILE_SIZE, TILE_SIZE)
+const TILE := Vector2(Global.TILE_SIZE, Global.TILE_SIZE)
 const SCALE_FACTOR := 2  # Don't remember where I set this
 enum GUI_STATE {NONE, TRACK, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY}
 
@@ -61,9 +62,9 @@ func _positions_between(start: Vector2, stop: Vector2) -> Array[Vector2]:
 	out.append(start)
 	while x != stop.x or y != stop.y:
 		if x != stop.x:
-			x += TILE_SIZE * dx_sign
+			x += Global.TILE_SIZE * dx_sign
 		if y != stop.y:
-			y += TILE_SIZE * dy_sign
+			y += Global.TILE_SIZE * dy_sign
 		out.append(Vector2(x,y))
 	return out
 
@@ -91,7 +92,7 @@ func _generate_map():
 				continue
 			if randf() < wall_chance:
 				var wall = WALL.instantiate()
-				wall.position = Vector2(x, y) * TILE_SIZE
+				wall.position = Vector2(x, y) * Global.TILE_SIZE
 				add_child(wall)
 
 				# maybe add ore inside this wall
@@ -272,4 +273,5 @@ func _on_timer_timeout():
 	for station: Station in _real_stations():
 		station.extract_ore()
 
+######################################################################
 	

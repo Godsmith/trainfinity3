@@ -14,6 +14,10 @@ config/name="Trainfinity"
 run/main_scene="uid://bdv5fulluq6xw"
 config/features=PackedStringArray("4.4", "Forward Plus")
 
+[autoload]
+
+Global="*res://scripts/global.gd"
+
 [display]
 
 window/size/viewport_width=960
