@@ -59,6 +59,11 @@ func _positions_between(start: Vector2, stop: Vector2) -> Array[Vector2]:
 
 
 func _ready():
+	$Gui/HBoxContainer/TrackButton.connect("toggled", _on_trackbutton_toggled)
+	$Gui/HBoxContainer/StationButton.connect("toggled", _on_stationbutton_toggled)
+	$Gui/HBoxContainer/TrainButton.connect("toggled", _on_trainbutton_toggled)
+	$Gui/HBoxContainer/LightButton.connect("toggled", _on_lightbutton_toggled)
+	$Gui/HBoxContainer/DestroyButton.connect("toggled", _on_destroybutton_toggled)
 	_generate_map()
 
 
@@ -176,7 +181,7 @@ func _on_stationbutton_toggled(toggled_on: bool) -> void:
 func _on_trainbutton_toggled(toggled_on: bool) -> void:
 	_change_gui_state(GUI_STATE.TRAIN1 if toggled_on else GUI_STATE.NONE)
 	
-func _on_light_button_toggled(toggled_on: bool) -> void:
+func _on_lightbutton_toggled(toggled_on: bool) -> void:
 	_change_gui_state(GUI_STATE.LIGHT if toggled_on else GUI_STATE.NONE)
 
 func _on_destroybutton_toggled(toggled_on: bool) -> void:

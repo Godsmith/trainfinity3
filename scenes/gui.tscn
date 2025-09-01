@@ -1,0 +1,40 @@
+[gd_scene load_steps=2 format=3 uid="uid://vyo6h6rte1xu"]
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_lbhrr"]
+
+[node name="Gui" type="CanvasLayer"]
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+offset_right = 89.0
+offset_bottom = 31.0
+
+[node name="TrackButton" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_lbhrr")
+text = "Track"
+
+[node name="StationButton" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_lbhrr")
+text = "Station"
+
+[node name="TrainButton" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_lbhrr")
+text = "Train"
+
+[node name="LightButton" type="Button" parent="HBoxContainer"]
+visible = false
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_lbhrr")
+text = "Light"
+
+[node name="DestroyButton" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_lbhrr")
+text = "Destroy"
