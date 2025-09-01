@@ -8,6 +8,7 @@ signal station_clicked(station: Station)
 @export var ore = 0
 
 var adjacent_ores = []
+var _chunks = []
 
 
 func _ready():
@@ -29,5 +30,12 @@ func extract_ore():
 									 randf_range(-Global.TILE_SIZE/2 + 5,Global.TILE_SIZE/2 + 1))
 		new_chunk.visible = true
 		new_chunk.color = adjacent_ore.ORE_COLOR[adjacent_ore.ore_type]
+		_chunks.append(new_chunk)
 		add_child(new_chunk)
+		
+func remove_all_ore():
+	for chunk in _chunks:
+		chunk.queue_free()
+	_chunks.clear()
+	ore = 0
 	

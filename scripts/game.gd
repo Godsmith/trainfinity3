@@ -249,6 +249,7 @@ func _station_clicked(station: Station):
 		if point_path:
 			var train = TRAIN.instantiate()
 			train.set_path(point_path)
+			train.end_reached.connect(_on_train_reaches_end)
 			add_child(train)
 			gui_state == GUI_STATE.NONE
 	elif gui_state == GUI_STATE.DESTROY:
@@ -275,3 +276,9 @@ func _on_timer_timeout():
 
 ######################################################################
 	
+func _on_train_reaches_end(train: Train):
+	for station in _real_stations():
+		if Vector2i(station.global_position) == Vector2i(train.get_train_position()):
+			train.ore += station.ore
+			station.remove_all_ore()
+	pass
