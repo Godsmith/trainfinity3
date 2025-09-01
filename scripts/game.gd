@@ -1,3 +1,7 @@
+# Possible improvements
+# - range of stations (start with 1)
+
+
 extends Node2D
 
 const GRID_SIZE := 32
@@ -64,6 +68,7 @@ func _ready():
 	$Gui/HBoxContainer/TrainButton.connect("toggled", _on_trainbutton_toggled)
 	$Gui/HBoxContainer/LightButton.connect("toggled", _on_lightbutton_toggled)
 	$Gui/HBoxContainer/DestroyButton.connect("toggled", _on_destroybutton_toggled)
+	$Timer.connect("timeout", _on_timer_timeout)
 	_generate_map()
 
 
@@ -247,3 +252,12 @@ func _create_light(position: Vector2):
 func _light_clicked(light: Light):
 	if gui_state == GUI_STATE.DESTROY:
 		light.queue_free()
+
+
+######################################################################
+	
+func _on_timer_timeout():
+	for station: Station in _real_stations():
+		station.extract_ore()
+
+	
