@@ -34,8 +34,8 @@ var astar_id_from_position = {}
 
 var selected_station: Station = null
 
-@export_range(0.0, 1.0) var wall_chance: float = 0.4
-@export_range(0.0, 1.0) var ore_chance: float = 0.2
+@export_range(0.0, 1.0) var wall_chance: float = 0.3
+@export_range(0.0, 1.0) var ore_chance: float = 0.1
 
 func _real_stations() -> Array:
 	return get_tree().get_nodes_in_group("stations").filter(func(station): return !station.is_ghost)
