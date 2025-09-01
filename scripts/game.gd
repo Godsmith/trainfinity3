@@ -1,5 +1,10 @@
 # Possible improvements
 # - range of stations (start with 1)
+# - number of trains (start with 1)
+
+# Between rounds
+# - starting everything above
+# - ore patch size
 
 
 extends Node2D
@@ -10,6 +15,7 @@ const TILE := Vector2(TILE_SIZE, TILE_SIZE)
 const SCALE_FACTOR := 2  # Don't remember where I set this
 enum GUI_STATE {NONE, TRACK, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY}
 
+const FACTORY = preload("res://scenes/factory.tscn")
 const STATION = preload("res://scenes/station.tscn")
 const TRAIN = preload("res://scenes/train.tscn")
 const TRACK = preload("res://scenes/track.tscn")
@@ -74,9 +80,15 @@ func _ready():
 
 func _generate_map():
 	randomize()
-
+	var factory = FACTORY.instantiate()
+	factory.position = Vector2(0, 0)
+	add_child(factory)
+	
 	for x in range(-GRID_SIZE/2, GRID_SIZE):
 		for y in range(-GRID_SIZE/2, GRID_SIZE):
+			if x >= -1 and x <= 1 and y >= -1 and y <= 1:
+				# Do not place around starting factory
+				continue
 			if randf() < wall_chance:
 				var wall = WALL.instantiate()
 				wall.position = Vector2(x, y) * TILE_SIZE
