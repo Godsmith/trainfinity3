@@ -1,10 +1,21 @@
-# Possible improvements
+# In-game upgrades
 # - range of stations (start with 1) - though it looks ugly when they are too far from ore
 # - number of trains (start with 1)
+# - map size
 
-# Between rounds
+# Between-round upgrade
 # - starting everything above
 # - ore patch size
+
+# TODO
+# - reset GUI_STATE after building train
+# - some tracks above trains
+# - don't allow building track on mountains
+# - tracks not above stations
+# - trains, rails and stations should have a cost
+# - train collisions
+# - trains cannot turn so quickly
+# - limit zoom in and out
 
 
 extends Node2D
