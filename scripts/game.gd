@@ -8,9 +8,7 @@
 # - ore patch size
 
 # TODO
-# - some tracks above trains
 # - don't allow building track on mountains
-# - tracks not above stations
 # - trains, rails and stations should have a cost
 # - train collisions
 # - trains cannot turn so quickly
@@ -23,7 +21,7 @@ class_name Game
 
 const GRID_SIZE := 32
 const TILE := Vector2(Global.TILE_SIZE, Global.TILE_SIZE)
-const SCALE_FACTOR := 2  # Don't remember where I set this
+const SCALE_FACTOR := 2 # Don't remember where I set this
 enum GUI_STATE {NONE, TRACK, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY}
 
 const FACTORY = preload("res://scenes/factory.tscn")
@@ -78,7 +76,7 @@ func _positions_between(start: Vector2, stop: Vector2) -> Array[Vector2]:
 			x += Global.TILE_SIZE * dx_sign
 		if y != stop.y:
 			y += Global.TILE_SIZE * dy_sign
-		out.append(Vector2(x,y))
+		out.append(Vector2(x, y))
 	return out
 
 
@@ -99,8 +97,8 @@ func _generate_map():
 	factory.position = Vector2(0, 0)
 	add_child(factory)
 	
-	for x in range(-GRID_SIZE/2, GRID_SIZE):
-		for y in range(-GRID_SIZE/2, GRID_SIZE):
+	for x in range(-GRID_SIZE / 2, GRID_SIZE):
+		for y in range(-GRID_SIZE / 2, GRID_SIZE):
 			if x >= -1 and x <= 1 and y >= -1 and y <= 1:
 				# Do not place around starting factory
 				continue
@@ -112,7 +110,7 @@ func _generate_map():
 				# maybe add ore inside this wall
 				if randf() < ore_chance:
 					var ore = ORE.instantiate()
-					ore.position = Vector2.ZERO   # relative to wall
+					ore.position = Vector2.ZERO # relative to wall
 					wall.add_child(ore)
 
 
@@ -128,7 +126,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.button_index == MOUSE_BUTTON_WHEEL_UP and not event.is_echo():
 			camera.zoom_camera(1.1)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and not event.is_echo():
-			camera.zoom_camera(1/1.1)
+			camera.zoom_camera(1 / 1.1)
 	
 	if event is InputEventMouseButton and event.is_released() and event.button_index == MOUSE_BUTTON_LEFT:
 		match gui_state:
@@ -165,7 +163,7 @@ func _show_ghost_track(positions: Array[Vector2]):
 	ghost_tracks.clear()
 	for i in len(ghost_track_tile_positions) - 1:
 		var pos1 = ghost_track_tile_positions[i]
-		var pos2 = ghost_track_tile_positions[i+1]
+		var pos2 = ghost_track_tile_positions[i + 1]
 		var position = pos1.lerp(pos2, 0.5)
 		var ghost_track := Track.create(pos1, pos2)
 		ghost_track.set_ghost_status(true)
@@ -187,7 +185,7 @@ func _create_track():
 		_add_position_to_astar(position)
 		ids.append(astar_id_from_position[position])
 	for i in range(1, len(ids)):
-		astar.connect_points(ids[i-1], ids[i])
+		astar.connect_points(ids[i - 1], ids[i])
 	ghost_tracks.clear()
 
 func _add_position_to_astar(position):
@@ -230,7 +228,7 @@ func _change_gui_state(new_state: GUI_STATE):
 	ghost_station.visible = false
 	ghost_light.visible = false
 	for station: Station in _real_stations():
-		station.modulate = Color(1,1,1,1)
+		station.modulate = Color(1, 1, 1, 1)
 		
 	if new_state == GUI_STATE.TRACK:
 		ghost_track.visible = true
@@ -256,11 +254,11 @@ func _station_clicked(station: Station):
 	if gui_state == GUI_STATE.TRAIN1:
 		var id1 = astar_id_from_position[station.position.round()]
 		for other_station: Station in _real_stations():
-			station.modulate = Color(1,1,1,1)
+			station.modulate = Color(1, 1, 1, 1)
 			if other_station != station:
 				var id2 = astar_id_from_position[other_station.position.round()]
 				if astar.get_point_path(id1, id2):
-					other_station.modulate = Color(0,1,0,1)
+					other_station.modulate = Color(0, 1, 0, 1)
 		selected_station = station
 		gui_state = GUI_STATE.TRAIN2
 	elif gui_state == GUI_STATE.TRAIN2:
@@ -299,7 +297,7 @@ func _on_timer_timeout():
 	
 func _on_train_reaches_end(train: Train):
 	for factory in get_tree().get_nodes_in_group("factories"):
-		if Global.is_orthogonally_adjacent(factory.get_global_position(), 
+		if Global.is_orthogonally_adjacent(factory.get_global_position(),
 										   Vector2i(train.get_train_position())):
 			money += train.ore
 			gui.show_money(money)

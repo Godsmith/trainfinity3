@@ -1,13 +1,11 @@
-[gd_scene load_steps=3 format=3 uid="uid://bwtjmen3o0mo2"]
-
-[ext_resource type="Script" uid="uid://b2y7rsqb0bxqi" path="res://scripts/station.gd" id="1_r3gb1"]
+[gd_scene load_steps=2 format=3 uid="uid://bwtjmen3o0mo2"]
 
 [sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_rod8h"]
 cull_mode = 2
 polygon = PackedVector2Array(-8, -8, -6, -8, -6, -2, 8, -2, 8, 8, -8, 8)
 
 [node name="Factory" type="Node2D" groups=["factories"]]
-script = ExtResource("1_r3gb1")
+z_index = 1
 
 [node name="Polygon2D" type="Polygon2D" parent="."]
 position = Vector2(-8, 8)
