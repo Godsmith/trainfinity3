@@ -4,26 +4,35 @@
 
 [sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_rod8h"]
 cull_mode = 2
-polygon = PackedVector2Array(-8, -4, -0.0468216, -8, 8, -4, 8, 8, -8, 8)
+polygon = PackedVector2Array(-6, -2, 0, -6, 6, -2, 6, 6, -6, 6)
 
 [node name="Station" type="Node2D" groups=["stations"]]
 script = ExtResource("1_rod8h")
 
 [node name="Polygon2D" type="Polygon2D" parent="."]
 position = Vector2(-8, 8)
-color = Color(0.390011, 0.0631477, 0, 1)
-polygon = PackedVector2Array(0, 0, 0, -12, 8, -16, 16, -12, 16, 0)
+color = Color(0.489226, 0.317136, 0.268828, 1)
+polygon = PackedVector2Array(2, -2, 2, -10, 8, -14, 14, -10, 14, -2)
 
 [node name="Polygon2D" type="Polygon2D" parent="Polygon2D"]
 position = Vector2(-8, 8)
-polygon = PackedVector2Array(14, -14, 14, -18, 18, -18, 18, -14)
+polygon = PackedVector2Array(12, -16, 12, -18, 14, -18, 14, -16)
+
+[node name="Polygon2D2" type="Polygon2D" parent="Polygon2D"]
+position = Vector2(-2, 8)
+polygon = PackedVector2Array(12, -16, 12, -18, 14, -18, 14, -16)
+
+[node name="Polygon2D3" type="Polygon2D" parent="Polygon2D"]
+position = Vector2(-6, 14)
+color = Color(0.0605303, 0.0605303, 0.0605303, 1)
+polygon = PackedVector2Array(12, -16, 12, -20, 16, -20, 16, -16)
 
 [node name="Area2D" type="Area2D" parent="."]
 position = Vector2(-16, 16)
 
 [node name="CollisionShape2D" type="CollisionPolygon2D" parent="Area2D"]
 position = Vector2(16, -16)
-polygon = PackedVector2Array(-8, -4, 0, -8, 8, -4, 8, 8, -8, 8)
+polygon = PackedVector2Array(-6, -2, 0, -6, 6, -2, 6, 6, -6, 6)
 
 [node name="LightOccluder2D" type="LightOccluder2D" parent="."]
 occluder = SubResource("OccluderPolygon2D_rod8h")

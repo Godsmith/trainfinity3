@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://bdv5fulluq6xw"]
+[gd_scene load_steps=7 format=3 uid="uid://bdv5fulluq6xw"]
 
 [ext_resource type="Script" uid="uid://cqw467o78e8bf" path="res://scripts/overground.gd" id="1_u5idq"]
 [ext_resource type="PackedScene" uid="uid://vyo6h6rte1xu" path="res://scenes/gui.tscn" id="2_lgfhw"]
@@ -6,13 +6,6 @@
 [ext_resource type="PackedScene" uid="uid://rq8dlyspro46" path="res://scenes/track.tscn" id="4_tl2kb"]
 [ext_resource type="PackedScene" uid="uid://b1064yqqmy7mf" path="res://scenes/station.tscn" id="5_ilnf8"]
 [ext_resource type="PackedScene" uid="uid://cxgimf5dgovcu" path="res://scenes/light.tscn" id="6_6dr8u"]
-[ext_resource type="PackedScene" uid="uid://b2t1f8rkw52mt" path="res://scenes/train.tscn" id="7_o5urb"]
-
-[sub_resource type="Curve2D" id="Curve2D_lbhrr"]
-_data = {
-"points": PackedVector2Array(0, 0, 0, 0, 80, -32, 0, 0, 0, 0, -16, -32)
-}
-point_count = 2
 
 [node name="Overground" type="Node2D"]
 script = ExtResource("1_u5idq")
@@ -44,9 +37,6 @@ is_ghost = true
 [node name="GhostLight" parent="." instance=ExtResource("6_6dr8u")]
 visible = false
 position = Vector2(-96, -64)
-
-[node name="Train" parent="." instance=ExtResource("7_o5urb")]
-curve = SubResource("Curve2D_lbhrr")
 
 [node name="Timer" type="Timer" parent="."]
 autostart = true
