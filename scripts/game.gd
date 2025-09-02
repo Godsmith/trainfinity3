@@ -8,7 +8,6 @@
 # - ore patch size
 
 # TODO
-# - reset GUI_STATE after building train
 # - some tracks above trains
 # - don't allow building track on mountains
 # - tracks not above stations
@@ -84,6 +83,7 @@ func _positions_between(start: Vector2, stop: Vector2) -> Array[Vector2]:
 
 
 func _ready():
+	# TODO: do not expose Gui innards this way
 	$Gui/HBoxContainer/TrackButton.connect("toggled", _on_trackbutton_toggled)
 	$Gui/HBoxContainer/StationButton.connect("toggled", _on_stationbutton_toggled)
 	$Gui/HBoxContainer/TrainButton.connect("toggled", _on_trainbutton_toggled)
@@ -205,19 +205,24 @@ func _track_clicked(track: Track):
 ##################################################################
 
 func _on_trackbutton_toggled(toggled_on: bool) -> void:
-	_change_gui_state(GUI_STATE.TRACK if toggled_on else GUI_STATE.NONE)
+	if toggled_on:
+		_change_gui_state(GUI_STATE.TRACK)
 
 func _on_stationbutton_toggled(toggled_on: bool) -> void:
-	_change_gui_state(GUI_STATE.STATION if toggled_on else GUI_STATE.NONE)
+	if toggled_on:
+		_change_gui_state(GUI_STATE.STATION)
 
 func _on_trainbutton_toggled(toggled_on: bool) -> void:
-	_change_gui_state(GUI_STATE.TRAIN1 if toggled_on else GUI_STATE.NONE)
+	if toggled_on:
+		_change_gui_state(GUI_STATE.TRAIN1)
 	
 func _on_lightbutton_toggled(toggled_on: bool) -> void:
-	_change_gui_state(GUI_STATE.LIGHT if toggled_on else GUI_STATE.NONE)
+	if toggled_on:
+		_change_gui_state(GUI_STATE.LIGHT)
 
 func _on_destroybutton_toggled(toggled_on: bool) -> void:
-	_change_gui_state(GUI_STATE.DESTROY if toggled_on else GUI_STATE.NONE)
+	if toggled_on:
+		_change_gui_state(GUI_STATE.DESTROY)
 
 
 func _change_gui_state(new_state: GUI_STATE):
@@ -233,7 +238,9 @@ func _change_gui_state(new_state: GUI_STATE):
 		ghost_station.visible = true
 	elif new_state == GUI_STATE.LIGHT:
 		ghost_light.visible = true
-		
+	
+	if new_state == GUI_STATE.NONE:
+		gui.unpress_all()
 	gui_state = new_state
 
 ###################################################################
@@ -265,7 +272,7 @@ func _station_clicked(station: Station):
 			train.set_path(point_path)
 			train.end_reached.connect(_on_train_reaches_end)
 			add_child(train)
-			gui_state == GUI_STATE.NONE
+			_change_gui_state(GUI_STATE.NONE)
 	elif gui_state == GUI_STATE.DESTROY:
 		station.queue_free()
 	

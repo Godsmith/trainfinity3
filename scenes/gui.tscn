@@ -13,18 +13,21 @@ offset_bottom = 31.0
 
 [node name="TrackButton" type="Button" parent="HBoxContainer"]
 layout_mode = 2
+focus_mode = 0
 toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "Track"
 
 [node name="StationButton" type="Button" parent="HBoxContainer"]
 layout_mode = 2
+focus_mode = 0
 toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "Station"
 
 [node name="TrainButton" type="Button" parent="HBoxContainer"]
 layout_mode = 2
+focus_mode = 0
 toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "Train"
@@ -32,12 +35,14 @@ text = "Train"
 [node name="LightButton" type="Button" parent="HBoxContainer"]
 visible = false
 layout_mode = 2
+focus_mode = 0
 toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "Light"
 
 [node name="DestroyButton" type="Button" parent="HBoxContainer"]
 layout_mode = 2
+focus_mode = 0
 toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "Destroy"
