@@ -14,9 +14,9 @@ config/name="Trainfinity"
 run/main_scene="uid://bdv5fulluq6xw"
 config/features=PackedStringArray("4.4", "Forward Plus")
 
-[autoload]
+[debug]
 
-Global="*res://scripts/global.gd"
+gdscript/warnings/integer_division=0
 
 [display]
 

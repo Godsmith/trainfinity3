@@ -19,7 +19,7 @@ extends Node2D
 
 class_name Game
 
-const GRID_SIZE := 32
+const HALF_GRID_SIZE := 32
 const TILE := Vector2(Global.TILE_SIZE, Global.TILE_SIZE)
 const SCALE_FACTOR := 2 # Don't remember where I set this
 enum GUI_STATE {NONE, TRACK, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY}
@@ -97,8 +97,8 @@ func _generate_map():
 	factory.position = Vector2(0, 0)
 	add_child(factory)
 	
-	for x in range(-GRID_SIZE / 2, GRID_SIZE):
-		for y in range(-GRID_SIZE / 2, GRID_SIZE):
+	for x in range(-HALF_GRID_SIZE, HALF_GRID_SIZE):
+		for y in range(-HALF_GRID_SIZE, HALF_GRID_SIZE):
 			if x >= -1 and x <= 1 and y >= -1 and y <= 1:
 				# Do not place around starting factory
 				continue
@@ -150,7 +150,6 @@ func _unhandled_input(event: InputEvent) -> void:
 					_show_ghost_track(new_ghost_track_tile_positions)
 					
 		if is_right_mouse_button_held_down:
-			var camera = get_viewport().get_camera_2d()
 			camera.position -= event.get_relative() / camera.zoom.x
 			
 
@@ -158,41 +157,40 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _show_ghost_track(positions: Array[Vector2]):
 	ghost_track_tile_positions = positions
-	for ghost_track in ghost_tracks:
-		ghost_track.queue_free()
+	for track in ghost_tracks:
+		track.queue_free()
 	ghost_tracks.clear()
 	for i in len(ghost_track_tile_positions) - 1:
 		var pos1 = ghost_track_tile_positions[i]
 		var pos2 = ghost_track_tile_positions[i + 1]
-		var position = pos1.lerp(pos2, 0.5)
-		var ghost_track := Track.create(pos1, pos2)
-		ghost_track.set_ghost_status(true)
-		ghost_track.position = position
-		ghost_tracks.append(ghost_track)
-		$".".add_child(ghost_track)
+		var midway_position = pos1.lerp(pos2, 0.5)
+		var track := Track.create(pos1, pos2)
+		track.set_ghost_status(true)
+		track.position = midway_position
+		ghost_tracks.append(track)
+		$".".add_child(track)
 
 func _create_track():
-	for ghost_track in ghost_tracks:
-		var position = ghost_track.position.snapped(TILE)
-		if ghost_track.position_rotation() in tracks:
-			ghost_track.queue_free()
+	for track in ghost_tracks:
+		if track.position_rotation() in tracks:
+			track.queue_free()
 		else:
-			tracks[ghost_track.position_rotation()] = ghost_track
-			ghost_track.set_ghost_status(false)
-			ghost_track.track_clicked.connect(_track_clicked)
+			tracks[track.position_rotation()] = track
+			track.set_ghost_status(false)
+			track.track_clicked.connect(_track_clicked)
 	var ids = []
-	for position in ghost_track_tile_positions:
-		_add_position_to_astar(position)
-		ids.append(astar_id_from_position[position])
+	for ghost_track_position in ghost_track_tile_positions:
+		_add_position_to_astar(ghost_track_position)
+		ids.append(astar_id_from_position[ghost_track_position])
 	for i in range(1, len(ids)):
 		astar.connect_points(ids[i - 1], ids[i])
 	ghost_tracks.clear()
 
-func _add_position_to_astar(position):
-	if not position in astar_id_from_position:
+func _add_position_to_astar(new_position):
+	if not new_position in astar_id_from_position:
 		var id = astar.get_available_point_id()
-		astar_id_from_position[position] = id
-		astar.add_point(id, position)
+		astar_id_from_position[new_position] = id
+		astar.add_point(id, new_position)
 
 func _track_clicked(track: Track):
 	if gui_state == GUI_STATE.DESTROY:
@@ -243,10 +241,10 @@ func _change_gui_state(new_state: GUI_STATE):
 
 ###################################################################
 
-func _create_station(position: Vector2):
+func _create_station(station_position: Vector2):
 	var station = STATION.instantiate()
-	station.position = position
-	_add_position_to_astar(position)
+	station.position = station_position
+	_add_position_to_astar(station_position)
 	station.station_clicked.connect(_station_clicked)
 	add_child(station)
 	
@@ -276,9 +274,9 @@ func _station_clicked(station: Station):
 	
 ###################################################################
 
-func _create_light(position: Vector2):
+func _create_light(light_position: Vector2):
 	var light = LIGHT.instantiate()
-	light.position = position
+	light.position = light_position
 	light.light_clicked.connect(_light_clicked)
 	add_child(light)
 
