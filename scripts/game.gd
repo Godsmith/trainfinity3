@@ -281,7 +281,7 @@ func _station_clicked(station: Station):
 			train.set_path(point_path)
 			train.end_reached.connect(_on_train_reaches_end)
 			add_child(train)
-			_change_gui_state(GUI_STATE.NONE)
+			_change_gui_state(GUI_STATE.TRAIN1)
 	elif gui_state == GUI_STATE.DESTROY:
 		station.queue_free()
 	
