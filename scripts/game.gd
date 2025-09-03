@@ -275,13 +275,14 @@ func _station_clicked(station: Station):
 	elif gui_state == GUI_STATE.TRAIN2:
 		var id1 = astar_id_from_position[selected_station.position.round()]
 		var id2 = astar_id_from_position[station.position.round()]
-		var point_path = astar.get_point_path(id1, id2)
-		if point_path:
-			var train = TRAIN.instantiate()
-			train.set_path(point_path)
-			train.end_reached.connect(_on_train_reaches_end)
-			add_child(train)
-			_change_gui_state(GUI_STATE.TRAIN1)
+		if id1 != id2:
+			var point_path = astar.get_point_path(id1, id2)
+			if point_path:
+				var train = TRAIN.instantiate()
+				train.set_path(point_path)
+				train.end_reached.connect(_on_train_reaches_end)
+				add_child(train)
+		_change_gui_state(GUI_STATE.TRAIN1)
 	elif gui_state == GUI_STATE.DESTROY:
 		station.queue_free()
 	
