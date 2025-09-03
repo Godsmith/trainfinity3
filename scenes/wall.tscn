@@ -6,6 +6,9 @@ polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8, -8, -8)
 
 [node name="Wall" type="Node2D"]
 
+[node name="LightOccluder2D" type="LightOccluder2D" parent="."]
+occluder = SubResource("OccluderPolygon2D_uvhfp")
+
 [node name="Node2D3" type="Polygon2D" parent="."]
 color = Color(0.313726, 0.313726, 0.313726, 1)
 polygon = PackedVector2Array(8, -8, 8, 8, -8, 8, -8, -8)
@@ -29,6 +32,3 @@ polygon = PackedVector2Array(0, -8, 0, -8, 8, 8, -8, 0)
 [node name="Node2D" type="Polygon2D" parent="Node2D/Node2D/Node2D/Node2D"]
 color = Color(0.707966, 0.707967, 0.707966, 1)
 polygon = PackedVector2Array(0, -8, 0, -8, 8, 0, 0, 0)
-
-[node name="LightOccluder2D" type="LightOccluder2D" parent="."]
-occluder = SubResource("OccluderPolygon2D_uvhfp")

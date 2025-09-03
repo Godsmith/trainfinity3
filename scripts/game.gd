@@ -8,7 +8,6 @@
 # - ore patch size
 
 # TODO
-# - don't allow building track on mountains
 # - trains, rails and stations should have a cost
 # - train collisions
 # - trains cannot turn so quickly
@@ -59,6 +58,8 @@ var selected_station: Station = null
 
 var money := 0
 
+var wall_position_set: Dictionary[Vector2i, int] = {}
+
 func _real_stations() -> Array:
 	return get_tree().get_nodes_in_group("stations").filter(func(station): return !station.is_ghost)
 
@@ -104,7 +105,9 @@ func _generate_map():
 				continue
 			if randf() < wall_chance:
 				var wall = WALL.instantiate()
-				wall.position = Vector2(x, y) * Global.TILE_SIZE
+				var wall_position = Vector2i(x, y) * Global.TILE_SIZE
+				wall.position = wall_position
+				wall_position_set[wall_position] = 0
 				add_child(wall)
 
 				# maybe add ore inside this wall
@@ -131,7 +134,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.is_released() and event.button_index == MOUSE_BUTTON_LEFT:
 		match gui_state:
 			GUI_STATE.TRACK:
-				_create_track()
+				_try_create_tracks()
 				ghost_track.visible = true
 			GUI_STATE.STATION:
 				_create_station(get_local_mouse_position().snapped(TILE))
@@ -163,20 +166,30 @@ func _show_ghost_track(positions: Array[Vector2]):
 	for i in len(ghost_track_tile_positions) - 1:
 		var pos1 = ghost_track_tile_positions[i]
 		var pos2 = ghost_track_tile_positions[i + 1]
-		var midway_position = pos1.lerp(pos2, 0.5)
 		var track := Track.create(pos1, pos2)
-		track.set_ghost_status(true)
+		# TODO: add other stuff beside walls here
+		var is_allowed = (Vector2i(pos1) not in wall_position_set and Vector2i(pos2) not in wall_position_set)
+		track.set_color(true, is_allowed)
+		var midway_position = Vector2(pos1).lerp(pos2, 0.5)
 		track.position = midway_position
 		ghost_tracks.append(track)
 		$".".add_child(track)
 
-func _create_track():
+func _try_create_tracks():
+	# Check if illegal positions, and if so abort and reset everything
+	for ghost_track_tile_position in ghost_track_tile_positions:
+		if Vector2i(ghost_track_tile_position) in wall_position_set:
+			for track in ghost_tracks:
+				track.queue_free()
+			ghost_tracks.clear()
+			return
+	
 	for track in ghost_tracks:
 		if track.position_rotation() in tracks:
 			track.queue_free()
 		else:
 			tracks[track.position_rotation()] = track
-			track.set_ghost_status(false)
+			track.set_color(false, true)
 			track.track_clicked.connect(_track_clicked)
 	var ids = []
 	for ghost_track_position in ghost_track_tile_positions:
@@ -186,7 +199,7 @@ func _create_track():
 		astar.connect_points(ids[i - 1], ids[i])
 	ghost_tracks.clear()
 
-func _add_position_to_astar(new_position):
+func _add_position_to_astar(new_position: Vector2):
 	if not new_position in astar_id_from_position:
 		var id = astar.get_available_point_id()
 		astar_id_from_position[new_position] = id
