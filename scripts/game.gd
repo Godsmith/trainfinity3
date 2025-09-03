@@ -51,19 +51,53 @@ var astar_id_from_position = {}
 
 @onready var camera = $Camera2D
 @onready var gui: Gui = $Gui
+@onready var bank = Bank.new(gui)
 
 var selected_station: Station = null
 
 @export_range(0.0, 1.0) var wall_chance: float = 0.3
 @export_range(0.0, 1.0) var ore_chance: float = 0.1
-@export var track_price := 1
-@export var station_price := 5
-@export var train_price := 10
-
-# TODO: hide inside class to enforce display update
-var money := 30
 
 var wall_position_set: Dictionary[Vector2i, int] = {}
+
+class Bank:
+	const _start_price := {
+		Global.Asset.TRACK: 1.0,
+		Global.Asset.STATION: 5.0,
+		Global.Asset.TRAIN: 10.0
+	}
+	var _current_price: Dictionary[Global.Asset, float] = {
+		Global.Asset.TRACK: _start_price[Global.Asset.TRACK],
+		Global.Asset.STATION: _start_price[Global.Asset.STATION],
+		Global.Asset.TRAIN: _start_price[Global.Asset.TRAIN]
+	}
+
+	const _INCREASE_FACTOR := 1.5
+
+	var money := 30
+	var gui: Gui
+
+	func _init(gui_: Gui):
+		gui = gui_
+		gui.update_prices(_current_price)
+
+
+	func cost(asset: Global.Asset, amount := 1) -> int:
+		return amount * floori(_current_price[asset])
+
+	func can_afford(asset: Global.Asset, amount := 1) -> bool:
+		return cost(asset, amount) <= money
+
+	func buy(asset: Global.Asset, amount := 1):
+		money -= cost(asset, amount)
+		_current_price[asset] *= _INCREASE_FACTOR
+		gui.show_money(money)
+		gui.update_prices(_current_price)
+
+	func earn(amount: int):
+		self.money += amount
+		gui.show_money(money)
+
 
 func _real_stations() -> Array:
 	return get_tree().get_nodes_in_group("stations").filter(func(station): return !station.is_ghost)
@@ -95,7 +129,6 @@ func _ready():
 	$Gui/HBoxContainer/DestroyButton.connect("toggled", _on_destroybutton_toggled)
 	$Timer.connect("timeout", _on_timer_timeout)
 	_generate_map()
-	gui.show_money(money)
 
 
 func _generate_map():
@@ -188,8 +221,7 @@ func _reset_ghost_tracks():
 
 
 func _try_create_tracks():
-	var cost = len(ghost_tracks) * track_price
-	if cost > money:
+	if not bank.can_afford(Global.Asset.TRACK, len(ghost_tracks)):
 		_reset_ghost_tracks()
 		return
 
@@ -211,8 +243,7 @@ func _try_create_tracks():
 		ids.append(astar_id_from_position[ghost_track_position])
 	for i in range(1, len(ids)):
 		astar.connect_points(ids[i - 1], ids[i])
-	money -= cost
-	gui.show_money(money)
+	bank.buy(Global.Asset.TRACK, len(ghost_tracks))
 	ghost_tracks.clear()
 
 func _add_position_to_astar(new_position: Vector2):
@@ -271,15 +302,14 @@ func _change_gui_state(new_state: GUI_STATE):
 ###################################################################
 
 func _try_create_station(station_position: Vector2):
-	if money < station_price:
+	if not bank.can_afford(Global.Asset.STATION):
 		return
 	var station = STATION.instantiate()
 	station.position = station_position
 	_add_position_to_astar(station_position)
 	station.station_clicked.connect(_station_clicked)
 	add_child(station)
-	money -= station_price
-	gui.show_money(money)
+	bank.buy(Global.Asset.STATION)
 	
 func _station_clicked(station: Station):
 	if gui_state == GUI_STATE.TRAIN1:
@@ -299,7 +329,7 @@ func _station_clicked(station: Station):
 		station.queue_free()
 
 func _try_create_train(station1: Station, station2: Station):
-	if money < train_price:
+	if not bank.can_afford(Global.Asset.TRAIN):
 		return
 	var id1 = astar_id_from_position[station1.position.round()]
 	var id2 = astar_id_from_position[station2.position.round()]
@@ -310,8 +340,7 @@ func _try_create_train(station1: Station, station2: Station):
 			train.set_path(point_path)
 			train.end_reached.connect(_on_train_reaches_end)
 			add_child(train)
-			money -= train_price
-			gui.show_money(money)
+			bank.buy(Global.Asset.TRAIN)
 
 	
 ###################################################################
@@ -339,8 +368,7 @@ func _on_train_reaches_end(train: Train):
 	for factory in get_tree().get_nodes_in_group("factories"):
 		if Global.is_orthogonally_adjacent(factory.get_global_position(),
 										   Vector2i(train.get_train_position())):
-			money += train.ore
-			gui.show_money(money)
+			bank.earn(train.ore)
 			train.ore = 0
 			
 	for station in _real_stations():
