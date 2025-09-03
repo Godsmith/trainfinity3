@@ -8,8 +8,9 @@
 # - ore patch size
 
 # TODO
-# - trains, rails and stations should have a cost
 # - train collisions
+# - train acceleration
+# - train wagons
 # - trains cannot turn so quickly
 # - limit zoom in and out
 
@@ -55,8 +56,12 @@ var selected_station: Station = null
 
 @export_range(0.0, 1.0) var wall_chance: float = 0.3
 @export_range(0.0, 1.0) var ore_chance: float = 0.1
+@export var track_price := 1
+@export var station_price := 5
+@export var train_price := 10
 
-var money := 0
+# TODO: hide inside class to enforce display update
+var money := 30
 
 var wall_position_set: Dictionary[Vector2i, int] = {}
 
@@ -90,6 +95,7 @@ func _ready():
 	$Gui/HBoxContainer/DestroyButton.connect("toggled", _on_destroybutton_toggled)
 	$Timer.connect("timeout", _on_timer_timeout)
 	_generate_map()
+	gui.show_money(money)
 
 
 func _generate_map():
@@ -137,7 +143,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				_try_create_tracks()
 				ghost_track.visible = true
 			GUI_STATE.STATION:
-				_create_station(get_local_mouse_position().snapped(TILE))
+				_try_create_station(get_local_mouse_position().snapped(TILE))
 			GUI_STATE.LIGHT:
 				_create_light(get_local_mouse_position().snapped(TILE))
 	
@@ -175,13 +181,21 @@ func _show_ghost_track(positions: Array[Vector2]):
 		ghost_tracks.append(track)
 		$".".add_child(track)
 
+func _reset_ghost_tracks():
+	for track in ghost_tracks:
+		track.queue_free()
+	ghost_tracks.clear()
+
+
 func _try_create_tracks():
-	# Check if illegal positions, and if so abort and reset everything
+	var cost = len(ghost_tracks) * track_price
+	if cost > money:
+		_reset_ghost_tracks()
+		return
+
 	for ghost_track_tile_position in ghost_track_tile_positions:
 		if Vector2i(ghost_track_tile_position) in wall_position_set:
-			for track in ghost_tracks:
-				track.queue_free()
-			ghost_tracks.clear()
+			_reset_ghost_tracks()
 			return
 	
 	for track in ghost_tracks:
@@ -197,6 +211,8 @@ func _try_create_tracks():
 		ids.append(astar_id_from_position[ghost_track_position])
 	for i in range(1, len(ids)):
 		astar.connect_points(ids[i - 1], ids[i])
+	money -= cost
+	gui.show_money(money)
 	ghost_tracks.clear()
 
 func _add_position_to_astar(new_position: Vector2):
@@ -254,12 +270,16 @@ func _change_gui_state(new_state: GUI_STATE):
 
 ###################################################################
 
-func _create_station(station_position: Vector2):
+func _try_create_station(station_position: Vector2):
+	if money < station_price:
+		return
 	var station = STATION.instantiate()
 	station.position = station_position
 	_add_position_to_astar(station_position)
 	station.station_clicked.connect(_station_clicked)
 	add_child(station)
+	money -= station_price
+	gui.show_money(money)
 	
 func _station_clicked(station: Station):
 	if gui_state == GUI_STATE.TRAIN1:
@@ -273,18 +293,26 @@ func _station_clicked(station: Station):
 		selected_station = station
 		gui_state = GUI_STATE.TRAIN2
 	elif gui_state == GUI_STATE.TRAIN2:
-		var id1 = astar_id_from_position[selected_station.position.round()]
-		var id2 = astar_id_from_position[station.position.round()]
-		if id1 != id2:
-			var point_path = astar.get_point_path(id1, id2)
-			if point_path:
-				var train = TRAIN.instantiate()
-				train.set_path(point_path)
-				train.end_reached.connect(_on_train_reaches_end)
-				add_child(train)
+		_try_create_train(selected_station, station)
 		_change_gui_state(GUI_STATE.TRAIN1)
 	elif gui_state == GUI_STATE.DESTROY:
 		station.queue_free()
+
+func _try_create_train(station1: Station, station2: Station):
+	if money < train_price:
+		return
+	var id1 = astar_id_from_position[station1.position.round()]
+	var id2 = astar_id_from_position[station2.position.round()]
+	if id1 != id2:
+		var point_path = astar.get_point_path(id1, id2)
+		if point_path:
+			var train = TRAIN.instantiate()
+			train.set_path(point_path)
+			train.end_reached.connect(_on_train_reaches_end)
+			add_child(train)
+			money -= train_price
+			gui.show_money(money)
+
 	
 ###################################################################
 
