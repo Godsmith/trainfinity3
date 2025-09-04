@@ -36,6 +36,7 @@ const STATION = preload("res://scenes/station.tscn")
 const TRAIN = preload("res://scenes/train.tscn")
 const TRACK = preload("res://scenes/track.tscn")
 const WATER = preload("res://scenes/water.tscn")
+const SAND = preload("res://scenes/sand.tscn")
 const WALL = preload("res://scenes/wall.tscn")
 const ORE = preload("res://scenes/ore.tscn")
 const LIGHT = preload("res://scenes/light.tscn")
@@ -64,6 +65,7 @@ var astar_id_from_position = {}
 var selected_station: Station = null
 
 @export_range(-1.0, 1.0) var water_level: float = -0.2
+@export_range(-1.0, 1.0) var sand_level: float = -0.1
 @export_range(-1.0, 1.0) var mountain_level: float = 0.3
 @export_range(0.0, 1.0) var ore_chance: float = 0.1
 
@@ -166,7 +168,11 @@ func _generate_map():
 				water.position = water_position
 				obstacle_position_set[water_position] = 0
 				add_child(water)
-			if noise_level > mountain_level:
+			elif noise_level < sand_level:
+				var sand = SAND.instantiate()
+				sand.position = Vector2i(x, y) * Global.TILE_SIZE
+				add_child(sand)
+			elif noise_level > mountain_level:
 				var wall = WALL.instantiate()
 				var wall_position = Vector2i(x, y) * Global.TILE_SIZE
 				wall.position = wall_position

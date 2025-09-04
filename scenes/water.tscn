@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://b8nlx3wd4k3u3"]
 
-[node name="Wall" type="Node2D"]
+[node name="Water" type="Node2D"]
 z_index = -1
 
 [node name="Node2D3" type="Polygon2D" parent="."]
-color = Color(0.157495, 0.335953, 0.434474, 1)
+color = Color(0.156863, 0.337255, 0.435294, 1)
 polygon = PackedVector2Array(8, -8, 8, 8, -8, 8, -8, -8)
