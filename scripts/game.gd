@@ -67,7 +67,11 @@ var selected_station: Station = null
 @export_range(-1.0, 1.0) var mountain_level: float = 0.3
 @export_range(0.0, 1.0) var ore_chance: float = 0.1
 
-var wall_position_set: Dictionary[Vector2i, int] = {}
+# When creating terrain, walls and water positions are recorded here,
+# so that when building things later we can check this set to see
+# where we cannot build. Using a Dictionary as a set, since there is
+# no set in Godot.
+var obstacle_position_set: Dictionary[Vector2i, int] = {}
 
 class Bank:
 	const _start_price := {
@@ -158,13 +162,15 @@ func _generate_map():
 			var noise_level = noise.get_noise_2d(x, y)
 			if noise_level < water_level:
 				var water = WATER.instantiate()
-				water.position = Vector2i(x, y) * Global.TILE_SIZE
+				var water_position = Vector2i(x, y) * Global.TILE_SIZE
+				water.position = water_position
+				obstacle_position_set[water_position] = 0
 				add_child(water)
 			if noise_level > mountain_level:
 				var wall = WALL.instantiate()
 				var wall_position = Vector2i(x, y) * Global.TILE_SIZE
 				wall.position = wall_position
-				wall_position_set[wall_position] = 0
+				obstacle_position_set[wall_position] = 0
 				add_child(wall)
 
 				# maybe add ore inside this wall
@@ -225,7 +231,7 @@ func _show_ghost_track(positions: Array[Vector2]):
 		var pos2 = ghost_track_tile_positions[i + 1]
 		var track := Track.create(pos1, pos2)
 		# TODO: add other stuff beside walls here
-		var is_allowed = (Vector2i(pos1) not in wall_position_set and Vector2i(pos2) not in wall_position_set)
+		var is_allowed = (Vector2i(pos1) not in obstacle_position_set and Vector2i(pos2) not in obstacle_position_set)
 		track.set_color(true, is_allowed)
 		var midway_position = Vector2(pos1).lerp(pos2, 0.5)
 		track.position = midway_position
@@ -244,7 +250,7 @@ func _try_create_tracks():
 		return
 
 	for ghost_track_tile_position in ghost_track_tile_positions:
-		if Vector2i(ghost_track_tile_position) in wall_position_set:
+		if Vector2i(ghost_track_tile_position) in obstacle_position_set:
 			_reset_ghost_tracks()
 			return
 	
