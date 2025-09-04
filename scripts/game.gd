@@ -8,11 +8,18 @@
 # - ore patch size
 
 # TODO
+# - increase prices based on the number of assets that exist, not the number of times
+#   one has been created. Also reduce costs immediately when something is destroyed.
 # - train collisions
 # - train acceleration
 # - train wagons
 # - trains cannot turn so quickly
 # - limit zoom in and out
+# - saving the game
+# - terrain (water, sand, grass, hills, mountains...)
+# - cities
+# - perlin noise for terrain generation
+# - iron
 
 
 extends Node2D
