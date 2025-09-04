@@ -35,9 +35,10 @@ const FACTORY = preload("res://scenes/factory.tscn")
 const STATION = preload("res://scenes/station.tscn")
 const TRAIN = preload("res://scenes/train.tscn")
 const TRACK = preload("res://scenes/track.tscn")
-const LIGHT = preload("res://scenes/light.tscn")
+const WATER = preload("res://scenes/water.tscn")
 const WALL = preload("res://scenes/wall.tscn")
 const ORE = preload("res://scenes/ore.tscn")
+const LIGHT = preload("res://scenes/light.tscn")
 
 @onready var ghost_track = $GhostTrack
 @onready var ghost_station = $GhostStation
@@ -62,7 +63,8 @@ var astar_id_from_position = {}
 
 var selected_station: Station = null
 
-@export_range(0.0, 1.0) var wall_chance: float = 0.3
+@export_range(-1.0, 1.0) var water_level: float = -0.2
+@export_range(-1.0, 1.0) var mountain_level: float = 0.3
 @export_range(0.0, 1.0) var ore_chance: float = 0.1
 
 var wall_position_set: Dictionary[Vector2i, int] = {}
@@ -139,7 +141,11 @@ func _ready():
 
 
 func _generate_map():
-	randomize()
+	var noise := FastNoiseLite.new()
+	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
+	noise.seed = randi() # random terrain each run
+	noise.frequency = 0.05
+
 	var factory = FACTORY.instantiate()
 	factory.position = Vector2(0, 0)
 	add_child(factory)
@@ -149,7 +155,12 @@ func _generate_map():
 			if x >= -1 and x <= 1 and y >= -1 and y <= 1:
 				# Do not place around starting factory
 				continue
-			if randf() < wall_chance:
+			var noise_level = noise.get_noise_2d(x, y)
+			if noise_level < water_level:
+				var water = WATER.instantiate()
+				water.position = Vector2i(x, y) * Global.TILE_SIZE
+				add_child(water)
+			if noise_level > mountain_level:
 				var wall = WALL.instantiate()
 				var wall_position = Vector2i(x, y) * Global.TILE_SIZE
 				wall.position = wall_position
