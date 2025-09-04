@@ -73,7 +73,9 @@ var selected_station: Station = null
 # so that when building things later we can check this set to see
 # where we cannot build. Using a Dictionary as a set, since there is
 # no set in Godot.
-var obstacle_position_set: Dictionary[Vector2i, int] = {}
+# Untyped, since the keys are multiple types of classes and Godot does not
+# have union types.
+var obstacle_position_set: Dictionary = {}
 
 class Bank:
 	const _start_price := {
@@ -166,7 +168,7 @@ func _generate_map():
 				var water = WATER.instantiate()
 				var water_position = Vector2i(x, y) * Global.TILE_SIZE
 				water.position = water_position
-				obstacle_position_set[water_position] = 0
+				obstacle_position_set[water_position] = water
 				add_child(water)
 			elif noise_level < sand_level:
 				var sand = SAND.instantiate()
@@ -176,7 +178,7 @@ func _generate_map():
 				var wall = WALL.instantiate()
 				var wall_position = Vector2i(x, y) * Global.TILE_SIZE
 				wall.position = wall_position
-				obstacle_position_set[wall_position] = 0
+				obstacle_position_set[wall_position] = wall
 				add_child(wall)
 
 				# maybe add ore inside this wall
@@ -184,6 +186,25 @@ func _generate_map():
 					var ore = ORE.instantiate()
 					ore.position = Vector2.ZERO # relative to wall
 					wall.add_child(ore)
+	for pos in obstacle_position_set.keys():
+			var wall = obstacle_position_set[pos]
+			if not wall is Wall:
+				continue
+			
+			var west_of = pos + Vector2i(-Global.TILE_SIZE, 0)
+			var east_of = pos + Vector2i(Global.TILE_SIZE, 0)
+			var north_of = pos + Vector2i(0, -Global.TILE_SIZE)
+			var south_of = pos + Vector2i(0, Global.TILE_SIZE)
+
+
+			if not west_of in obstacle_position_set or obstacle_position_set[west_of] is not Wall:
+				wall.get_node("West").visible = false
+			if not east_of in obstacle_position_set or obstacle_position_set[east_of] is not Wall:
+				wall.get_node("East").visible = false
+			if not south_of in obstacle_position_set or obstacle_position_set[south_of] is not Wall:
+				wall.get_node("South").visible = false
+			if not north_of in obstacle_position_set or obstacle_position_set[north_of] is not Wall:
+				wall.get_node("North").visible = false
 
 
 func _unhandled_input(event: InputEvent) -> void:

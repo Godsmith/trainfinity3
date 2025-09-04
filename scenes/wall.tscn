@@ -1,4 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://ddwk7q8585at4"]
+[gd_scene load_steps=3 format=3 uid="uid://ddwk7q8585at4"]
+
+[ext_resource type="Script" uid="uid://b8q5p8kgndjn1" path="res://scripts/wall.gd" id="1_wykyb"]
 
 [sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_uvhfp"]
 cull_mode = 2
@@ -6,30 +8,43 @@ polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8, -8, -8)
 
 [node name="Wall" type="Node2D"]
 z_index = -1
+script = ExtResource("1_wykyb")
 
 [node name="LightOccluder2D" type="LightOccluder2D" parent="."]
 occluder = SubResource("OccluderPolygon2D_uvhfp")
 
-[node name="Node2D3" type="Polygon2D" parent="."]
-color = Color(0.313726, 0.313726, 0.313726, 1)
-polygon = PackedVector2Array(8, -8, 8, 8, -8, 8, -8, -8)
+[node name="West" type="Polygon2D" parent="."]
+color = Color(0.366595, 0.366595, 0.366595, 1)
+polygon = PackedVector2Array(0, -8, 0, 8, -8, 8, -8, -8)
 
-[node name="Node2D" type="Polygon2D" parent="."]
+[node name="North" type="Polygon2D" parent="."]
+color = Color(0.366595, 0.366595, 0.366595, 1)
+polygon = PackedVector2Array(8, -8, 8, 0, -8, 0, -8, -8)
+
+[node name="East" type="Polygon2D" parent="."]
+color = Color(0.366595, 0.366595, 0.366595, 1)
+polygon = PackedVector2Array(8, -8, 8, 8, 0, 8, 0, -8)
+
+[node name="South" type="Polygon2D" parent="."]
+color = Color(0.366595, 0.366595, 0.366595, 1)
+polygon = PackedVector2Array(8, 0, 8, 8, -8, 8, -8, 0)
+
+[node name="Node2D2" type="Polygon2D" parent="."]
 color = Color(0.381703, 0.381703, 0.381703, 1)
-polygon = PackedVector2Array(-8, 0, 8, -8, 8, 0, 0, 8, 0, 8)
+polygon = PackedVector2Array(-8, 0, 4, -4, 8, 0, 0, 8, 0, 8)
 
-[node name="Node2D" type="Polygon2D" parent="Node2D"]
+[node name="Node2D" type="Polygon2D" parent="Node2D2"]
 color = Color(0.454524, 0.454524, 0.454524, 1)
-polygon = PackedVector2Array(-8, -8, 0, -8, 8, 0, 0, 0, -8, 8, -8, 0)
+polygon = PackedVector2Array(-4, -4, 0, -8, 8, -4, 4, 8, 0, 8, -4, 4, -8, -4)
 
-[node name="Node2D" type="Polygon2D" parent="Node2D/Node2D"]
+[node name="Node2D" type="Polygon2D" parent="Node2D2/Node2D"]
 color = Color(0.548963, 0.548963, 0.548962, 1)
-polygon = PackedVector2Array(0, -8, 0, -8, 8, 8, 0, 8)
+polygon = PackedVector2Array(0, -8, 0, -8, 4, -4, 8, 4, -4, 4, 0, 0)
 
-[node name="Node2D" type="Polygon2D" parent="Node2D/Node2D/Node2D"]
+[node name="Node2D" type="Polygon2D" parent="Node2D2/Node2D/Node2D"]
 color = Color(0.61339, 0.61339, 0.61339, 1)
-polygon = PackedVector2Array(0, -8, 0, -8, 8, 8, -8, 0)
+polygon = PackedVector2Array(0, -4, 0, -8, 8, 0, 0, 8, -4, 4)
 
-[node name="Node2D" type="Polygon2D" parent="Node2D/Node2D/Node2D/Node2D"]
+[node name="Node2D" type="Polygon2D" parent="Node2D2/Node2D/Node2D/Node2D"]
 color = Color(0.707966, 0.707967, 0.707966, 1)
-polygon = PackedVector2Array(0, -8, 0, -8, 8, 0, 0, 0)
+polygon = PackedVector2Array(-4, -4, 0, -4, 4, 0, 4, 4, -4, 4)
