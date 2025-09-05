@@ -10,8 +10,6 @@
 # - ore patch size
 
 # TODO
-# - increase prices based on the number of assets that exist, not the number of times
-#   one has been created. Also reduce costs immediately when something is destroyed.
 # - train collisions
 # - train acceleration
 # - train wagons
@@ -91,6 +89,12 @@ class Bank:
 		Global.Asset.TRAIN: _start_price[Global.Asset.TRAIN]
 	}
 
+	var _asset_count: Dictionary[Global.Asset, int] = {
+		Global.Asset.TRACK: 0,
+		Global.Asset.STATION: 0,
+		Global.Asset.TRAIN: 0
+	}
+
 	const _INCREASE_FACTOR := 1.5
 
 	var money := 30
@@ -109,13 +113,25 @@ class Bank:
 
 	func buy(asset: Global.Asset, amount := 1):
 		money -= cost(asset, amount)
-		_current_price[asset] *= _INCREASE_FACTOR
+		_asset_count[asset] += amount
+		self._update_prices()
 		gui.show_money(money)
+
+	func _update_prices():
+		for asset in Global.Asset.values():
+			if asset == Global.Asset.TRACK:
+				_current_price[asset] = _start_price[asset] * (1 + _asset_count[asset] / 10)
+			else:
+				_current_price[asset] = _start_price[asset] * _INCREASE_FACTOR ** _asset_count[asset]
 		gui.update_prices(_current_price)
 
 	func earn(amount: int):
 		self.money += amount
 		gui.show_money(money)
+
+	func destroy(asset: Global.Asset):
+		_asset_count[asset] -= 1
+		self._update_prices()
 
 
 func _real_stations() -> Array:
@@ -313,6 +329,7 @@ func _track_clicked(track: Track):
 		astar.disconnect_points(astar_id_from_position[track.pos1], astar_id_from_position[track.pos2])
 		tracks.erase(track.position_rotation())
 		track.queue_free()
+		bank.destroy(Global.Asset.TRACK)
 	
 ##################################################################
 
@@ -383,6 +400,7 @@ func _station_clicked(station: Station):
 		_change_gui_state(GUI_STATE.TRAIN1)
 	elif gui_state == GUI_STATE.DESTROY:
 		station.queue_free()
+		bank.destroy(Global.Asset.STATION)
 
 func _try_create_train(station1: Station, station2: Station):
 	if not bank.can_afford(Global.Asset.TRAIN):
