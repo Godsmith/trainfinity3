@@ -6,28 +6,24 @@
 script = ExtResource("1_s1rm4")
 
 [node name="Sleeper1" type="Line2D" parent="."]
-z_index = -1
 position = Vector2(-6, -5)
 points = PackedVector2Array(0, 0, 0, 10)
 width = 2.0
 default_color = Color(0.316029, 0.210545, 0.0370625, 1)
 
 [node name="Sleeper2" type="Line2D" parent="."]
-z_index = -1
 position = Vector2(-2, -5)
 points = PackedVector2Array(0, 0, 0, 10)
 width = 2.0
 default_color = Color(0.316029, 0.210545, 0.0370625, 1)
 
 [node name="Sleeper3" type="Line2D" parent="."]
-z_index = -1
 position = Vector2(2, -5)
 points = PackedVector2Array(0, 0, 0, 10)
 width = 2.0
 default_color = Color(0.316029, 0.210545, 0.0370625, 1)
 
 [node name="Sleeper4" type="Line2D" parent="."]
-z_index = -1
 position = Vector2(6, -5)
 points = PackedVector2Array(0, 0, 0, 10)
 width = 2.0
@@ -47,7 +43,6 @@ default_color = Color(0.60933, 0.60933, 0.60933, 1)
 
 [node name="Sleeper5" type="Line2D" parent="."]
 visible = false
-z_index = -1
 position = Vector2(10, -5)
 points = PackedVector2Array(0, 0, 0, 10)
 width = 2.0
@@ -55,7 +50,6 @@ default_color = Color(0.316029, 0.210545, 0.0370625, 1)
 
 [node name="Sleeper6" type="Line2D" parent="."]
 visible = false
-z_index = -1
 position = Vector2(-10, -5)
 points = PackedVector2Array(0, 0, 0, 10)
 width = 2.0
