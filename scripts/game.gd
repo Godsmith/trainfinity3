@@ -7,11 +7,11 @@
 
 # Between-round upgrade
 # - starting everything above
-# - ore patch size
+# - amount of ore per tile
 
 # TODO
-# - trains cannot turn so quickly
-# - limit zoom in and out
+# - prevent scrolling past edges of the map
+# - slow trains down in sharp corners
 # - saving the game
 # - cities
 # - iron
