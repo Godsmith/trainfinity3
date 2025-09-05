@@ -246,6 +246,9 @@ func _unhandled_input(event: InputEvent) -> void:
 					
 		if is_right_mouse_button_held_down:
 			camera.position -= event.get_relative() / camera.zoom.x
+
+	if OS.is_debug_build() and event is InputEventKey and event.is_pressed() and event.keycode == KEY_X:
+		bank.earn(10000)
 			
 
 #######################################################################
