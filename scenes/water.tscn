@@ -1,4 +1,4 @@
-[gd_scene load_steps=0 format=3 uid="uid://b8nlx3wd4k3u3"]
+[gd_scene format=3 uid="uid://b8nlx3wd4k3u3"]
 
 [node name="Water" type="Node2D"]
 z_index = -1

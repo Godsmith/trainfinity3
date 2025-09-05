@@ -2,18 +2,27 @@ extends Path2D
 
 class_name Train
 
+const WAGON = preload("res://scenes/wagon.tscn")
+
 signal end_reached(train: Train)
 
 @export var max_speed := 20
 @export var absolute_speed := 0.0
 @export var acceleration := 0.1
 @export var ore := 0
+@export var wagons: Array = []
 
 var direction := 1
 var last_progress := 0.0
 @onready var path_follow := $PathFollow2D
 @onready var polygon := $PathFollow2D/LightOccluder2D
-	
+
+func _ready() -> void:
+	for i in 3:
+		var wagon = WAGON.instantiate()
+		wagons.append(wagon)
+		add_child(wagon)
+
 func _process(delta):
 	if absolute_speed < max_speed:
 		absolute_speed += acceleration
@@ -21,6 +30,10 @@ func _process(delta):
 	
 func loop_movement(delta: Variant):
 	path_follow.progress += delta * absolute_speed * direction
+	for i in len(wagons):
+		var wagon = wagons[i]
+		wagon.progress = path_follow.progress - direction * Global.TILE_SIZE * (i + 1)
+		wagon.progress = clamp(wagon.progress, 0.0, curve.get_baked_length())
 	if path_follow.progress >= curve.get_baked_length() or path_follow.progress == 0.0:
 		absolute_speed = 0
 		direction *= -1

@@ -10,15 +10,13 @@
 # - ore patch size
 
 # TODO
-# - train collisions
-# - train wagons
 # - trains cannot turn so quickly
 # - limit zoom in and out
 # - saving the game
-# - terrain (water, sand, grass, hills, mountains...)
 # - cities
-# - perlin noise for terrain generation
 # - iron
+# - train collisions
+#   - cannot be done until we have pathfinding that takes other trains into account/signals/manual paths
 
 
 extends Node2D
