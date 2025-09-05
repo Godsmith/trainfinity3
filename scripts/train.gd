@@ -4,19 +4,26 @@ class_name Train
 
 signal end_reached(train: Train)
 
-var speed = 20
-var last_progress = 0.0
+@export var max_speed := 20
+@export var absolute_speed := 0.0
+@export var acceleration := 0.1
+@export var ore := 0
+
+var direction := 1
+var last_progress := 0.0
 @onready var path_follow := $PathFollow2D
 @onready var polygon := $PathFollow2D/LightOccluder2D
-var ore := 0
 	
 func _process(delta):
+	if absolute_speed < max_speed:
+		absolute_speed += acceleration
 	loop_movement(delta)
 	
 func loop_movement(delta: Variant):
-	path_follow.progress += delta * speed
-	if path_follow.progress >= curve.get_baked_length() or path_follow.progress == 0.0 :
-		speed *= -1
+	path_follow.progress += delta * absolute_speed * direction
+	if path_follow.progress >= curve.get_baked_length() or path_follow.progress == 0.0:
+		absolute_speed = 0
+		direction *= -1
 		polygon.rotate(PI)
 		end_reached.emit(self)
 		

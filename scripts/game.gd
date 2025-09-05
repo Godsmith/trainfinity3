@@ -11,7 +11,6 @@
 
 # TODO
 # - train collisions
-# - train acceleration
 # - train wagons
 # - trains cannot turn so quickly
 # - limit zoom in and out
