@@ -32,8 +32,8 @@ func loop_movement(delta: Variant):
 	path_follow.progress += delta * absolute_speed * direction
 	for i in len(wagons):
 		var wagon = wagons[i]
-		wagon.progress = path_follow.progress - direction * Global.TILE_SIZE * (i + 1)
-		wagon.progress = clamp(wagon.progress, 0.0, curve.get_baked_length())
+		var wagon_progress = path_follow.progress - direction * Global.TILE_SIZE * (i + 1)
+		wagon.progress = clamp(wagon_progress, 0.0, curve.get_baked_length())
 	if path_follow.progress >= curve.get_baked_length() or path_follow.progress == 0.0:
 		absolute_speed = 0
 		direction *= -1
