@@ -16,19 +16,29 @@ static func create(p1: Vector2, p2: Vector2) -> Track:
 	if p2.y == p1.y:
 		pass
 	elif p2.x == p1.x:
-		track.rotate(PI / 2)
+		track.set_rotation_and_adjust_length(PI / 2)
 	elif p2.y > p1.y and p2.x > p1.x:
-		track.rotate(PI / 4)
-		track._extend_length()
+		track.set_rotation_and_adjust_length(PI / 4)
 	elif p2.y < p1.y and p2.x < p1.x:
-		track.rotate(PI / 4)
-		track._extend_length()
+		track.set_rotation_and_adjust_length(PI / 4)
 	else:
-		track.rotate(PI * 3 / 4)
-		track._extend_length()
+		track.set_rotation_and_adjust_length(PI * 3 / 4)
 	return track
 
-func _extend_length():
+func set_rotation_and_adjust_length(radians: float):
+	if is_equal_approx(radians, PI / 4) or is_equal_approx(radians, PI * 3 / 4):
+		_set_length_extended()
+	else:
+		_set_length_normal()
+	rotation = radians
+
+func _set_length_normal():
+	$Sleeper5.visible = false
+	$Sleeper6.visible = false
+	$LongRail1.visible = false
+	$LongRail2.visible = false
+
+func _set_length_extended():
 	$Sleeper5.visible = true
 	$Sleeper6.visible = true
 	$LongRail1.visible = true
