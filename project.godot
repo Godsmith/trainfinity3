@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Trainfinity"
-run/main_scene="uid://bdv5fulluq6xw"
+run/main_scene="uid://ceoib4xplu3v4"
 config/features=PackedStringArray("4.4", "Forward Plus")
 
 [debug]
