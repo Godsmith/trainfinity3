@@ -11,7 +11,8 @@
 
 # TODO
 # - prevent scrolling past edges of the map
-# - slow trains down in sharp corners
+#   - note that duplicating the map size and zooming out max makes the game stutter, so adjustments needed. 
+#	  At least in debug mode, need to test performance after exporting as well.
 # - saving the game
 # - cities
 # - iron

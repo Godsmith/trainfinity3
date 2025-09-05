@@ -6,13 +6,15 @@ const WAGON = preload("res://scenes/wagon.tscn")
 
 signal end_reached(train: Train)
 
-@export var max_speed := 20
+@export var max_speed := 20.0
 @export var absolute_speed := 0.0
 @export var acceleration := 0.1
 @export var wagons: Array = []
 
 var direction := 1
 var last_progress := 0.0
+var last_corner_checked = Vector2(0.0, 0.0)
+
 @onready var path_follow := $PathFollow2D
 @onready var polygon := $PathFollow2D/LightOccluder2D
 
@@ -25,7 +27,24 @@ func _ready() -> void:
 func _process(delta):
 	if absolute_speed < max_speed:
 		absolute_speed += acceleration
+
+	for i in curve.point_count:
+		var point = curve.get_point_position(i)
+		if point.distance_squared_to(path_follow.position) < 4.0:
+			if not point == last_corner_checked:
+				if i > 0 and i < curve.point_count - 1:
+					var angle = angle_between_points(curve.get_point_position(i - 1), point, curve.get_point_position(i + 1))
+					if angle < PI / 2 + 0.05: # 90 degrees or lower
+						absolute_speed = 0.0
+					print("close to %s, next angle %s" % [point, angle])
+				last_corner_checked = point
+
 	loop_movement(delta)
+
+func angle_between_points(a: Vector2, b: Vector2, c: Vector2) -> float:
+	var ba = a - b
+	var bc = c - b
+	return abs(ba.angle_to(bc)) # signed angle in radians (-π..π)
 	
 func loop_movement(delta: Variant):
 	path_follow.progress += delta * absolute_speed * direction
