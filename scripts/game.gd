@@ -2,6 +2,8 @@
 # - range of stations (start with 1) - though it looks ugly when they are too far from ore
 # - number of trains (start with 1)
 # - map size
+# - the ability to tear down/build track on mountain
+# - bridges
 
 # Between-round upgrade
 # - starting everything above
