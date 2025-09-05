@@ -40,6 +40,7 @@ const WALL = preload("res://scenes/wall.tscn")
 const ORE = preload("res://scenes/ore.tscn")
 const LIGHT = preload("res://scenes/light.tscn")
 
+@onready var terrain_node = $Terrain
 @onready var ghost_track = $GhostTrack
 @onready var ghost_station = $GhostStation
 @onready var ghost_light = $GhostLight
@@ -186,17 +187,17 @@ func _generate_map():
 				var water_position = Vector2i(x, y) * Global.TILE_SIZE
 				water.position = water_position
 				obstacle_position_set[water_position] = water
-				add_child(water)
+				terrain_node.add_child(water)
 			elif noise_level < sand_level:
 				var sand = SAND.instantiate()
 				sand.position = Vector2i(x, y) * Global.TILE_SIZE
-				add_child(sand)
+				terrain_node.add_child(sand)
 			elif noise_level > mountain_level:
 				var wall = WALL.instantiate()
 				var wall_position = Vector2i(x, y) * Global.TILE_SIZE
 				wall.position = wall_position
 				obstacle_position_set[wall_position] = wall
-				add_child(wall)
+				terrain_node.add_child(wall)
 
 				# maybe add ore inside this wall
 				if randf() < ore_chance:
