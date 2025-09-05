@@ -9,7 +9,6 @@ signal end_reached(train: Train)
 @export var max_speed := 20
 @export var absolute_speed := 0.0
 @export var acceleration := 0.1
-@export var ore := 0
 @export var wagons: Array = []
 
 var direction := 1
@@ -47,3 +46,28 @@ func set_path(path: Array[Vector2]):
 
 func get_train_position() -> Vector2:
 	return polygon.global_position
+
+func max_capacity() -> int:
+	var out := 0
+	for wagon in wagons:
+		out += wagon.max_capacity
+	return out
+
+func add_ore(type: Ore.ORE_TYPE):
+	for wagon in wagons:
+		if not wagon.ore == wagon.max_capacity:
+			wagon.add_ore(type)
+			break
+
+func ore() -> int:
+	var amount := 0
+	for wagon in wagons:
+		amount += wagon.ore
+	return amount
+
+
+func remove_all_ore():
+	for i in len(wagons):
+		var wagon = wagons[-i - 1]
+		while wagon.ore > 0:
+			wagon.remove_ore()

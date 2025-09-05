@@ -1,0 +1,44 @@
+[gd_scene load_steps=7 format=3 uid="uid://ceoib4xplu3v4"]
+
+[ext_resource type="Script" uid="uid://cqw467o78e8bf" path="res://scripts/overground.gd" id="1_u5idq"]
+[ext_resource type="PackedScene" uid="uid://vyo6h6rte1xu" path="res://scenes/gui.tscn" id="2_lgfhw"]
+[ext_resource type="Script" uid="uid://d070mqp5unjky" path="res://scripts/camera_2d.gd" id="3_mg5ko"]
+[ext_resource type="PackedScene" uid="uid://rq8dlyspro46" path="res://scenes/track.tscn" id="4_tl2kb"]
+[ext_resource type="PackedScene" uid="uid://b1064yqqmy7mf" path="res://scenes/station.tscn" id="5_ilnf8"]
+[ext_resource type="PackedScene" uid="uid://cxgimf5dgovcu" path="res://scenes/light.tscn" id="6_6dr8u"]
+
+[node name="Overground" type="Node2D"]
+script = ExtResource("1_u5idq")
+
+[node name="Terrain" type="Node2D" parent="."]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(38, 20)
+zoom = Vector2(3, 3)
+script = ExtResource("3_mg5ko")
+
+[node name="Gui" parent="." instance=ExtResource("2_lgfhw")]
+
+[node name="Background" type="Polygon2D" parent="."]
+z_index = -2
+position = Vector2(-16, 0)
+color = Color(0.337255, 0.490196, 0.27451, 1)
+polygon = PackedVector2Array(-1008, -1024, -1008, 959.32, -1008, 1024, 1040, 1024, 1040, -1024)
+
+[node name="GhostTrack" parent="." instance=ExtResource("4_tl2kb")]
+visible = false
+modulate = Color(1, 1, 1, 0.501961)
+position = Vector2(-88, 104)
+
+[node name="GhostStation" parent="." instance=ExtResource("5_ilnf8")]
+visible = false
+modulate = Color(1, 1, 1, 0.501961)
+position = Vector2(-96, 56)
+is_ghost = true
+
+[node name="GhostLight" parent="." instance=ExtResource("6_6dr8u")]
+visible = false
+position = Vector2(-96, -64)
+
+[node name="Timer" type="Timer" parent="."]
+autostart = true

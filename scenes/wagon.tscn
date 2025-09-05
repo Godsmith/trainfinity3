@@ -1,6 +1,9 @@
-[gd_scene format=3 uid="uid://b4kkdoufxj3o1"]
+[gd_scene load_steps=2 format=3 uid="uid://b4kkdoufxj3o1"]
+
+[ext_resource type="Script" uid="uid://dah5oi8vyt7cx" path="res://scripts/wagon.gd" id="1_asyws"]
 
 [node name="Wagon" type="PathFollow2D"]
+script = ExtResource("1_asyws")
 
 [node name="Polygon2D2" type="Polygon2D" parent="."]
 position = Vector2(-2.48524, 0.497559)

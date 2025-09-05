@@ -12,12 +12,12 @@ var _chunks = []
 
 
 func _ready():
-	for ore: Ore in get_tree().get_nodes_in_group("ores"):
-		if Global.is_orthogonally_adjacent(Vector2i(global_position), Vector2i(ore.global_position)):
-			adjacent_ores.append(ore)
+	for ore_: Ore in get_tree().get_nodes_in_group("ores"):
+		if Global.is_orthogonally_adjacent(Vector2i(global_position), Vector2i(ore_.global_position)):
+			adjacent_ores.append(ore_)
 	
 
-func _on_input_event(viewport: Node, event: InputEvent, shape_idx: int) -> void:
+func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		station_clicked.emit(self)
 
@@ -26,16 +26,13 @@ func extract_ore():
 		ore += 1
 		var new_chunk := $Chunk.duplicate()
 		# Some magic position numbers to not place ores too much outside. Will probably be changed anyway.
-		new_chunk.position = Vector2(randf_range(-Global.TILE_SIZE/2 + 5,Global.TILE_SIZE/2 + 1), 
-									 randf_range(-Global.TILE_SIZE/2 + 5,Global.TILE_SIZE/2 + 1))
+		new_chunk.position = Vector2(randf_range(-Global.TILE_SIZE / 2 + 5, Global.TILE_SIZE / 2 + 1),
+									 randf_range(-Global.TILE_SIZE / 2 + 5, Global.TILE_SIZE / 2 + 1))
 		new_chunk.visible = true
 		new_chunk.color = adjacent_ore.ORE_COLOR[adjacent_ore.ore_type]
 		_chunks.append(new_chunk)
 		add_child(new_chunk)
 		
-func remove_all_ore():
-	for chunk in _chunks:
-		chunk.queue_free()
-	_chunks.clear()
-	ore = 0
-	
+func remove_ore():
+	_chunks.pop_back().queue_free()
+	ore -= 1

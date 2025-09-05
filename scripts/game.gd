@@ -440,10 +440,11 @@ func _on_train_reaches_end(train: Train):
 	for factory in get_tree().get_nodes_in_group("factories"):
 		if Global.is_orthogonally_adjacent(factory.get_global_position(),
 										   Vector2i(train.get_train_position())):
-			bank.earn(train.ore)
-			train.ore = 0
+			bank.earn(train.ore())
+			train.remove_all_ore()
 			
 	for station in _real_stations():
 		if Vector2i(station.global_position) == Vector2i(train.get_train_position()):
-			train.ore += station.ore
-			station.remove_all_ore()
+			while station.ore > 0 and train.ore() < train.max_capacity():
+				train.add_ore(Ore.ORE_TYPE.COAL)
+				station.remove_ore()
