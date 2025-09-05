@@ -234,23 +234,53 @@ func _unhandled_input(event: InputEvent) -> void:
 				_create_light(get_local_mouse_position().snapped(TILE))
 	
 	if event is InputEventMouseMotion:
-		var mouse_position = get_local_mouse_position().snapped(TILE)
-		ghost_track.position = mouse_position
-		ghost_station.position = mouse_position
-		ghost_light.position = mouse_position
+		var original_mouse_position = get_local_mouse_position()
+		var snapped_mouse_position = get_local_mouse_position().snapped(TILE)
+		_show_ghost_track_while_hovering(original_mouse_position, snapped_mouse_position)
+		ghost_station.position = snapped_mouse_position
+		ghost_light.position = snapped_mouse_position
 		if is_left_mouse_button_held_down:
 			if gui_state == GUI_STATE.TRACK and is_left_mouse_button_held_down:
-				var new_ghost_track_tile_positions = _positions_between(start_track_location, mouse_position)
+				var new_ghost_track_tile_positions = _positions_between(start_track_location, snapped_mouse_position)
 				if new_ghost_track_tile_positions != ghost_track_tile_positions:
-					_show_ghost_track(new_ghost_track_tile_positions)
+					_show_ghost_track_while_building(new_ghost_track_tile_positions)
 					
 		if is_right_mouse_button_held_down:
 			camera.position -= event.get_relative() / camera.zoom.x
+
+func _closest_index(pos: Vector2, positions: Array[Vector2]):
+	var closest_distance_squared = 100000.0
+	var closest_i = -1
+	for i in 8:
+		var distance_squared = pos.distance_squared_to(positions[i])
+		if distance_squared < closest_distance_squared:
+			closest_i = i
+			closest_distance_squared = distance_squared
+	return closest_i
 			
+func _show_ghost_track_while_hovering(original_mouse_position: Vector2, tile_center: Vector2):
+	var d = Global.TILE_SIZE / 2
+	# start at n and go clockwise
+	var rotations = [PI / 2, PI * 1 / 4, 0, PI * 3 / 4, PI / 2, PI * 1 / 4, 0, PI * 3 / 4]
+	var positions: Array[Vector2] = [
+		tile_center + Vector2(0, d),
+		tile_center + Vector2(d, d),
+		tile_center + Vector2(d, 0),
+		tile_center + Vector2(d, -d),
+		tile_center + Vector2(0, -d),
+		tile_center + Vector2(-d, -d),
+		tile_center + Vector2(-d, 0),
+		tile_center + Vector2(-d, d)
+		]
+	
+	var i = _closest_index(original_mouse_position, positions)
+	ghost_track.position = positions[i]
+	ghost_track.set_rotation_and_adjust_length(rotations[i])
+	
 
 #######################################################################
 
-func _show_ghost_track(positions: Array[Vector2]):
+func _show_ghost_track_while_building(positions: Array[Vector2]):
 	ghost_track_tile_positions = positions
 	for track in ghost_tracks:
 		track.queue_free()
