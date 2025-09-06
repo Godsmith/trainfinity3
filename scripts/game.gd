@@ -2,23 +2,16 @@ extends Node2D
 
 class_name Game
 
-const HALF_GRID_SIZE := 32
 const TILE := Vector2(Global.TILE_SIZE, Global.TILE_SIZE)
 const SCALE_FACTOR := 2 # Don't remember where I set this
 enum GUI_STATE {NONE, TRACK, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY}
 
-const FACTORY = preload("res://scenes/factory.tscn")
 const STATION = preload("res://scenes/station.tscn")
 const TRAIN = preload("res://scenes/train.tscn")
 const TRACK = preload("res://scenes/track.tscn")
-const WATER = preload("res://scenes/water.tscn")
-const SAND = preload("res://scenes/sand.tscn")
-const WALL = preload("res://scenes/wall.tscn")
-const ORE = preload("res://scenes/ore.tscn")
-const CITY = preload("res://scenes/city.tscn")
 const LIGHT = preload("res://scenes/light.tscn")
 
-@onready var terrain_node = $Terrain
+@onready var terrain = $Terrain
 @onready var ghost_track = $GhostTrack
 @onready var ghost_station = $GhostStation
 @onready var ghost_light = $GhostLight
@@ -42,18 +35,6 @@ var astar_id_from_position = {}
 
 var selected_station: Station = null
 
-@export_range(-1.0, 1.0) var water_level: float = -0.2
-@export_range(-1.0, 1.0) var sand_level: float = -0.1
-@export_range(-1.0, 1.0) var mountain_level: float = 0.3
-@export_range(0.0, 1.0) var ore_chance: float = 0.1
-
-# When creating terrain, walls and water positions are recorded here,
-# so that when building things later we can check this set to see
-# where we cannot build. Using a Dictionary as a set, since there is
-# no set in Godot.
-# Untyped, since the keys are multiple types of classes and Godot does not
-# have union types.
-var obstacle_position_set: Dictionary = {}
 
 class Bank:
 	const _start_price := {
@@ -141,87 +122,6 @@ func _ready():
 	$Gui/HBoxContainer/LightButton.connect("toggled", _on_lightbutton_toggled)
 	$Gui/HBoxContainer/DestroyButton.connect("toggled", _on_destroybutton_toggled)
 	$Timer.connect("timeout", _on_timer_timeout)
-	_generate_map()
-
-
-func _generate_map():
-	var noise := FastNoiseLite.new()
-	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
-	noise.seed = randi() # random terrain each run
-	noise.frequency = 0.05
-
-	var factory = FACTORY.instantiate()
-	factory.position = Vector2(0, 0)
-	add_child(factory)
-
-	var grid_positions: Array[Vector2i] = []
-	var noise_from_position: Dictionary[Vector2i, float] = {}
-	
-	for x in range(-HALF_GRID_SIZE, HALF_GRID_SIZE):
-		for y in range(-HALF_GRID_SIZE, HALF_GRID_SIZE):
-			if x >= -1 and x <= 1 and y >= -1 and y <= 1:
-				# Do not place around starting factory
-				continue
-			var grid_position = Vector2i(x, y) * Global.TILE_SIZE
-			grid_positions.append(grid_position)
-			noise_from_position[grid_position] = noise.get_noise_2d(x, y)
-	for pos in grid_positions:
-		var noise_level = noise_from_position[pos]
-		if noise_level < water_level:
-			var water = WATER.instantiate()
-			var water_position = pos
-			water.position = water_position
-			obstacle_position_set[water_position] = water
-			terrain_node.add_child(water)
-		elif noise_level < sand_level:
-			var sand = SAND.instantiate()
-			sand.position = pos
-			terrain_node.add_child(sand)
-		elif noise_level > mountain_level:
-			var wall = WALL.instantiate()
-			var wall_position = pos
-			wall.position = wall_position
-			obstacle_position_set[wall_position] = wall
-			terrain_node.add_child(wall)
-
-			# maybe add ore inside this wall
-			if randf() < ore_chance:
-				var ore = ORE.instantiate()
-				ore.position = Vector2.ZERO # relative to wall
-				wall.add_child(ore)
-
-	# Make walls look nicer
-	for pos in obstacle_position_set.keys():
-		var wall = obstacle_position_set[pos]
-		if not wall is Wall:
-			continue
-		
-		var west_of = pos + Vector2i(-Global.TILE_SIZE, 0)
-		var east_of = pos + Vector2i(Global.TILE_SIZE, 0)
-		var north_of = pos + Vector2i(0, -Global.TILE_SIZE)
-		var south_of = pos + Vector2i(0, Global.TILE_SIZE)
-
-
-		if not west_of in obstacle_position_set or obstacle_position_set[west_of] is not Wall:
-			wall.get_node("West").visible = false
-		if not east_of in obstacle_position_set or obstacle_position_set[east_of] is not Wall:
-			wall.get_node("East").visible = false
-		if not south_of in obstacle_position_set or obstacle_position_set[south_of] is not Wall:
-			wall.get_node("South").visible = false
-		if not north_of in obstacle_position_set or obstacle_position_set[north_of] is not Wall:
-			wall.get_node("North").visible = false
-	
-	# Add cities
-	var possible_city_positions: Array[Vector2i] = []
-	for pos in grid_positions:
-		if pos not in obstacle_position_set:
-			possible_city_positions.append(pos)
-	for i in 5:
-		var city_position = possible_city_positions.pick_random()
-		possible_city_positions.erase(city_position)
-		var city = CITY.instantiate()
-		city.position = city_position
-		terrain_node.add_child(city)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -278,7 +178,7 @@ func _show_ghost_track(positions: Array[Vector2]):
 		var pos2 = ghost_track_tile_positions[i + 1]
 		var track := Track.create(pos1, pos2)
 		# TODO: add other stuff beside walls here
-		var is_allowed = (Vector2i(pos1) not in obstacle_position_set and Vector2i(pos2) not in obstacle_position_set)
+		var is_allowed = (Vector2i(pos1) not in terrain.obstacle_position_set and Vector2i(pos2) not in terrain.obstacle_position_set)
 		track.set_color(true, is_allowed)
 		var midway_position = Vector2(pos1).lerp(pos2, 0.5)
 		track.position = midway_position
@@ -297,7 +197,7 @@ func _try_create_tracks():
 		return
 
 	for ghost_track_tile_position in ghost_track_tile_positions:
-		if Vector2i(ghost_track_tile_position) in obstacle_position_set:
+		if Vector2i(ghost_track_tile_position) in terrain.obstacle_position_set:
 			_reset_ghost_tracks()
 			return
 	

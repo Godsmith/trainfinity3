@@ -10,7 +10,6 @@
 - amount of ore per tile
 
 # TODO
-- move grid setup to terrain script
 - larger stations
 - cities
 - iron
