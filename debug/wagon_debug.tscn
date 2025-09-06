@@ -1,0 +1,15 @@
+[gd_scene load_steps=4 format=3 uid="uid://brsg0fml72pou"]
+
+[ext_resource type="Script" uid="uid://d4jbjb8ox7wup" path="res://debug/wagon_debug.gd" id="1_pqsek"]
+[ext_resource type="PackedScene" uid="uid://b4kkdoufxj3o1" path="res://scenes/wagon.tscn" id="2_wrpkv"]
+[ext_resource type="Script" uid="uid://d070mqp5unjky" path="res://scripts/camera_2d.gd" id="3_otdvy"]
+
+[node name="WagonDebug" type="Node2D"]
+script = ExtResource("1_pqsek")
+
+[node name="Wagon" parent="." instance=ExtResource("2_wrpkv")]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(38, 20)
+zoom = Vector2(5, 5)
+script = ExtResource("3_otdvy")
