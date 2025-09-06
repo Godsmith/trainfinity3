@@ -1,8 +1,11 @@
-[gd_scene load_steps=4 format=3 uid="uid://b2t1f8rkw52mt"]
+[gd_scene load_steps=5 format=3 uid="uid://b2t1f8rkw52mt"]
 
 [ext_resource type="Script" uid="uid://bw0hnr0olk1oj" path="res://scripts/train.gd" id="1_68jl8"]
 
 [sub_resource type="Curve2D" id="Curve2D_68jl8"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_68jl8"]
+size = Vector2(12, 6)
 
 [sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_68jl8"]
 cull_mode = 2
@@ -16,64 +19,74 @@ script = ExtResource("1_68jl8")
 [node name="PathFollow2D" type="PathFollow2D" parent="."]
 loop = false
 
-[node name="LightOccluder2D" type="LightOccluder2D" parent="PathFollow2D"]
+[node name="RigidBody2D" type="RigidBody2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D"]
+shape = SubResource("RectangleShape2D_68jl8")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="RigidBody2D"]
 scale = Vector2(1.08557, 1.19412)
 occluder = SubResource("OccluderPolygon2D_68jl8")
 
-[node name="Polygon2D" type="Polygon2D" parent="PathFollow2D/LightOccluder2D"]
-position = Vector2(-0.499322, 0.487984)
+[node name="Polygon2D" type="Polygon2D" parent="RigidBody2D"]
+position = Vector2(-0.542049, 0.582711)
+scale = Vector2(1.08557, 1.19412)
 color = Color(0.212745, 0.217409, 0.213871, 1)
 polygon = PackedVector2Array(-5, 1.46525, -0.996554, 1.48764, -1, -2.49756, -5, -2.49756)
 uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
 
-[node name="Polygon2D6" type="Polygon2D" parent="PathFollow2D/LightOccluder2D"]
-position = Vector2(5.50068, -0.516898)
-scale = Vector2(1, 0.497559)
+[node name="Polygon2D6" type="Polygon2D" parent="RigidBody2D"]
+position = Vector2(5.97137, -0.617238)
+scale = Vector2(1.08557, 0.594145)
 color = Color(0.212745, 0.217409, 0.213871, 1)
 polygon = PackedVector2Array(-6, -2, -4, -2, -4, -3, -6, -3)
 uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
 
-[node name="Polygon2D7" type="Polygon2D" parent="PathFollow2D/LightOccluder2D"]
-position = Vector2(8.50068, -0.516898)
-scale = Vector2(1, 0.497559)
+[node name="Polygon2D7" type="Polygon2D" parent="RigidBody2D"]
+position = Vector2(9.22808, -0.617238)
+scale = Vector2(1.08557, 0.594145)
 color = Color(0.212745, 0.217409, 0.213871, 1)
 polygon = PackedVector2Array(-6, -2, -4, -2, -4, -3, -6, -3)
 uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
 
-[node name="Polygon2D8" type="Polygon2D" parent="PathFollow2D/LightOccluder2D"]
-position = Vector2(5.50068, 2.9509)
-scale = Vector2(1, 0.487637)
+[node name="Polygon2D8" type="Polygon2D" parent="RigidBody2D"]
+position = Vector2(5.97137, 3.52373)
+scale = Vector2(1.08557, 0.582297)
 color = Color(0.212745, 0.217409, 0.213871, 1)
 polygon = PackedVector2Array(-6, -2, -4, -2, -4, -3, -6, -3)
 uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
 
-[node name="Polygon2D9" type="Polygon2D" parent="PathFollow2D/LightOccluder2D"]
-position = Vector2(8.50068, 2.9509)
-scale = Vector2(1, 0.487637)
+[node name="Polygon2D9" type="Polygon2D" parent="RigidBody2D"]
+position = Vector2(9.22808, 3.52373)
+scale = Vector2(1.08557, 0.582297)
 color = Color(0.212745, 0.217409, 0.213871, 1)
 polygon = PackedVector2Array(-6, -2, -4.99606, -2, -4, -2, -4, -3, -6, -3)
 uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
 
-[node name="Polygon2D2" type="Polygon2D" parent="PathFollow2D/LightOccluder2D"]
-position = Vector2(-0.499322, 0.487984)
+[node name="Polygon2D2" type="Polygon2D" parent="RigidBody2D"]
+position = Vector2(-0.542049, 0.582711)
+scale = Vector2(1.08557, 1.19412)
 color = Color(0.350796, 0.357471, 0.352406, 1)
 polygon = PackedVector2Array(-1, 1, 1.91604, 1, 6, 1, 6, -2, -1, -2)
 uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
 
-[node name="Polygon2D3" type="Polygon2D" parent="PathFollow2D/LightOccluder2D"]
-position = Vector2(-0.499322, 0.487984)
+[node name="Polygon2D3" type="Polygon2D" parent="RigidBody2D"]
+position = Vector2(-0.542049, 0.582711)
+scale = Vector2(1.08557, 1.19412)
 color = Color(0.00178845, 0.00186649, 0.00180712, 1)
 polygon = PackedVector2Array(4, 0, 5, 0, 5, -1, 4, -1)
 uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
 
-[node name="Polygon2D4" type="Polygon2D" parent="PathFollow2D/LightOccluder2D"]
-position = Vector2(-2.49932, 0.487984)
+[node name="Polygon2D4" type="Polygon2D" parent="RigidBody2D"]
+position = Vector2(-2.71319, 0.582711)
+scale = Vector2(1.08557, 1.19412)
 color = Color(0.644942, 0.652615, 0.646786, 1)
 polygon = PackedVector2Array(4, 0, 5, 0, 5, -1, 4, -1)
 uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
 
-[node name="Polygon2D5" type="Polygon2D" parent="PathFollow2D/LightOccluder2D"]
-position = Vector2(-4.59016, 0.487984)
+[node name="Polygon2D5" type="Polygon2D" parent="RigidBody2D"]
+position = Vector2(-4.98294, 0.582711)
+scale = Vector2(1.08557, 1.19412)
 color = Color(0.644942, 0.652615, 0.646786, 1)
 polygon = PackedVector2Array(4, 0, 5, 0, 5, -1, 4, -1)
 uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)

@@ -2,6 +2,8 @@ extends PathFollow2D
 
 @onready var _chunks := find_children("Chunk*")
 @onready var max_capacity := len(_chunks)
+@onready var rigid_body: RigidBody2D = $RigidBody2D
+@onready var collision_shape: CollisionShape2D = $RigidBody2D/CollisionShape2D
 
 var ore := 0
 

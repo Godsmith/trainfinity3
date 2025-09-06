@@ -1,66 +1,75 @@
-[gd_scene load_steps=2 format=3 uid="uid://b4kkdoufxj3o1"]
+[gd_scene load_steps=3 format=3 uid="uid://b4kkdoufxj3o1"]
 
 [ext_resource type="Script" uid="uid://dah5oi8vyt7cx" path="res://scripts/wagon.gd" id="1_asyws"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_asyws"]
+size = Vector2(14, 6)
 
 [node name="Wagon" type="PathFollow2D"]
 script = ExtResource("1_asyws")
 
-[node name="Polygon2D2" type="Polygon2D" parent="."]
+[node name="RigidBody2D" type="RigidBody2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RigidBody2D"]
+shape = SubResource("RectangleShape2D_asyws")
+disabled = true
+
+[node name="Polygon2D2" type="Polygon2D" parent="RigidBody2D"]
 position = Vector2(-2.48524, 0.497559)
 color = Color(0.350796, 0.357471, 0.352406, 1)
 polygon = PackedVector2Array(-4.51476, 2.50244, 9.48524, 2.50244, 9.48524, -3.49756, -4.51476, -3.49756)
 uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
 
-[node name="Polygon2D" type="Polygon2D" parent="."]
+[node name="Polygon2D" type="Polygon2D" parent="RigidBody2D"]
 position = Vector2(2.01408, 2.00957)
 color = Color(0.212745, 0.217409, 0.213871, 1)
 polygon = PackedVector2Array(-8.5, 0.5, 4.5, 0.5, 4.5, -4.5, -8.5, -4.5)
 uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
 
-[node name="Chunk1" type="Polygon2D" parent="."]
+[node name="Chunk1" type="Polygon2D" parent="RigidBody2D"]
 position = Vector2(6, 2)
 polygon = PackedVector2Array(-4, -2, -2, -2, -2, -4, -4, -4)
 
-[node name="Chunk2" type="Polygon2D" parent="."]
+[node name="Chunk2" type="Polygon2D" parent="RigidBody2D"]
 position = Vector2(8, 2)
 polygon = PackedVector2Array(-4, -2, -2, -2, -2, -4, -4, -4)
 
-[node name="Chunk3" type="Polygon2D" parent="."]
+[node name="Chunk3" type="Polygon2D" parent="RigidBody2D"]
 position = Vector2(8, 4)
 polygon = PackedVector2Array(-4, -2, -2, -2, -2, -4, -4, -4)
 
-[node name="Chunk4" type="Polygon2D" parent="."]
+[node name="Chunk4" type="Polygon2D" parent="RigidBody2D"]
 position = Vector2(6, 4)
 polygon = PackedVector2Array(-4, -2, -2, -2, -2, -4, -4, -4)
 
-[node name="Chunk5" type="Polygon2D" parent="."]
+[node name="Chunk5" type="Polygon2D" parent="RigidBody2D"]
 position = Vector2(4, 2)
 polygon = PackedVector2Array(-4, -2, -2, -2, -2, -4, -4, -4)
 
-[node name="Chunk6" type="Polygon2D" parent="."]
+[node name="Chunk6" type="Polygon2D" parent="RigidBody2D"]
 position = Vector2(4, 4)
 polygon = PackedVector2Array(-4, -2, -2, -2, -2, -4, -4, -4)
 
-[node name="Chunk7" type="Polygon2D" parent="."]
+[node name="Chunk7" type="Polygon2D" parent="RigidBody2D"]
 position = Vector2(2, 2)
 polygon = PackedVector2Array(-4, -2, -2, -2, -2, -4, -4, -4)
 
-[node name="Chunk8" type="Polygon2D" parent="."]
+[node name="Chunk8" type="Polygon2D" parent="RigidBody2D"]
 position = Vector2(2, 4)
 polygon = PackedVector2Array(-4, -2, -2, -2, -2, -4, -4, -4)
 
-[node name="Chunk9" type="Polygon2D" parent="."]
+[node name="Chunk9" type="Polygon2D" parent="RigidBody2D"]
 position = Vector2(0, 2)
 polygon = PackedVector2Array(-4, -2, -2, -2, -2, -4, -4, -4)
 
-[node name="Chunk10" type="Polygon2D" parent="."]
+[node name="Chunk10" type="Polygon2D" parent="RigidBody2D"]
 position = Vector2(0, 4)
 polygon = PackedVector2Array(-4, -2, -2, -2, -2, -4, -4, -4)
 
-[node name="Chunk11" type="Polygon2D" parent="."]
+[node name="Chunk11" type="Polygon2D" parent="RigidBody2D"]
 position = Vector2(-2, 2)
 polygon = PackedVector2Array(-4, -2, -2, -2, -2, -4, -4, -4)
 
-[node name="Chunk12" type="Polygon2D" parent="."]
+[node name="Chunk12" type="Polygon2D" parent="RigidBody2D"]
 position = Vector2(-2, 4)
 polygon = PackedVector2Array(-4, -2, -2, -2, -2, -4, -4, -4)

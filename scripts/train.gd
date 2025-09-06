@@ -14,9 +14,11 @@ signal end_reached(train: Train)
 var direction := 1
 var last_progress := 0.0
 var last_corner_checked = Vector2(0.0, 0.0)
+var on_rails := true
 
 @onready var path_follow := $PathFollow2D
-@onready var polygon := $PathFollow2D/LightOccluder2D
+@onready var polygon := $RigidBody2D/LightOccluder2D
+@onready var rigid_body := $RigidBody2D
 
 func _ready() -> void:
 	for i in 3:
@@ -24,7 +26,35 @@ func _ready() -> void:
 		wagons.append(wagon)
 		add_child(wagon)
 
+func get_linear_velocity(path_follow_: PathFollow2D, delta: float):
+	var current_pos = path_follow_.global_position
+	path_follow_.progress += delta * absolute_speed * direction
+	var next_pos = path_follow_.global_position
+
+	var velocity = (next_pos - current_pos) / delta
+	return velocity
+
+
+func _physics_process(_delta: float) -> void:
+	if on_rails:
+		rigid_body.global_position = path_follow.global_position
+		rigid_body.rotation = path_follow.rotation if direction == 1 else path_follow.rotation + PI
+	# if <collision>:
+	#	derail(delta)
+
+func derail(delta):
+	on_rails = false
+	rigid_body.linear_velocity = get_linear_velocity(path_follow, delta)
+	for wagon in wagons:
+		wagon.rigid_body.linear_velocity = get_linear_velocity(wagon, delta)
+		wagon.collision_shape.disabled = false
+		get_parent().add_child(wagon.rigid_body)
+
+
 func _process(delta):
+	if not on_rails:
+		return
+
 	if absolute_speed < max_speed:
 		absolute_speed += acceleration
 
@@ -36,7 +66,6 @@ func _process(delta):
 					var angle = angle_between_points(curve.get_point_position(i - 1), point, curve.get_point_position(i + 1))
 					if angle < PI / 2 + 0.05: # 90 degrees or lower
 						absolute_speed = 0.0
-					print("close to %s, next angle %s" % [point, angle])
 				last_corner_checked = point
 
 	loop_movement(delta)
@@ -55,7 +84,6 @@ func loop_movement(delta: Variant):
 	if path_follow.progress >= curve.get_baked_length() or path_follow.progress == 0.0:
 		absolute_speed = 0
 		direction *= -1
-		polygon.rotate(PI)
 		end_reached.emit(self)
 		
 func set_path(path: Array[Vector2]):
@@ -64,7 +92,7 @@ func set_path(path: Array[Vector2]):
 		curve.add_point(p)
 
 func get_train_position() -> Vector2:
-	return polygon.global_position
+	return rigid_body.global_position
 
 func max_capacity() -> int:
 	var out := 0
