@@ -25,6 +25,7 @@ var obstacle_position_set: Dictionary = {}
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
+	print("Starting terrain generation")
 	var noise := FastNoiseLite.new()
 	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
 	noise.seed = randi() # random terrain each run
@@ -105,6 +106,7 @@ func _ready() -> void:
 		city.position = city_position
 		add_child(city)
 	
+	print("Starting city extension")
 	for original_city_position in city_positions:
 		var target_size = randi_range(1, 10)
 		var current_size = 1
@@ -119,3 +121,4 @@ func _ready() -> void:
 				var city = CITY.instantiate()
 				city.position = new_city_position
 				add_child(city)
+	print("City extension done")
