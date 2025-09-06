@@ -1,6 +1,7 @@
 extends Node2D
 
 const HALF_GRID_SIZE := 32
+const CITY_COUNT := 5
 
 const FACTORY = preload("res://scenes/factory.tscn")
 const WATER = preload("res://scenes/water.tscn")
@@ -95,11 +96,26 @@ func _ready() -> void:
 	for pos in grid_positions:
 		if pos not in obstacle_position_set:
 			possible_city_positions.append(pos)
-	for i in 5:
+	var city_positions = []
+	for i in CITY_COUNT:
 		var city_position = possible_city_positions.pick_random()
 		possible_city_positions.erase(city_position)
 		var city = CITY.instantiate()
+		city_positions.append(city_position)
 		city.position = city_position
 		add_child(city)
-
-	pass # Replace with function body.
+	
+	for original_city_position in city_positions:
+		var target_size = randi_range(1, 10)
+		var current_size = 1
+		var handled_city_positions := [original_city_position]
+		var possible_new_city_positions = Global.orthogonally_adjacent(original_city_position)
+		while current_size < target_size and possible_new_city_positions:
+			var new_city_position = possible_new_city_positions.pick_random()
+			if new_city_position not in obstacle_position_set and new_city_position not in handled_city_positions and new_city_position in grid_positions:
+				current_size += 1
+				handled_city_positions.append(new_city_position)
+				possible_new_city_positions.append_array(Global.orthogonally_adjacent(new_city_position))
+				var city = CITY.instantiate()
+				city.position = new_city_position
+				add_child(city)
