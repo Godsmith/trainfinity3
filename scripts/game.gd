@@ -15,6 +15,7 @@ const WATER = preload("res://scenes/water.tscn")
 const SAND = preload("res://scenes/sand.tscn")
 const WALL = preload("res://scenes/wall.tscn")
 const ORE = preload("res://scenes/ore.tscn")
+const CITY = preload("res://scenes/city.tscn")
 const LIGHT = preload("res://scenes/light.tscn")
 
 @onready var terrain_node = $Terrain
@@ -152,54 +153,75 @@ func _generate_map():
 	var factory = FACTORY.instantiate()
 	factory.position = Vector2(0, 0)
 	add_child(factory)
+
+	var grid_positions: Array[Vector2i] = []
+	var noise_from_position: Dictionary[Vector2i, float] = {}
 	
 	for x in range(-HALF_GRID_SIZE, HALF_GRID_SIZE):
 		for y in range(-HALF_GRID_SIZE, HALF_GRID_SIZE):
 			if x >= -1 and x <= 1 and y >= -1 and y <= 1:
 				# Do not place around starting factory
 				continue
-			var noise_level = noise.get_noise_2d(x, y)
-			if noise_level < water_level:
-				var water = WATER.instantiate()
-				var water_position = Vector2i(x, y) * Global.TILE_SIZE
-				water.position = water_position
-				obstacle_position_set[water_position] = water
-				terrain_node.add_child(water)
-			elif noise_level < sand_level:
-				var sand = SAND.instantiate()
-				sand.position = Vector2i(x, y) * Global.TILE_SIZE
-				terrain_node.add_child(sand)
-			elif noise_level > mountain_level:
-				var wall = WALL.instantiate()
-				var wall_position = Vector2i(x, y) * Global.TILE_SIZE
-				wall.position = wall_position
-				obstacle_position_set[wall_position] = wall
-				terrain_node.add_child(wall)
+			var grid_position = Vector2i(x, y) * Global.TILE_SIZE
+			grid_positions.append(grid_position)
+			noise_from_position[grid_position] = noise.get_noise_2d(x, y)
+	for pos in grid_positions:
+		var noise_level = noise_from_position[pos]
+		if noise_level < water_level:
+			var water = WATER.instantiate()
+			var water_position = pos
+			water.position = water_position
+			obstacle_position_set[water_position] = water
+			terrain_node.add_child(water)
+		elif noise_level < sand_level:
+			var sand = SAND.instantiate()
+			sand.position = pos
+			terrain_node.add_child(sand)
+		elif noise_level > mountain_level:
+			var wall = WALL.instantiate()
+			var wall_position = pos
+			wall.position = wall_position
+			obstacle_position_set[wall_position] = wall
+			terrain_node.add_child(wall)
 
-				# maybe add ore inside this wall
-				if randf() < ore_chance:
-					var ore = ORE.instantiate()
-					ore.position = Vector2.ZERO # relative to wall
-					wall.add_child(ore)
+			# maybe add ore inside this wall
+			if randf() < ore_chance:
+				var ore = ORE.instantiate()
+				ore.position = Vector2.ZERO # relative to wall
+				wall.add_child(ore)
+
+	# Make walls look nicer
 	for pos in obstacle_position_set.keys():
-			var wall = obstacle_position_set[pos]
-			if not wall is Wall:
-				continue
-			
-			var west_of = pos + Vector2i(-Global.TILE_SIZE, 0)
-			var east_of = pos + Vector2i(Global.TILE_SIZE, 0)
-			var north_of = pos + Vector2i(0, -Global.TILE_SIZE)
-			var south_of = pos + Vector2i(0, Global.TILE_SIZE)
+		var wall = obstacle_position_set[pos]
+		if not wall is Wall:
+			continue
+		
+		var west_of = pos + Vector2i(-Global.TILE_SIZE, 0)
+		var east_of = pos + Vector2i(Global.TILE_SIZE, 0)
+		var north_of = pos + Vector2i(0, -Global.TILE_SIZE)
+		var south_of = pos + Vector2i(0, Global.TILE_SIZE)
 
 
-			if not west_of in obstacle_position_set or obstacle_position_set[west_of] is not Wall:
-				wall.get_node("West").visible = false
-			if not east_of in obstacle_position_set or obstacle_position_set[east_of] is not Wall:
-				wall.get_node("East").visible = false
-			if not south_of in obstacle_position_set or obstacle_position_set[south_of] is not Wall:
-				wall.get_node("South").visible = false
-			if not north_of in obstacle_position_set or obstacle_position_set[north_of] is not Wall:
-				wall.get_node("North").visible = false
+		if not west_of in obstacle_position_set or obstacle_position_set[west_of] is not Wall:
+			wall.get_node("West").visible = false
+		if not east_of in obstacle_position_set or obstacle_position_set[east_of] is not Wall:
+			wall.get_node("East").visible = false
+		if not south_of in obstacle_position_set or obstacle_position_set[south_of] is not Wall:
+			wall.get_node("South").visible = false
+		if not north_of in obstacle_position_set or obstacle_position_set[north_of] is not Wall:
+			wall.get_node("North").visible = false
+	
+	# Add cities
+	var possible_city_positions: Array[Vector2i] = []
+	for pos in grid_positions:
+		if pos not in obstacle_position_set:
+			possible_city_positions.append(pos)
+	for i in 5:
+		var city_position = possible_city_positions.pick_random()
+		possible_city_positions.erase(city_position)
+		var city = CITY.instantiate()
+		city.position = city_position
+		terrain_node.add_child(city)
 
 
 func _unhandled_input(event: InputEvent) -> void:

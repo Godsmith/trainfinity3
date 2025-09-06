@@ -1,0 +1,58 @@
+[gd_scene format=3 uid="uid://b06h2fa0roq7u"]
+
+[node name="City" type="Node2D"]
+
+[node name="Building1" type="Polygon2D" parent="."]
+position = Vector2(9, -2)
+color = Color(0.196078, 0.196078, 0.32549, 1)
+polygon = PackedVector2Array(-5, 3, -2, 3, -3, -5, -5, -5)
+
+[node name="Building5" type="Polygon2D" parent="."]
+position = Vector2(2, 0)
+color = Color(0.666569, 0.666569, 0.666569, 1)
+polygon = PackedVector2Array(-4, -4, -2, -4, -2, -8, -4, -8)
+
+[node name="Building10" type="Polygon2D" parent="."]
+position = Vector2(5, 0)
+color = Color(0.666569, 0.666569, 0.666569, 1)
+polygon = PackedVector2Array(-4, -4, -2, -4, -2, -8, -4, -8)
+
+[node name="Building11" type="Polygon2D" parent="."]
+position = Vector2(-1, 0)
+color = Color(0.666569, 0.666569, 0.666569, 1)
+polygon = PackedVector2Array(-4, -4, -2, -4, -2, -8, -4, -8)
+
+[node name="Building2" type="Polygon2D" parent="Building11"]
+position = Vector2(-2, -3)
+color = Color(0.505344, 0.505344, 0.505344, 1)
+polygon = PackedVector2Array(-4, 4, -1, 4, -1, -4, -4, -4)
+
+[node name="Building6" type="Polygon2D" parent="."]
+position = Vector2(-2, 5)
+color = Color(0.308995, 0.321884, 0.219049, 1)
+polygon = PackedVector2Array(-4, -2, 0, -2, 0, -8, -4, -8)
+
+[node name="Building8" type="Polygon2D" parent="."]
+position = Vector2(4, -1)
+color = Color(0.505882, 0.505882, 0.505882, 1)
+polygon = PackedVector2Array(-3, 4, 1, 4, 1, -2, -3, -2)
+
+[node name="Building9" type="Polygon2D" parent="."]
+position = Vector2(3, -2)
+color = Color(0.717647, 0.717647, 0.717647, 1)
+polygon = PackedVector2Array(-4, 4, -2, 4, -3, -2)
+
+[node name="Building4" type="Polygon2D" parent="."]
+position = Vector2(-1, 8)
+color = Color(0.717647, 0.717647, 0.717647, 1)
+polygon = PackedVector2Array(-4, -2, 0.680183, -2, 2, -2, 2, -6, -4, -6)
+
+[node name="Building7" type="Polygon2D" parent="."]
+position = Vector2(6, 6)
+color = Color(0.197937, 0.197937, 0.197937, 1)
+polygon = PackedVector2Array(-4, -2, 0, -2, -2, -4)
+
+[node name="Building3" type="Polygon2D" parent="."]
+position = Vector2(6, 9)
+color = Color(0.697442, 0, 0.0767244, 1)
+polygon = PackedVector2Array(-4, -2, 0, -2, 0, -5, -4, -5)
