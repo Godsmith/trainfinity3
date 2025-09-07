@@ -114,6 +114,7 @@ func _ready() -> void:
 		var possible_new_city_positions = Global.orthogonally_adjacent(original_city_position)
 		while current_size < target_size and possible_new_city_positions:
 			var new_city_position = possible_new_city_positions.pick_random()
+			possible_new_city_positions.erase(new_city_position)
 			if new_city_position not in obstacle_position_set and new_city_position not in handled_city_positions and new_city_position in grid_positions:
 				current_size += 1
 				handled_city_positions.append(new_city_position)
