@@ -17,7 +17,8 @@
   - x do not create platforms if they are adjacent to another platform but in wrong direction
   - x refactor to add TrackSet
   - x change train creation from between stations to between platform tiles. single platform tiles for now.
-  - when train stops at platform, take ore from all stations adjacent to platform
+  - x when train stops at platform, take ore from all stations adjacent to platform
+  - mark all platforms green when going into TRAIN1
   - prevent train from going from platform to same platform
   - Paths should go all the way to the furthest point of the target station's platform.
   - When following the path, should start some way into the path; at the end of the station closest to the

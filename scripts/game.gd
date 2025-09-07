@@ -387,17 +387,15 @@ func _on_timer_timeout():
 ######################################################################
 	
 func _on_train_reaches_end(train: Train):
-	for factory in get_tree().get_nodes_in_group("factories"):
-		if Global.is_orthogonally_adjacent(factory.get_global_position(),
-										   Vector2i(train.get_train_position())):
-			bank.earn(train.ore())
-			train.remove_all_ore()
-			
-	for station in _real_stations():
-		if station.global_position.snapped(TILE) == train.get_train_position().snapped(TILE):
-			while station.ore > 0 and train.ore() < train.max_capacity():
-				train.add_ore(Ore.ORE_TYPE.COAL)
-				station.remove_ore()
+	for station in _stations_connected_to_platform(train.get_train_position().snapped(TILE)):
+		while station.ore > 0 and train.ore() < train.max_capacity():
+			train.add_ore(Ore.ORE_TYPE.COAL)
+			station.remove_ore()
+		for factory in get_tree().get_nodes_in_group("factories"):
+			if Global.is_orthogonally_adjacent(factory.get_global_position(), station.position):
+				bank.earn(train.ore())
+				train.remove_all_ore()
+
 
 ######################################################################
 
@@ -437,3 +435,19 @@ func _get_legal_platform_positions_and_rotations() -> Dictionary[Vector2i, float
 					var rotation_ = 0.0 if other_track_position1.y == other_track_position2.y else PI / 2
 					legal_platform_positions_and_rotations[track_position] = rotation_
 	return legal_platform_positions_and_rotations
+
+func _stations_connected_to_platform(pos: Vector2i):
+	var connected_positions := [pos]
+	var possible_connected_platforms := track_set.positions_connected_to(pos)
+	while possible_connected_platforms:
+		var new_pos = possible_connected_platforms.pop_back()
+		if new_pos not in connected_positions and new_pos in platforms:
+			connected_positions.append(new_pos)
+			possible_connected_platforms.append_array(track_set.positions_connected_to(new_pos))
+	
+	var stations = []
+	for station in _real_stations():
+		for neighbor in Global.orthogonally_adjacent(Vector2i(station.position)):
+			if connected_positions.has(neighbor):
+				stations.append(station)
+	return stations
