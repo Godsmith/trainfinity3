@@ -16,20 +16,18 @@
   - x after building rail, create new platform on adjacent n/s or w/e stretches
   - x do not create platforms if they are adjacent to another platform but in wrong direction
   - x refactor to add TrackSet
-  - after deleting rail or station, reevaluate all existing platform spaces. if not adjacent to station or adjacent
-    to adjacent to station etc, remove platform. Also updates the platforms variable.
-  - disallow creating tracks going off at the wrong angle from existing platforms
-  - ensure platforms are only built if length is at least 2
+  - change train creation from between stations to between platform tiles. single platform tiles for now.
+  - when train stops at platform, take ore from all stations adjacent to platform
   - change pathfinding nodes to be not on the station tile but either of the platform tiles. 
     - Paths should go all the way to the furthest point of the target station's platform.
     - When following the path, should start some way into the path; at the end of the station closest to the
       target station.
     - Since one station can have multiple platforms, should click platforms instead of stations.
-  - support building station after rail. show ghost platform on orthogonally adjacent stretch of rail.
-    - problem 1: if very long adjacent stretch of rail, not clear where to put platform. 
-      - just make a platform on all of it
-    - problem 2: if adjacent to two stretches of rail, which one to choose? 
-      - support both. Yes, probably.
+  - Reevaluate platforms (also update platforms variable)
+    - when deleting rail
+    - when deleting station
+    - when creating tracks going off at the wrong angle from existing platforms
+  - ensure platforms are only built if length is at least 2
   - show ghost platforms of the above when building station
   - show ghost platforms of the above when building track
 - put track rails and sleepers on different layers
