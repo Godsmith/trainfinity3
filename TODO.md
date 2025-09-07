@@ -14,6 +14,7 @@
   - x after building station, create new platform on adjacent n/s or w/e stretches
   - x rotate buildings correctly
   - x after building rail, create new platform on adjacent n/s or w/e stretches
+  - x do not create platforms if they are adjacent to another platform but in wrong direction
   - show ghost platforms of the above when building station
   - show ghost platforms of the above when building track
   - after deleting rail or station, reevaluate all existing platform spaces. if not adjacent to station or adjacent
@@ -30,7 +31,12 @@
       - just make a platform on all of it
     - problem 2: if adjacent to two stretches of rail, which one to choose? 
       - support both. Yes, probably.
+- put track rails and sleepers on different layers
+- disallow creating stations on water and mountains
+- disallow creating stations on top of stations
 - popup when earning money
+- follow train
+- disallow creating stuff out of bounds
 - iron
 - prevent scrolling past edges of the map
   - note that duplicating the map size and zooming out max makes the game stutter, so adjustments needed. 

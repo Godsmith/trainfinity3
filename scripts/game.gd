@@ -363,7 +363,8 @@ func _on_train_reaches_end(train: Train):
 ######################################################################
 
 func _create_platforms(stations: Array[Station]):
-	var legal_platform_positions_and_rotations = _get_legal_platform_positions_and_rotations()
+	var tracks_from_position := _get_tracks_from_position()
+	var legal_platform_positions_and_rotations = _get_legal_platform_positions_and_rotations(tracks_from_position)
 	var evaluated_platform_positions = []
 	for station in stations:
 		var potential_platform_positions = Global.orthogonally_adjacent(Vector2i(station.position))
@@ -371,7 +372,7 @@ func _create_platforms(stations: Array[Station]):
 			var pos = potential_platform_positions.pop_back()
 			if pos not in evaluated_platform_positions and pos in legal_platform_positions_and_rotations:
 				evaluated_platform_positions.append(pos)
-				potential_platform_positions.append_array(Global.orthogonally_adjacent(pos))
+				potential_platform_positions.append_array(_positions_with_track_to(pos, tracks_from_position))
 				if pos in platforms:
 					continue
 				var platform = PLATFORM.instantiate()
@@ -379,9 +380,16 @@ func _create_platforms(stations: Array[Station]):
 				platform.rotation = legal_platform_positions_and_rotations[pos]
 				add_child(platform)
 				platforms[pos] = platform
-		
 
-func _get_legal_platform_positions_and_rotations() -> Dictionary[Vector2i, float]:
+# TODO: move also this method into class for storing track state
+func _positions_with_track_to(pos: Vector2i, tracks_from_position: Dictionary[Vector2i, Array]) -> Array[Vector2i]:
+	var positions: Array[Vector2i] = []
+	for track in tracks_from_position[pos]:
+		positions.append(track.other_position(pos))
+	return positions
+	
+# TODO: look into creating a class for storing track state
+func _get_tracks_from_position() -> Dictionary[Vector2i, Array]:
 	var tracks_from_position: Dictionary[Vector2i, Array] = {}
 	for track in tracks.values():
 		if not track.pos1 in tracks_from_position:
@@ -390,7 +398,9 @@ func _get_legal_platform_positions_and_rotations() -> Dictionary[Vector2i, float
 			tracks_from_position[track.pos2] = []
 		tracks_from_position[track.pos1].append(track)
 		tracks_from_position[track.pos2].append(track)
+	return tracks_from_position
 
+func _get_legal_platform_positions_and_rotations(tracks_from_position: Dictionary[Vector2i, Array]) -> Dictionary[Vector2i, float]:
 	var legal_platform_positions_and_rotations: Dictionary[Vector2i, float] = {}
 	for track_position in tracks_from_position:
 		if len(tracks_from_position[track_position]) == 1:
