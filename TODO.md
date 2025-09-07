@@ -11,7 +11,10 @@
 
 # TODO
 - larger stations
-  - after building rail or building station, create new platform on all n/s or w/e stretches of at least length 2
+  - x after building station, create new platform on all n/s or w/e stretches
+  - rotate buildings correctly
+  - ensure platforms are only built if length is at least 2
+  - after building rail, create new platform on all n/s or w/e stretches
     orthogonally adjacent to one or more stations.
   - show ghost platforms of the above when building station
   - show ghost platforms of the above when building track

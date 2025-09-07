@@ -58,3 +58,12 @@ func position_rotation() -> Vector3i:
 func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		track_clicked.emit(self)
+
+func other_position(pos: Vector2i) -> Vector2i:
+	if pos == pos1:
+		return pos2
+	elif pos == pos2:
+		return pos1
+	else:
+		assert(false, "pos neither pos1 nor pos2")
+		return pos1

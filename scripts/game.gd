@@ -7,6 +7,7 @@ const SCALE_FACTOR := 2 # Don't remember where I set this
 enum GUI_STATE {NONE, TRACK, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY}
 
 const STATION = preload("res://scenes/station.tscn")
+const PLATFORM = preload("res://scenes/platform.tscn")
 const TRAIN = preload("res://scenes/train.tscn")
 const TRACK = preload("res://scenes/track.tscn")
 const LIGHT = preload("res://scenes/light.tscn")
@@ -282,6 +283,7 @@ func _try_create_station(station_position: Vector2):
 	station.station_clicked.connect(_station_clicked)
 	add_child(station)
 	bank.buy(Global.Asset.STATION)
+	_create_platforms(Vector2i(station_position))
 	
 func _station_clicked(station: Station):
 	if gui_state == GUI_STATE.TRAIN1:
@@ -353,6 +355,21 @@ func _on_train_reaches_end(train: Train):
 ######################################################################
 
 func _create_platforms(station_position: Vector2i):
+	var legal_platform_positions = _get_legal_platform_positions()
+	var platform_positions = []
+	var potential_platform_positions = Global.orthogonally_adjacent(station_position)
+	while potential_platform_positions:
+		var pos = potential_platform_positions.pop_back()
+		if pos not in platform_positions and pos in legal_platform_positions:
+			platform_positions.append(pos)
+			potential_platform_positions.append_array(Global.orthogonally_adjacent(pos))
+	for pos in platform_positions:
+		var platform = PLATFORM.instantiate()
+		platform.position = pos
+		add_child(platform)
+		
+
+func _get_legal_platform_positions() -> Array[Vector2i]:
 	var tracks_from_position: Dictionary[Vector2i, Array] = {}
 	for track in tracks.values():
 		if not track.pos1 in tracks_from_position:
@@ -361,15 +378,19 @@ func _create_platforms(station_position: Vector2i):
 			tracks_from_position[track.pos2] = []
 		tracks_from_position[track.pos1].append(track)
 		tracks_from_position[track.pos2].append(track)
-		
+
 	var legal_platform_positions: Array[Vector2i] = []
-	for position_rotation in tracks:
-		var potential_positions = Global.orthogonally_adjacent(Vector2i(position_rotation.x, position_rotation.y))
-		while potential_positions:
-			var potential_position = potential_positions.pop_back()
-			if potential_position in tracks_from_position and potential_position not in legal_platform_positions:
-				if len(tracks_from_position[potential_position]) == 1:
-					legal_platform_positions.append(potential_position)
-				elif len(tracks_from_position[potential_position]) == 2:
+	for track_position in tracks_from_position:
+		if len(tracks_from_position[track_position]) == 1:
+			var other_track_position = tracks_from_position[track_position][0].other_position(track_position)
+			if Global.is_orthogonally_adjacent(track_position, other_track_position):
+				legal_platform_positions.append(track_position)
+		elif len(tracks_from_position[track_position]) == 2:
+			var other_track_position1 = tracks_from_position[track_position][0].other_position(track_position)
+			var other_track_position2 = tracks_from_position[track_position][1].other_position(track_position)
+			if other_track_position1.x == other_track_position2.x or other_track_position1.y == other_track_position2.y:
+				legal_platform_positions.append(track_position)
+	return legal_platform_positions
+
 	# for adjacent_positions in Global.orthogonally_adjacent(station.global_position.snapped(TILE)):
 	# 	pass
