@@ -20,14 +20,14 @@ var gui_state := GUI_STATE.NONE
 var is_left_mouse_button_held_down := false
 var is_right_mouse_button_held_down := false
 
-var start_track_location := Vector2()
+var start_track_location := Vector2i()
 var ghost_tracks: Array[Track] = []
 # The keys are provided by Track.position_rotation()
 var tracks: Dictionary[Vector3i, Track] = {}
-var ghost_track_tile_positions: Array[Vector2] = []
+var ghost_track_tile_positions: Array[Vector2i] = []
 
 var astar = AStar2D.new()
-var astar_id_from_position = {}
+var astar_id_from_position: Dictionary[Vector2i, int] = {}
 
 @onready var camera = $Camera2D
 @onready var gui: Gui = $Gui
@@ -97,20 +97,20 @@ func _real_stations() -> Array:
 	return get_tree().get_nodes_in_group("stations").filter(func(station): return !station.is_ghost)
 
 
-func _positions_between(start: Vector2, stop: Vector2) -> Array[Vector2]:
+func _positions_between(start: Vector2i, stop: Vector2i) -> Array[Vector2i]:
 	# start and stop must be on the grid.
-	var out: Array[Vector2] = []
+	var out: Array[Vector2i] = []
 	var x = start.x
 	var y = start.y
-	var dx_sign = sign(stop.x - start.x)
-	var dy_sign = sign(stop.y - start.y)
+	var dx_sign = signi(stop.x - start.x)
+	var dy_sign = signi(stop.y - start.y)
 	out.append(start)
 	while x != stop.x or y != stop.y:
 		if x != stop.x:
 			x += Global.TILE_SIZE * dx_sign
 		if y != stop.y:
 			y += Global.TILE_SIZE * dy_sign
-		out.append(Vector2(x, y))
+		out.append(Vector2i(x, y))
 	return out
 
 
@@ -129,7 +129,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			is_left_mouse_button_held_down = event.is_pressed()
 			if gui_state == GUI_STATE.TRACK:
-				start_track_location = get_local_mouse_position().snapped(TILE)
+				start_track_location = Vector2i(get_local_mouse_position().snapped(TILE))
 				ghost_track.visible = false
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			is_right_mouse_button_held_down = event.is_pressed()
@@ -149,7 +149,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				_create_light(get_local_mouse_position().snapped(TILE))
 	
 	if event is InputEventMouseMotion:
-		var mouse_position = get_local_mouse_position().snapped(TILE)
+		var mouse_position = Vector2i(get_local_mouse_position().snapped(TILE))
 		ghost_track.position = mouse_position
 		ghost_station.position = mouse_position
 		ghost_light.position = mouse_position
@@ -168,7 +168,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 #######################################################################
 
-func _show_ghost_track(positions: Array[Vector2]):
+func _show_ghost_track(positions: Array[Vector2i]):
 	ghost_track_tile_positions = positions
 	for track in ghost_tracks:
 		track.queue_free()
@@ -178,7 +178,7 @@ func _show_ghost_track(positions: Array[Vector2]):
 		var pos2 = ghost_track_tile_positions[i + 1]
 		var track := Track.create(pos1, pos2)
 		# TODO: add other stuff beside walls here
-		var is_allowed = (Vector2i(pos1) not in terrain.obstacle_position_set and Vector2i(pos2) not in terrain.obstacle_position_set)
+		var is_allowed = (pos1 not in terrain.obstacle_position_set and pos2 not in terrain.obstacle_position_set)
 		track.set_color(true, is_allowed)
 		var midway_position = Vector2(pos1).lerp(pos2, 0.5)
 		track.position = midway_position
@@ -217,7 +217,7 @@ func _try_create_tracks():
 	bank.buy(Global.Asset.TRACK, len(ghost_tracks))
 	ghost_tracks.clear()
 
-func _add_position_to_astar(new_position: Vector2):
+func _add_position_to_astar(new_position: Vector2i):
 	if not new_position in astar_id_from_position:
 		var id = astar.get_available_point_id()
 		astar_id_from_position[new_position] = id
@@ -285,11 +285,11 @@ func _try_create_station(station_position: Vector2):
 	
 func _station_clicked(station: Station):
 	if gui_state == GUI_STATE.TRAIN1:
-		var id1 = astar_id_from_position[station.position.round()]
+		var id1 = astar_id_from_position[Vector2i(station.position)]
 		for other_station: Station in _real_stations():
 			station.modulate = Color(1, 1, 1, 1)
 			if other_station != station:
-				var id2 = astar_id_from_position[other_station.position.round()]
+				var id2 = astar_id_from_position[Vector2i(other_station.position)]
 				if astar.get_point_path(id1, id2):
 					other_station.modulate = Color(0, 1, 0, 1)
 		selected_station = station
@@ -304,8 +304,8 @@ func _station_clicked(station: Station):
 func _try_create_train(station1: Station, station2: Station):
 	if not bank.can_afford(Global.Asset.TRAIN):
 		return
-	var id1 = astar_id_from_position[station1.position.round()]
-	var id2 = astar_id_from_position[station2.position.round()]
+	var id1 = astar_id_from_position[Vector2i(station1.position)]
+	var id2 = astar_id_from_position[Vector2i(station2.position)]
 	if id1 != id2:
 		var point_path = astar.get_point_path(id1, id2)
 		if point_path:

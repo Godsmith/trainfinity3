@@ -6,10 +6,10 @@ signal track_clicked(station: Track)
 
 const TRACK = preload("res://scenes/track.tscn")
 
-var pos1: Vector2
-var pos2: Vector2
+var pos1: Vector2i
+var pos2: Vector2i
 
-static func create(p1: Vector2, p2: Vector2) -> Track:
+static func create(p1: Vector2i, p2: Vector2i) -> Track:
 	var track: Track = TRACK.instantiate()
 	track.pos1 = p1
 	track.pos2 = p2

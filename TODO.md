@@ -11,6 +11,7 @@
 
 # TODO
 - larger stations
+- popup when earning money
 - iron
 - prevent scrolling past edges of the map
   - note that duplicating the map size and zooming out max makes the game stutter, so adjustments needed. 
