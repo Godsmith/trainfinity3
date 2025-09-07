@@ -349,3 +349,27 @@ func _on_train_reaches_end(train: Train):
 			while station.ore > 0 and train.ore() < train.max_capacity():
 				train.add_ore(Ore.ORE_TYPE.COAL)
 				station.remove_ore()
+
+######################################################################
+
+func _create_platforms(station_position: Vector2i):
+	var tracks_from_position: Dictionary[Vector2i, Array] = {}
+	for track in tracks.values():
+		if not track.pos1 in tracks_from_position:
+			tracks_from_position[track.pos1] = []
+		if not track.pos2 in tracks_from_position:
+			tracks_from_position[track.pos2] = []
+		tracks_from_position[track.pos1].append(track)
+		tracks_from_position[track.pos2].append(track)
+		
+	var legal_platform_positions: Array[Vector2i] = []
+	for position_rotation in tracks:
+		var potential_positions = Global.orthogonally_adjacent(Vector2i(position_rotation.x, position_rotation.y))
+		while potential_positions:
+			var potential_position = potential_positions.pop_back()
+			if potential_position in tracks_from_position and potential_position not in legal_platform_positions:
+				if len(tracks_from_position[potential_position]) == 1:
+					legal_platform_positions.append(potential_position)
+				elif len(tracks_from_position[potential_position]) == 2:
+	# for adjacent_positions in Global.orthogonally_adjacent(station.global_position.snapped(TILE)):
+	# 	pass
