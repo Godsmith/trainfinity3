@@ -145,7 +145,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				_try_create_tracks()
 				ghost_track.visible = true
 			GUI_STATE.STATION:
-				_try_create_station(get_local_mouse_position().snapped(TILE))
+				_try_create_station(Vector2i(get_local_mouse_position().snapped(TILE)))
 			GUI_STATE.LIGHT:
 				_create_light(get_local_mouse_position().snapped(TILE))
 	
@@ -274,7 +274,7 @@ func _change_gui_state(new_state: GUI_STATE):
 
 ###################################################################
 
-func _try_create_station(station_position: Vector2):
+func _try_create_station(station_position: Vector2i):
 	if not bank.can_afford(Global.Asset.STATION):
 		return
 	var station = STATION.instantiate()
@@ -283,7 +283,7 @@ func _try_create_station(station_position: Vector2):
 	station.station_clicked.connect(_station_clicked)
 	add_child(station)
 	bank.buy(Global.Asset.STATION)
-	_create_platforms(Vector2i(station_position))
+	_create_platforms(station_position)
 	
 func _station_clicked(station: Station):
 	if gui_state == GUI_STATE.TRAIN1:
