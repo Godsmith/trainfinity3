@@ -16,13 +16,13 @@
   - x after building rail, create new platform on adjacent n/s or w/e stretches
   - x do not create platforms if they are adjacent to another platform but in wrong direction
   - x refactor to add TrackSet
-  - change train creation from between stations to between platform tiles. single platform tiles for now.
+  - x change train creation from between stations to between platform tiles. single platform tiles for now.
   - when train stops at platform, take ore from all stations adjacent to platform
-  - change pathfinding nodes to be not on the station tile but either of the platform tiles. 
-    - Paths should go all the way to the furthest point of the target station's platform.
-    - When following the path, should start some way into the path; at the end of the station closest to the
-      target station.
-    - Since one station can have multiple platforms, should click platforms instead of stations.
+  - prevent train from going from platform to same platform
+  - Paths should go all the way to the furthest point of the target station's platform.
+  - When following the path, should start some way into the path; at the end of the station closest to the
+    target station.
+  - Since one station can have multiple platforms, should click platforms instead of stations.
   - Reevaluate platforms (also update platforms variable)
     - when deleting rail
     - when deleting station

@@ -35,7 +35,7 @@ var astar_id_from_position: Dictionary[Vector2i, int] = {}
 @onready var bank = Bank.new(gui)
 @onready var track_set = TrackSet.new()
 
-var selected_station: Station = null
+var selected_platform: Platform = null
 
 class TrackSet:
 # The keys are provided by Track.position_rotation()
@@ -304,8 +304,8 @@ func _change_gui_state(new_state: GUI_STATE):
 	ghost_track.visible = false
 	ghost_station.visible = false
 	ghost_light.visible = false
-	for station: Station in _real_stations():
-		station.modulate = Color(1, 1, 1, 1)
+	for platform: Platform in get_tree().get_nodes_in_group("platforms"):
+		platform.modulate = Color(1, 1, 1, 1)
 		
 	if new_state == GUI_STATE.TRACK:
 		ghost_track.visible = true
@@ -325,35 +325,36 @@ func _try_create_station(station_position: Vector2i):
 		return
 	var station = STATION.instantiate()
 	station.position = station_position
-	_add_position_to_astar(station_position)
 	station.station_clicked.connect(_station_clicked)
 	add_child(station)
 	bank.buy(Global.Asset.STATION)
 	_create_platforms([station])
-	
+
 func _station_clicked(station: Station):
-	if gui_state == GUI_STATE.TRAIN1:
-		var id1 = astar_id_from_position[Vector2i(station.position)]
-		for other_station: Station in _real_stations():
-			station.modulate = Color(1, 1, 1, 1)
-			if other_station != station:
-				var id2 = astar_id_from_position[Vector2i(other_station.position)]
-				if astar.get_point_path(id1, id2):
-					other_station.modulate = Color(0, 1, 0, 1)
-		selected_station = station
-		gui_state = GUI_STATE.TRAIN2
-	elif gui_state == GUI_STATE.TRAIN2:
-		_try_create_train(selected_station, station)
-		_change_gui_state(GUI_STATE.TRAIN1)
-	elif gui_state == GUI_STATE.DESTROY:
+	if gui_state == GUI_STATE.DESTROY:
 		station.queue_free()
 		bank.destroy(Global.Asset.STATION)
 
-func _try_create_train(station1: Station, station2: Station):
+func _platform_clicked(platform: Platform):
+	if gui_state == GUI_STATE.TRAIN1:
+		var id1 = astar_id_from_position[Vector2i(platform.position)]
+		for other_platform: Platform in get_tree().get_nodes_in_group("platforms"):
+			platform.modulate = Color(1, 1, 1, 1)
+			if other_platform != platform:
+				var id2 = astar_id_from_position[Vector2i(other_platform.position)]
+				if astar.get_point_path(id1, id2):
+					other_platform.modulate = Color(0, 1, 0, 1)
+		selected_platform = platform
+		gui_state = GUI_STATE.TRAIN2
+	elif gui_state == GUI_STATE.TRAIN2:
+		_try_create_train(selected_platform, platform)
+		_change_gui_state(GUI_STATE.TRAIN1)
+
+func _try_create_train(platform1: Platform, platform2: Platform):
 	if not bank.can_afford(Global.Asset.TRAIN):
 		return
-	var id1 = astar_id_from_position[Vector2i(station1.position)]
-	var id2 = astar_id_from_position[Vector2i(station2.position)]
+	var id1 = astar_id_from_position[Vector2i(platform1.position)]
+	var id2 = astar_id_from_position[Vector2i(platform2.position)]
 	if id1 != id2:
 		var point_path = astar.get_point_path(id1, id2)
 		if point_path:
@@ -415,6 +416,7 @@ func _create_platforms(stations: Array[Station]):
 				var platform = PLATFORM.instantiate()
 				platform.position = pos
 				platform.rotation = legal_platform_positions_and_rotations[pos]
+				platform.platform_clicked.connect(_platform_clicked)
 				add_child(platform)
 				platforms[pos] = platform
 
