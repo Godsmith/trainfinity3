@@ -1,7 +1,7 @@
-[gd_scene load_steps=0 format=3 uid="uid://ct6pl8eajuc18"]
+[gd_scene format=3 uid="uid://ct6pl8eajuc18"]
 
 [node name="Sand" type="Node2D"]
-z_index = -1
+z_index = -2
 
 [node name="Node2D3" type="Polygon2D" parent="."]
 color = Color(0.611765, 0.580392, 0.419608, 1)

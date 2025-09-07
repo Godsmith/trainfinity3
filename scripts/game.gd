@@ -355,21 +355,21 @@ func _on_train_reaches_end(train: Train):
 ######################################################################
 
 func _create_platforms(station_position: Vector2i):
-	var legal_platform_positions = _get_legal_platform_positions()
+	var legal_platform_positions_and_rotations = _get_legal_platform_positions_and_rotations()
 	var platform_positions = []
 	var potential_platform_positions = Global.orthogonally_adjacent(station_position)
 	while potential_platform_positions:
 		var pos = potential_platform_positions.pop_back()
-		if pos not in platform_positions and pos in legal_platform_positions:
+		if pos not in platform_positions and pos in legal_platform_positions_and_rotations:
+			var platform = PLATFORM.instantiate()
+			platform.position = pos
+			platform.rotation = legal_platform_positions_and_rotations[pos]
+			add_child(platform)
 			platform_positions.append(pos)
 			potential_platform_positions.append_array(Global.orthogonally_adjacent(pos))
-	for pos in platform_positions:
-		var platform = PLATFORM.instantiate()
-		platform.position = pos
-		add_child(platform)
 		
 
-func _get_legal_platform_positions() -> Array[Vector2i]:
+func _get_legal_platform_positions_and_rotations() -> Dictionary[Vector2i, float]:
 	var tracks_from_position: Dictionary[Vector2i, Array] = {}
 	for track in tracks.values():
 		if not track.pos1 in tracks_from_position:
@@ -379,18 +379,20 @@ func _get_legal_platform_positions() -> Array[Vector2i]:
 		tracks_from_position[track.pos1].append(track)
 		tracks_from_position[track.pos2].append(track)
 
-	var legal_platform_positions: Array[Vector2i] = []
+	var legal_platform_positions_and_rotations: Dictionary[Vector2i, float] = {}
 	for track_position in tracks_from_position:
 		if len(tracks_from_position[track_position]) == 1:
 			var other_track_position = tracks_from_position[track_position][0].other_position(track_position)
 			if Global.is_orthogonally_adjacent(track_position, other_track_position):
-				legal_platform_positions.append(track_position)
+				var rotation_ = 0.0 if track_position.y == other_track_position.y else PI / 2
+				legal_platform_positions_and_rotations[track_position] = rotation_
 		elif len(tracks_from_position[track_position]) == 2:
 			var other_track_position1 = tracks_from_position[track_position][0].other_position(track_position)
 			var other_track_position2 = tracks_from_position[track_position][1].other_position(track_position)
 			if other_track_position1.x == other_track_position2.x or other_track_position1.y == other_track_position2.y:
-				legal_platform_positions.append(track_position)
-	return legal_platform_positions
+				var rotation_ = 0.0 if other_track_position1.y == other_track_position2.y else PI / 2
+				legal_platform_positions_and_rotations[track_position] = rotation_
+	return legal_platform_positions_and_rotations
 
 	# for adjacent_positions in Global.orthogonally_adjacent(station.global_position.snapped(TILE)):
 	# 	pass

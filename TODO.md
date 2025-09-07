@@ -12,7 +12,7 @@
 # TODO
 - larger stations
   - x after building station, create new platform on all n/s or w/e stretches
-  - rotate buildings correctly
+  - x rotate buildings correctly
   - ensure platforms are only built if length is at least 2
   - after building rail, create new platform on all n/s or w/e stretches
     orthogonally adjacent to one or more stations.

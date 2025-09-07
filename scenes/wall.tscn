@@ -7,7 +7,7 @@ cull_mode = 2
 polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8, -8, -8)
 
 [node name="Wall" type="Node2D"]
-z_index = -1
+z_index = -2
 script = ExtResource("1_wykyb")
 
 [node name="LightOccluder2D" type="LightOccluder2D" parent="."]

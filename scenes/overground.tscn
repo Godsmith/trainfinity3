@@ -22,7 +22,7 @@ script = ExtResource("3_mg5ko")
 [node name="Gui" parent="." instance=ExtResource("2_lgfhw")]
 
 [node name="Background" type="Polygon2D" parent="."]
-z_index = -2
+z_index = -10
 position = Vector2(-16, 0)
 color = Color(0.337255, 0.490196, 0.27451, 1)
 polygon = PackedVector2Array(-1008, -1024, -1008, 959.32, -1008, 1024, 1040, 1024, 1040, -1024)
