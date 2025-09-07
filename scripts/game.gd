@@ -65,6 +65,7 @@ class Bank:
 	func _init(gui_: Gui):
 		gui = gui_
 		gui.update_prices(_current_price)
+		gui.show_money(money)
 
 
 	func cost(asset: Global.Asset, amount := 1) -> int:
