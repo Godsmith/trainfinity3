@@ -11,16 +11,15 @@
 
 # TODO
 - larger stations
-  - x after building station, create new platform on all n/s or w/e stretches
+  - x after building station, create new platform on adjacent n/s or w/e stretches
   - x rotate buildings correctly
-  - ensure platforms are only built if length is at least 2
-  - after building rail, create new platform on all n/s or w/e stretches
-    orthogonally adjacent to one or more stations.
+  - x after building rail, create new platform on adjacent n/s or w/e stretches
   - show ghost platforms of the above when building station
   - show ghost platforms of the above when building track
   - after deleting rail or station, reevaluate all existing platform spaces. if not adjacent to station or adjacent
-    to adjacent to station etc, remove platform.
+    to adjacent to station etc, remove platform. Also updates the platforms variable.
   - disallow creating tracks going off at the wrong angle from existing platforms
+  - ensure platforms are only built if length is at least 2
   - change pathfinding nodes to be not on the station tile but either of the platform tiles. 
     - Paths should go all the way to the furthest point of the target station's platform.
     - When following the path, should start some way into the path; at the end of the station closest to the

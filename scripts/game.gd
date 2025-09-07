@@ -27,6 +27,8 @@ var ghost_tracks: Array[Track] = []
 var tracks: Dictionary[Vector3i, Track] = {}
 var ghost_track_tile_positions: Array[Vector2i] = []
 
+var platforms: Dictionary[Vector2i, Node2D] = {}
+
 var astar = AStar2D.new()
 var astar_id_from_position: Dictionary[Vector2i, int] = {}
 
@@ -94,8 +96,12 @@ class Bank:
 		self._update_prices()
 
 
-func _real_stations() -> Array:
-	return get_tree().get_nodes_in_group("stations").filter(func(station): return !station.is_ghost)
+func _real_stations() -> Array[Station]:
+	var stations: Array[Station] = []
+	for station in get_tree().get_nodes_in_group("stations"):
+		if station is Station and !station.is_ghost:
+			stations.append(station)
+	return stations
 
 
 func _positions_between(start: Vector2i, stop: Vector2i) -> Array[Vector2i]:
@@ -216,6 +222,7 @@ func _try_create_tracks():
 	for i in range(1, len(ids)):
 		astar.connect_points(ids[i - 1], ids[i])
 	bank.buy(Global.Asset.TRACK, len(ghost_tracks))
+	_create_platforms(_real_stations())
 	ghost_tracks.clear()
 
 func _add_position_to_astar(new_position: Vector2i):
@@ -283,7 +290,7 @@ func _try_create_station(station_position: Vector2i):
 	station.station_clicked.connect(_station_clicked)
 	add_child(station)
 	bank.buy(Global.Asset.STATION)
-	_create_platforms(station_position)
+	_create_platforms([station])
 	
 func _station_clicked(station: Station):
 	if gui_state == GUI_STATE.TRAIN1:
@@ -354,19 +361,23 @@ func _on_train_reaches_end(train: Train):
 
 ######################################################################
 
-func _create_platforms(station_position: Vector2i):
+func _create_platforms(stations: Array[Station]):
 	var legal_platform_positions_and_rotations = _get_legal_platform_positions_and_rotations()
-	var platform_positions = []
-	var potential_platform_positions = Global.orthogonally_adjacent(station_position)
-	while potential_platform_positions:
-		var pos = potential_platform_positions.pop_back()
-		if pos not in platform_positions and pos in legal_platform_positions_and_rotations:
-			var platform = PLATFORM.instantiate()
-			platform.position = pos
-			platform.rotation = legal_platform_positions_and_rotations[pos]
-			add_child(platform)
-			platform_positions.append(pos)
-			potential_platform_positions.append_array(Global.orthogonally_adjacent(pos))
+	var evaluated_platform_positions = []
+	for station in stations:
+		var potential_platform_positions = Global.orthogonally_adjacent(Vector2i(station.position))
+		while potential_platform_positions:
+			var pos = potential_platform_positions.pop_back()
+			if pos not in evaluated_platform_positions and pos in legal_platform_positions_and_rotations:
+				evaluated_platform_positions.append(pos)
+				potential_platform_positions.append_array(Global.orthogonally_adjacent(pos))
+				if pos in platforms:
+					continue
+				var platform = PLATFORM.instantiate()
+				platform.position = pos
+				platform.rotation = legal_platform_positions_and_rotations[pos]
+				add_child(platform)
+				platforms[pos] = platform
 		
 
 func _get_legal_platform_positions_and_rotations() -> Dictionary[Vector2i, float]:
