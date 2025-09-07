@@ -23,8 +23,6 @@ var is_right_mouse_button_held_down := false
 
 var start_track_location := Vector2i()
 var ghost_tracks: Array[Track] = []
-# The keys are provided by Track.position_rotation()
-var tracks: Dictionary[Vector3i, Track] = {}
 var ghost_track_tile_positions: Array[Vector2i] = []
 
 var platforms: Dictionary[Vector2i, Node2D] = {}
@@ -35,8 +33,49 @@ var astar_id_from_position: Dictionary[Vector2i, int] = {}
 @onready var camera = $Camera2D
 @onready var gui: Gui = $Gui
 @onready var bank = Bank.new(gui)
+@onready var track_set = TrackSet.new()
 
 var selected_station: Station = null
+
+class TrackSet:
+# The keys are provided by Track.position_rotation()
+	var _tracks: Dictionary[Vector3i, Track] = {}
+	var _tracks_from_position: Dictionary[Vector2i, Array] = {}
+
+	func add(track: Track):
+		_tracks[track.position_rotation()] = track
+		if not track.pos1 in _tracks_from_position:
+			_tracks_from_position[track.pos1] = []
+		if not track.pos2 in _tracks_from_position:
+			_tracks_from_position[track.pos2] = []
+		_tracks_from_position[track.pos1].append(track)
+		_tracks_from_position[track.pos2].append(track)
+
+	func exists(track: Track):
+		return track.position_rotation() in _tracks
+
+	func get_all_tracks():
+		return _tracks.values()
+
+	func get_track_count(position: Vector2i) -> int:
+		if not position in _tracks_from_position:
+			_tracks_from_position[position] = []
+		return len(_tracks_from_position[position])
+
+	func positions_with_track() -> Array[Vector2i]:
+		return _tracks_from_position.keys()
+
+	func positions_connected_to(position: Vector2i) -> Array[Vector2i]:
+		var positions: Array[Vector2i] = []
+		for track in _tracks_from_position[position]:
+			positions.append(track.other_position(position))
+		return positions
+
+	func erase(track: Track):
+		_tracks.erase(track.position_rotation())
+		_tracks_from_position[track.pos1].erase(track)
+		_tracks_from_position[track.pos2].erase(track)
+		track.queue_free()
 
 
 class Bank:
@@ -210,10 +249,10 @@ func _try_create_tracks():
 			return
 	
 	for track in ghost_tracks:
-		if track.position_rotation() in tracks:
+		if track_set.exists(track):
 			track.queue_free()
 		else:
-			tracks[track.position_rotation()] = track
+			track_set.add(track)
 			track.set_color(false, true)
 			track.track_clicked.connect(_track_clicked)
 	var ids = []
@@ -235,8 +274,7 @@ func _add_position_to_astar(new_position: Vector2i):
 func _track_clicked(track: Track):
 	if gui_state == GUI_STATE.DESTROY:
 		astar.disconnect_points(astar_id_from_position[track.pos1], astar_id_from_position[track.pos2])
-		tracks.erase(track.position_rotation())
-		track.queue_free()
+		track_set.erase(track)
 		bank.destroy(Global.Asset.TRACK)
 	
 ##################################################################
@@ -363,8 +401,7 @@ func _on_train_reaches_end(train: Train):
 ######################################################################
 
 func _create_platforms(stations: Array[Station]):
-	var tracks_from_position := _get_tracks_from_position()
-	var legal_platform_positions_and_rotations = _get_legal_platform_positions_and_rotations(tracks_from_position)
+	var legal_platform_positions_and_rotations = _get_legal_platform_positions_and_rotations()
 	var evaluated_platform_positions = []
 	for station in stations:
 		var potential_platform_positions = Global.orthogonally_adjacent(Vector2i(station.position))
@@ -372,7 +409,7 @@ func _create_platforms(stations: Array[Station]):
 			var pos = potential_platform_positions.pop_back()
 			if pos not in evaluated_platform_positions and pos in legal_platform_positions_and_rotations:
 				evaluated_platform_positions.append(pos)
-				potential_platform_positions.append_array(_positions_with_track_to(pos, tracks_from_position))
+				potential_platform_positions.append_array(track_set.positions_connected_to(pos))
 				if pos in platforms:
 					continue
 				var platform = PLATFORM.instantiate()
@@ -381,40 +418,20 @@ func _create_platforms(stations: Array[Station]):
 				add_child(platform)
 				platforms[pos] = platform
 
-# TODO: move also this method into class for storing track state
-func _positions_with_track_to(pos: Vector2i, tracks_from_position: Dictionary[Vector2i, Array]) -> Array[Vector2i]:
-	var positions: Array[Vector2i] = []
-	for track in tracks_from_position[pos]:
-		positions.append(track.other_position(pos))
-	return positions
 	
-# TODO: look into creating a class for storing track state
-func _get_tracks_from_position() -> Dictionary[Vector2i, Array]:
-	var tracks_from_position: Dictionary[Vector2i, Array] = {}
-	for track in tracks.values():
-		if not track.pos1 in tracks_from_position:
-			tracks_from_position[track.pos1] = []
-		if not track.pos2 in tracks_from_position:
-			tracks_from_position[track.pos2] = []
-		tracks_from_position[track.pos1].append(track)
-		tracks_from_position[track.pos2].append(track)
-	return tracks_from_position
-
-func _get_legal_platform_positions_and_rotations(tracks_from_position: Dictionary[Vector2i, Array]) -> Dictionary[Vector2i, float]:
+func _get_legal_platform_positions_and_rotations() -> Dictionary[Vector2i, float]:
 	var legal_platform_positions_and_rotations: Dictionary[Vector2i, float] = {}
-	for track_position in tracks_from_position:
-		if len(tracks_from_position[track_position]) == 1:
-			var other_track_position = tracks_from_position[track_position][0].other_position(track_position)
-			if Global.is_orthogonally_adjacent(track_position, other_track_position):
-				var rotation_ = 0.0 if track_position.y == other_track_position.y else PI / 2
-				legal_platform_positions_and_rotations[track_position] = rotation_
-		elif len(tracks_from_position[track_position]) == 2:
-			var other_track_position1 = tracks_from_position[track_position][0].other_position(track_position)
-			var other_track_position2 = tracks_from_position[track_position][1].other_position(track_position)
-			if other_track_position1.x == other_track_position2.x or other_track_position1.y == other_track_position2.y:
-				var rotation_ = 0.0 if other_track_position1.y == other_track_position2.y else PI / 2
-				legal_platform_positions_and_rotations[track_position] = rotation_
+	for track_position in track_set.positions_with_track():
+		match track_set.get_track_count(track_position):
+			1:
+				var other_track_position = track_set.positions_connected_to(track_position)[0]
+				if Global.is_orthogonally_adjacent(track_position, other_track_position):
+					var rotation_ = 0.0 if track_position.y == other_track_position.y else PI / 2
+					legal_platform_positions_and_rotations[track_position] = rotation_
+			2:
+				var other_track_position1 = track_set.positions_connected_to(track_position)[0]
+				var other_track_position2 = track_set.positions_connected_to(track_position)[1]
+				if other_track_position1.x == other_track_position2.x or other_track_position1.y == other_track_position2.y:
+					var rotation_ = 0.0 if other_track_position1.y == other_track_position2.y else PI / 2
+					legal_platform_positions_and_rotations[track_position] = rotation_
 	return legal_platform_positions_and_rotations
-
-	# for adjacent_positions in Global.orthogonally_adjacent(station.global_position.snapped(TILE)):
-	# 	pass

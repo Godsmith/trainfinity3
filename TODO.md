@@ -15,8 +15,7 @@
   - x rotate buildings correctly
   - x after building rail, create new platform on adjacent n/s or w/e stretches
   - x do not create platforms if they are adjacent to another platform but in wrong direction
-  - show ghost platforms of the above when building station
-  - show ghost platforms of the above when building track
+  - x refactor to add TrackSet
   - after deleting rail or station, reevaluate all existing platform spaces. if not adjacent to station or adjacent
     to adjacent to station etc, remove platform. Also updates the platforms variable.
   - disallow creating tracks going off at the wrong angle from existing platforms
@@ -31,6 +30,8 @@
       - just make a platform on all of it
     - problem 2: if adjacent to two stretches of rail, which one to choose? 
       - support both. Yes, probably.
+  - show ghost platforms of the above when building station
+  - show ghost platforms of the above when building track
 - put track rails and sleepers on different layers
 - disallow creating stations on water and mountains
 - disallow creating stations on top of stations
