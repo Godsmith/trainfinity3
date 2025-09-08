@@ -364,15 +364,22 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 		return
 	if _are_connected(platform1, platform2):
 		return
-	var id1 = astar_id_from_position[Vector2i(platform1.position)]
-	var id2 = astar_id_from_position[Vector2i(platform2.position)]
-	var point_path = astar.get_point_path(id1, id2)
-	if point_path:
-		var train = TRAIN.instantiate()
-		train.set_path(point_path)
-		train.end_reached.connect(_on_train_reaches_end)
-		add_child(train)
-		bank.buy(Global.Asset.TRAIN)
+
+	# Get path from the beginning of the first platform to the end
+	# of the target platform
+	var point_paths: Array[PackedVector2Array] = []
+	for p1 in _platform_endpoints(platform1.position):
+		for p2 in _platform_endpoints(platform2.position):
+			var id1 = astar_id_from_position[Vector2i(p1)]
+			var id2 = astar_id_from_position[Vector2i(p2)]
+			point_paths.append(astar.get_point_path(id1, id2))
+	point_paths.sort_custom(func(a, b): return len(a) < len(b))
+
+	var train = TRAIN.instantiate()
+	train.set_path(point_paths[-1])
+	train.end_reached.connect(_on_train_reaches_end)
+	add_child(train)
+	bank.buy(Global.Asset.TRAIN)
 
 	
 ###################################################################
@@ -458,6 +465,13 @@ func _connected_platform_positions(pos: Vector2i) -> Array[Vector2i]:
 			connected_positions.append(new_pos)
 			possible_connected_platforms.append_array(track_set.positions_connected_to(new_pos))
 	return connected_positions
+
+func _platform_endpoints(pos: Vector2i) -> Array[Vector2i]:
+	var platform_positions = _connected_platform_positions(pos)
+	# Sort by x if x are different else sort by y
+	platform_positions.sort_custom(func(a: Vector2i, b: Vector2i): return a.x < b.x if a.y == b.y else a.y < b.y)
+	return [platform_positions[0], platform_positions[-1]]
+
 
 func _stations_connected_to_platform(pos: Vector2i):
 	var connected_positions = _connected_platform_positions(pos)

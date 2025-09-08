@@ -20,7 +20,7 @@
   - x when train stops at platform, take ore from all stations adjacent to platform
   - x mark all platforms green when going into TRAIN1
   - x prevent train from going from platform to same platform
-  - Paths should go all the way to the furthest point of the target station's platform.
+  - x Paths should go all the way to the furthest point of the target station's platform.
   - When following the path, should start some way into the path; at the end of the station closest to the
     target station.
   - Since one station can have multiple platforms, should click platforms instead of stations.
@@ -28,6 +28,7 @@
     - when deleting rail
     - when deleting station
     - when creating tracks going off at the wrong angle from existing platforms
+      - this will solve a current bug where two stations can be connected by a track at the wrong angle
   - ensure platforms are only built if length is at least 2
   - show ghost platforms of the above when building station
   - show ghost platforms of the above when building track
