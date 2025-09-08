@@ -350,6 +350,19 @@ func _try_create_station(station_position: Vector2i):
 
 func _station_clicked(station: Station):
 	if gui_state == GuiState.DESTROY:
+		# Remove adjacent platforms and recreate them if they are close to other stations
+		# Using dictionary as a set. List of stations adjacent to adjacent platforms.
+		var station_set: Dictionary[Station, int] = {}
+		for adjacent_position in Global.orthogonally_adjacent(station.position):
+			if adjacent_position in platforms:
+				for other_station in _stations_connected_to_platform(adjacent_position):
+					if not other_station == station:
+						station_set[other_station] = 0
+				for pos in _connected_platform_positions(adjacent_position):
+					platforms[pos].queue_free()
+					platforms.erase(pos)
+		_create_platforms(station_set.keys())
+
 		station.queue_free()
 		bank.destroy(Global.Asset.STATION)
 

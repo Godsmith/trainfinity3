@@ -27,7 +27,7 @@
   - x Since one station can have multiple platforms, should click platforms instead of stations.
   - Reevaluate platforms (also update platforms variable)
     - x when deleting rail
-    - when deleting station
+    - x when deleting station
     - when creating tracks going off at the wrong angle from existing platforms
       - this will solve a current bug where two stations can be connected by a track at the wrong angle
   - ensure platforms are only built if length is at least 2
