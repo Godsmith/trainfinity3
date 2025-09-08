@@ -15,16 +15,20 @@ var direction := 1
 var last_progress := 0.0
 var last_corner_checked = Vector2(0.0, 0.0)
 var on_rails := true
+# TODO: consider changing to "starting wagon count"
+# and retrieving the number of wagons dynamically instead
+var wagon_count = 3
 
 @onready var path_follow := $PathFollow2D
 @onready var polygon := $RigidBody2D/LightOccluder2D
 @onready var rigid_body := $RigidBody2D
 
 func _ready() -> void:
-	for i in 3:
+	for i in wagon_count:
 		var wagon = WAGON.instantiate()
 		wagons.append(wagon)
 		add_child(wagon)
+	path_follow.progress = wagon_count * Global.TILE_SIZE
 
 func get_linear_velocity(path_follow_: PathFollow2D, delta: float):
 	var current_pos = path_follow_.global_position
@@ -85,7 +89,10 @@ func loop_movement(delta: Variant):
 		absolute_speed = 0
 		direction *= -1
 		end_reached.emit(self)
-		
+	if path_follow.progress >= curve.get_baked_length():
+		path_follow.progress = curve.get_baked_length() - wagon_count * Global.TILE_SIZE
+	if path_follow.progress == 0.0:
+		path_follow.progress = wagon_count * Global.TILE_SIZE
 func set_path(path: Array[Vector2]):
 	curve = Curve2D.new()
 	for p in path:

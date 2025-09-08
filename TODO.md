@@ -4,6 +4,7 @@
 - map size
 - the ability to tear down/build track on mountain
 - bridges
+- train loading speed
 
 # Between-round upgrade
 - starting everything above
@@ -21,8 +22,8 @@
   - x mark all platforms green when going into TRAIN1
   - x prevent train from going from platform to same platform
   - x Paths should go all the way to the furthest point of the target station's platform.
-  - When following the path, should start some way into the path; at the end of the station closest to the
-    target station.
+  - x When following the path, should start some way into the path; at the end of the station closest to the
+      target station.
   - Since one station can have multiple platforms, should click platforms instead of stations.
   - Reevaluate platforms (also update platforms variable)
     - when deleting rail
@@ -32,6 +33,7 @@
   - ensure platforms are only built if length is at least 2
   - show ghost platforms of the above when building station
   - show ghost platforms of the above when building track
+- make trains wait at stations
 - put track rails and sleepers on different layers
 - disallow creating stations on water and mountains
 - disallow creating stations on top of stations
