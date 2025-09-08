@@ -100,7 +100,7 @@ func max_capacity() -> int:
 		out += wagon.max_capacity
 	return out
 
-func add_ore(type: Ore.ORE_TYPE):
+func add_ore(type: Ore.OreType):
 	for wagon in wagons:
 		if not wagon.ore == wagon.max_capacity:
 			wagon.add_ore(type)

@@ -12,7 +12,7 @@ func _ready() -> void:
 	for chunk in _chunks:
 		chunk.visible = false
 
-func add_ore(type: Ore.ORE_TYPE):
+func add_ore(type: Ore.OreType):
 	_chunks[ore].color = Ore.ORE_COLOR[type]
 	_chunks[ore].visible = true
 	ore += 1

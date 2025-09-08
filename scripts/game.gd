@@ -4,7 +4,7 @@ class_name Game
 
 const TILE := Vector2(Global.TILE_SIZE, Global.TILE_SIZE)
 const SCALE_FACTOR := 2 # Don't remember where I set this
-enum GUI_STATE {NONE, TRACK, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY}
+enum GuiState {NONE, TRACK, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY}
 
 const STATION = preload("res://scenes/station.tscn")
 const PLATFORM = preload("res://scenes/platform.tscn")
@@ -17,7 +17,7 @@ const LIGHT = preload("res://scenes/light.tscn")
 @onready var ghost_station = $GhostStation
 @onready var ghost_light = $GhostLight
 
-var gui_state := GUI_STATE.NONE
+var gui_state := GuiState.NONE
 var is_left_mouse_button_held_down := false
 var is_right_mouse_button_held_down := false
 
@@ -175,7 +175,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			is_left_mouse_button_held_down = event.is_pressed()
-			if gui_state == GUI_STATE.TRACK:
+			if gui_state == GuiState.TRACK:
 				start_track_location = Vector2i(get_local_mouse_position().snapped(TILE))
 				ghost_track.visible = false
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
@@ -187,12 +187,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	
 	if event is InputEventMouseButton and event.is_released() and event.button_index == MOUSE_BUTTON_LEFT:
 		match gui_state:
-			GUI_STATE.TRACK:
+			GuiState.TRACK:
 				_try_create_tracks()
 				ghost_track.visible = true
-			GUI_STATE.STATION:
+			GuiState.STATION:
 				_try_create_station(Vector2i(get_local_mouse_position().snapped(TILE)))
-			GUI_STATE.LIGHT:
+			GuiState.LIGHT:
 				_create_light(get_local_mouse_position().snapped(TILE))
 	
 	if event is InputEventMouseMotion:
@@ -201,7 +201,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		ghost_station.position = mouse_position
 		ghost_light.position = mouse_position
 		if is_left_mouse_button_held_down:
-			if gui_state == GUI_STATE.TRACK and is_left_mouse_button_held_down:
+			if gui_state == GuiState.TRACK and is_left_mouse_button_held_down:
 				var new_ghost_track_tile_positions = _positions_between(start_track_location, mouse_position)
 				if new_ghost_track_tile_positions != ghost_track_tile_positions:
 					_show_ghost_track(new_ghost_track_tile_positions)
@@ -272,7 +272,7 @@ func _add_position_to_astar(new_position: Vector2i):
 		astar.add_point(id, new_position)
 
 func _track_clicked(track: Track):
-	if gui_state == GUI_STATE.DESTROY:
+	if gui_state == GuiState.DESTROY:
 		astar.disconnect_points(astar_id_from_position[track.pos1], astar_id_from_position[track.pos2])
 		track_set.erase(track)
 		bank.destroy(Global.Asset.TRACK)
@@ -281,49 +281,49 @@ func _track_clicked(track: Track):
 
 func _on_trackbutton_toggled(toggled_on: bool) -> void:
 	if toggled_on:
-		_change_gui_state(GUI_STATE.TRACK)
+		_change_gui_state(GuiState.TRACK)
 
 func _on_stationbutton_toggled(toggled_on: bool) -> void:
 	if toggled_on:
-		_change_gui_state(GUI_STATE.STATION)
+		_change_gui_state(GuiState.STATION)
 
 func _on_trainbutton_toggled(toggled_on: bool) -> void:
 	if toggled_on:
-		_change_gui_state(GUI_STATE.TRAIN1)
+		_change_gui_state(GuiState.TRAIN1)
 	
 func _on_lightbutton_toggled(toggled_on: bool) -> void:
 	if toggled_on:
-		_change_gui_state(GUI_STATE.LIGHT)
+		_change_gui_state(GuiState.LIGHT)
 
 func _on_destroybutton_toggled(toggled_on: bool) -> void:
 	if toggled_on:
-		_change_gui_state(GUI_STATE.DESTROY)
+		_change_gui_state(GuiState.DESTROY)
 
 
-func _change_gui_state(new_state: GUI_STATE):
+func _change_gui_state(new_state: GuiState):
 	ghost_track.visible = false
 	ghost_station.visible = false
 	ghost_light.visible = false
 
 	# Set platform colors
-	if new_state == GUI_STATE.TRAIN1:
+	if new_state == GuiState.TRAIN1:
 		for platform: Platform in get_tree().get_nodes_in_group("platforms"):
 			platform.modulate = Color(0, 1, 0, 1)
-	elif new_state == GUI_STATE.TRAIN2:
+	elif new_state == GuiState.TRAIN2:
 		# Platform colors handled elsewhere
 		pass
 	else:
 		for platform: Platform in get_tree().get_nodes_in_group("platforms"):
 			platform.modulate = Color(1, 1, 1, 1)
 		
-	if new_state == GUI_STATE.TRACK:
+	if new_state == GuiState.TRACK:
 		ghost_track.visible = true
-	elif new_state == GUI_STATE.STATION:
+	elif new_state == GuiState.STATION:
 		ghost_station.visible = true
-	elif new_state == GUI_STATE.LIGHT:
+	elif new_state == GuiState.LIGHT:
 		ghost_light.visible = true
 	
-	if new_state == GUI_STATE.NONE:
+	if new_state == GuiState.NONE:
 		gui.unpress_all()
 	gui_state = new_state
 
@@ -340,12 +340,12 @@ func _try_create_station(station_position: Vector2i):
 	_create_platforms([station])
 
 func _station_clicked(station: Station):
-	if gui_state == GUI_STATE.DESTROY:
+	if gui_state == GuiState.DESTROY:
 		station.queue_free()
 		bank.destroy(Global.Asset.STATION)
 
 func _platform_clicked(platform: Platform):
-	if gui_state == GUI_STATE.TRAIN1:
+	if gui_state == GuiState.TRAIN1:
 		var id1 = astar_id_from_position[Vector2i(platform.position)]
 		for other_platform: Platform in get_tree().get_nodes_in_group("platforms"):
 			other_platform.modulate = Color(1, 1, 1, 1)
@@ -354,10 +354,10 @@ func _platform_clicked(platform: Platform):
 				if astar.get_point_path(id1, id2):
 					other_platform.modulate = Color(0, 1, 0, 1)
 		selected_platform = platform
-		_change_gui_state(GUI_STATE.TRAIN2)
-	elif gui_state == GUI_STATE.TRAIN2:
+		_change_gui_state(GuiState.TRAIN2)
+	elif gui_state == GuiState.TRAIN2:
 		_try_create_train(selected_platform, platform)
-		_change_gui_state(GUI_STATE.TRAIN1)
+		_change_gui_state(GuiState.TRAIN1)
 
 func _try_create_train(platform1: Platform, platform2: Platform):
 	if not bank.can_afford(Global.Asset.TRAIN):
@@ -383,7 +383,7 @@ func _create_light(light_position: Vector2):
 	add_child(light)
 
 func _light_clicked(light: Light):
-	if gui_state == GUI_STATE.DESTROY:
+	if gui_state == GuiState.DESTROY:
 		light.queue_free()
 
 
@@ -398,7 +398,7 @@ func _on_timer_timeout():
 func _on_train_reaches_end(train: Train):
 	for station in _stations_connected_to_platform(train.get_train_position().snapped(TILE)):
 		while station.ore > 0 and train.ore() < train.max_capacity():
-			train.add_ore(Ore.ORE_TYPE.COAL)
+			train.add_ore(Ore.OreType.COAL)
 			station.remove_ore()
 		for factory in get_tree().get_nodes_in_group("factories"):
 			if Global.is_orthogonally_adjacent(factory.get_global_position(), station.position):
