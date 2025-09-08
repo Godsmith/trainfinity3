@@ -276,7 +276,16 @@ func _track_clicked(track: Track):
 		astar.disconnect_points(astar_id_from_position[track.pos1], astar_id_from_position[track.pos2])
 		track_set.erase(track)
 		bank.destroy(Global.Asset.TRACK)
-	
+
+		for platform_position in [track.pos1, track.pos2]:
+			if platform_position in platforms:
+				var stations = _stations_connected_to_platform(platform_position)
+				for pos in _connected_platform_positions(platform_position):
+					platforms[pos].queue_free()
+					platforms.erase(pos)
+				_create_platforms(stations)
+
+
 ##################################################################
 
 func _on_trackbutton_toggled(toggled_on: bool) -> void:
@@ -473,9 +482,9 @@ func _platform_endpoints(pos: Vector2i) -> Array[Vector2i]:
 	return [platform_positions[0], platform_positions[-1]]
 
 
-func _stations_connected_to_platform(pos: Vector2i):
+func _stations_connected_to_platform(pos: Vector2i) -> Array[Station]:
 	var connected_positions = _connected_platform_positions(pos)
-	var stations = []
+	var stations: Array[Station] = []
 	for station in _real_stations():
 		for neighbor in Global.orthogonally_adjacent(Vector2i(station.position)):
 			if connected_positions.has(neighbor):
