@@ -304,8 +304,17 @@ func _change_gui_state(new_state: GUI_STATE):
 	ghost_track.visible = false
 	ghost_station.visible = false
 	ghost_light.visible = false
-	for platform: Platform in get_tree().get_nodes_in_group("platforms"):
-		platform.modulate = Color(1, 1, 1, 1)
+
+	# Set platform colors
+	if new_state == GUI_STATE.TRAIN1:
+		for platform: Platform in get_tree().get_nodes_in_group("platforms"):
+			platform.modulate = Color(0, 1, 0, 1)
+	elif new_state == GUI_STATE.TRAIN2:
+		# Platform colors handled elsewhere
+		pass
+	else:
+		for platform: Platform in get_tree().get_nodes_in_group("platforms"):
+			platform.modulate = Color(1, 1, 1, 1)
 		
 	if new_state == GUI_STATE.TRACK:
 		ghost_track.visible = true
@@ -339,13 +348,13 @@ func _platform_clicked(platform: Platform):
 	if gui_state == GUI_STATE.TRAIN1:
 		var id1 = astar_id_from_position[Vector2i(platform.position)]
 		for other_platform: Platform in get_tree().get_nodes_in_group("platforms"):
-			platform.modulate = Color(1, 1, 1, 1)
+			other_platform.modulate = Color(1, 1, 1, 1)
 			if other_platform != platform:
 				var id2 = astar_id_from_position[Vector2i(other_platform.position)]
 				if astar.get_point_path(id1, id2):
 					other_platform.modulate = Color(0, 1, 0, 1)
 		selected_platform = platform
-		gui_state = GUI_STATE.TRAIN2
+		_change_gui_state(GUI_STATE.TRAIN2)
 	elif gui_state == GUI_STATE.TRAIN2:
 		_try_create_train(selected_platform, platform)
 		_change_gui_state(GUI_STATE.TRAIN1)
