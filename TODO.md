@@ -28,8 +28,8 @@
   - Reevaluate platforms (also update platforms variable)
     - x when deleting rail
     - x when deleting station
-    - when creating tracks going off at the wrong angle from existing platforms
-      - this will solve a current bug where two stations can be connected by a track at the wrong angle
+    - x when creating tracks going off at the wrong angle from existing platforms
+    - bug where two stations can be connected by a track at the wrong angle
   - ensure platforms are only built if length is at least 2
   - show ghost platforms of the above when building station
   - show ghost platforms of the above when building track

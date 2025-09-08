@@ -262,7 +262,7 @@ func _try_create_tracks():
 	for i in range(1, len(ids)):
 		astar.connect_points(ids[i - 1], ids[i])
 	bank.buy(Global.Asset.TRACK, len(ghost_tracks))
-	_create_platforms(_real_stations())
+	_recreate_platforms(ghost_track_tile_positions)
 	ghost_tracks.clear()
 
 func _add_position_to_astar(new_position: Vector2i):
@@ -277,13 +277,7 @@ func _track_clicked(track: Track):
 		track_set.erase(track)
 		bank.destroy(Global.Asset.TRACK)
 
-		for platform_position in [track.pos1, track.pos2]:
-			if platform_position in platforms:
-				var stations = _stations_connected_to_platform(platform_position)
-				for pos in _connected_platform_positions(platform_position):
-					platforms[pos].queue_free()
-					platforms.erase(pos)
-				_create_platforms(stations)
+		_recreate_platforms([track.pos1, track.pos2])
 
 
 ##################################################################
@@ -503,3 +497,24 @@ func _stations_connected_to_platform(pos: Vector2i) -> Array[Station]:
 			if connected_positions.has(neighbor):
 				stations.append(station)
 	return stations
+
+func _recreate_platforms(platform_positions: Array[Vector2i]):
+	# 1. Collect stations:
+	#    - adjacent to the new positions
+	#    - connected to platform at the new positions
+	# 2. Remove platforms connected to the new position
+	# 3. Create new platforms adjacent to the stations
+	# The stations Dictionary is used as a set
+	var stations: Dictionary[Station, int] = {}
+	for station in _real_stations():
+		for pos in Global.orthogonally_adjacent(station.position):
+			if platform_positions.has(pos):
+				stations[station] = 0
+	for platform_position in platform_positions:
+		if platform_position in platforms:
+			for station in _stations_connected_to_platform(platform_position):
+				stations[station] = 0
+			for pos in _connected_platform_positions(platform_position):
+				platforms[pos].queue_free()
+				platforms.erase(pos)
+	_create_platforms(stations.keys())
