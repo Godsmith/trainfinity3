@@ -462,10 +462,11 @@ func _get_legal_platform_positions_and_rotations() -> Dictionary[Vector2i, float
 					var rotation_ = 0.0 if track_position.y == other_track_position.y else PI / 2
 					legal_platform_positions_and_rotations[track_position] = rotation_
 			2:
-				var other_track_position1 = track_set.positions_connected_to(track_position)[0]
-				var other_track_position2 = track_set.positions_connected_to(track_position)[1]
-				if other_track_position1.x == other_track_position2.x or other_track_position1.y == other_track_position2.y:
-					var rotation_ = 0.0 if other_track_position1.y == other_track_position2.y else PI / 2
+				var connected_positions = track_set.positions_connected_to(track_position)
+				var are_on_horizontal_line = (track_position.y == connected_positions[0].y and track_position.y == connected_positions[1].y)
+				var are_on_vertical_line = (track_position.x == connected_positions[0].x and track_position.x == connected_positions[1].x)
+				if are_on_horizontal_line or are_on_vertical_line:
+					var rotation_ = 0.0 if are_on_horizontal_line else PI / 2
 					legal_platform_positions_and_rotations[track_position] = rotation_
 	return legal_platform_positions_and_rotations
 
