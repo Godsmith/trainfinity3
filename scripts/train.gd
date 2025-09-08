@@ -7,6 +7,7 @@ const WAGON = preload("res://scenes/wagon.tscn")
 signal end_reached(train: Train)
 
 @export var max_speed := 20.0
+@export var target_speed := max_speed
 @export var absolute_speed := 0.0
 @export var acceleration := 6.0
 @export var wagons: Array = []
@@ -58,9 +59,6 @@ func derail(delta):
 
 
 func _process(delta):
-	if is_stopped:
-		return
-
 	if not on_rails:
 		return
 
@@ -90,9 +88,10 @@ func loop_movement(delta: Variant):
 		var wagon = wagons[i]
 		var wagon_progress = path_follow.progress - direction * Global.TILE_SIZE * (i + 1)
 		wagon.progress = clamp(wagon_progress, 0.0, curve.get_baked_length())
-	if path_follow.progress >= curve.get_baked_length() or path_follow.progress == 0.0:
+	if (path_follow.progress >= curve.get_baked_length() or path_follow.progress == 0.0) and target_speed > 0.0:
+		target_speed = 0.0
 		end_reached.emit(self)
-		is_stopped = true
+		absolute_speed = 0.0
 
 func restart_after_station():
 	direction *= -1
@@ -100,7 +99,7 @@ func restart_after_station():
 		path_follow.progress = curve.get_baked_length() - wagon_count * Global.TILE_SIZE
 	if path_follow.progress == 0.0:
 		path_follow.progress = wagon_count * Global.TILE_SIZE
-	is_stopped = false
+	target_speed = max_speed
 	
 
 func set_path(path: Array[Vector2]):

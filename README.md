@@ -8,7 +8,7 @@
 - Prices increase with the number of objects built
 
 ## TODO
-- wagons unloaded in the wrong direction
+- keyboard shortcuts
 - first train should be free
 - load train when first starting
 - ensure platforms are only built if length is at least 2
@@ -31,6 +31,7 @@
   - cannot be done until we have pathfinding that takes other trains into account/signals/manual paths
 
 ### Bugs
+- wagons unloaded in the wrong direction
 - train disappeared when going to station with no coal
 - cargo wans can spawn with strange rotation
   - will be solved once too-long trains cannot spawn
