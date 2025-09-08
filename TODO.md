@@ -41,6 +41,8 @@
 - follow train
 - disallow creating stuff out of bounds
 - iron
+- change train paths when changing length of starting or ending station
+- do something - stop train? delete train? - when removing starting or ending station
 - prevent scrolling past edges of the map
   - note that duplicating the map size and zooming out max makes the game stutter, so adjustments needed. 
     At least in debug mode, need to test performance after exporting as well.
