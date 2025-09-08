@@ -25,7 +25,6 @@ var start_track_location := Vector2i()
 var ghost_tracks: Array[Track] = []
 var ghost_track_tile_positions: Array[Vector2i] = []
 
-var platforms: Dictionary[Vector2i, Node2D] = {}
 
 var astar = AStar2D.new()
 var astar_id_from_position: Dictionary[Vector2i, int] = {}
@@ -34,8 +33,122 @@ var astar_id_from_position: Dictionary[Vector2i, int] = {}
 @onready var gui: Gui = $Gui
 @onready var bank = Bank.new(gui)
 @onready var track_set = TrackSet.new()
+@onready var platform_set = PlatformSet.new(track_set)
 
 var selected_platform: Platform = null
+
+class PlatformSet:
+	var _platforms: Dictionary[Vector2i, Node2D] = {}
+	var track_set: TrackSet
+
+	func _init(track_set_: TrackSet):
+		track_set = track_set_
+
+	func create_platforms(stations: Array[Station], create_platform: Callable):
+		var legal_platform_positions_and_rotations = _get_legal_platform_positions_and_rotations()
+		var evaluated_platform_positions = []
+		for station in stations:
+			var potential_platform_positions = Global.orthogonally_adjacent(Vector2i(station.position))
+			while potential_platform_positions:
+				var pos = potential_platform_positions.pop_back()
+				if pos not in evaluated_platform_positions and pos in legal_platform_positions_and_rotations:
+					evaluated_platform_positions.append(pos)
+					potential_platform_positions.append_array(track_set.positions_connected_to(pos))
+					if pos in _platforms:
+						continue
+					var platform = PLATFORM.instantiate()
+					platform.position = pos
+					platform.rotation = legal_platform_positions_and_rotations[pos]
+					create_platform.call(platform)
+					_platforms[pos] = platform
+
+	func remove_adjacent_platforms(station: Station, all_stations: Array[Station]):
+		# Remove adjacent platforms that are not connected to any other station
+		for adjacent_position in Global.orthogonally_adjacent(station.position):
+			if adjacent_position in _platforms:
+				if len(stations_connected_to_platform(adjacent_position, all_stations)) == 1:
+					for pos in _connected_platform_positions(adjacent_position):
+						_platforms[pos].queue_free()
+						_platforms.erase(pos)
+
+	func _get_legal_platform_positions_and_rotations() -> Dictionary[Vector2i, float]:
+		var legal_platform_positions_and_rotations: Dictionary[Vector2i, float] = {}
+		for track_position in track_set.positions_with_track():
+			match track_set.get_track_count(track_position):
+				1:
+					var other_track_position = track_set.positions_connected_to(track_position)[0]
+					if Global.is_orthogonally_adjacent(track_position, other_track_position):
+						var rotation_ = 0.0 if track_position.y == other_track_position.y else PI / 2
+						legal_platform_positions_and_rotations[track_position] = rotation_
+				2:
+					var connected_positions = track_set.positions_connected_to(track_position)
+					var are_on_horizontal_line = (track_position.y == connected_positions[0].y and track_position.y == connected_positions[1].y)
+					var are_on_vertical_line = (track_position.x == connected_positions[0].x and track_position.x == connected_positions[1].x)
+					if are_on_horizontal_line or are_on_vertical_line:
+						var rotation_ = 0.0 if are_on_horizontal_line else PI / 2
+						legal_platform_positions_and_rotations[track_position] = rotation_
+		return legal_platform_positions_and_rotations
+
+	func stations_connected_to_platform(platform_position: Vector2i, all_stations: Array[Station]) -> Array[Station]:
+		var connected_positions = _connected_platform_positions(platform_position)
+		var stations: Array[Station] = []
+		for station in all_stations:
+			for neighbor in Global.orthogonally_adjacent(Vector2i(station.position)):
+				if connected_positions.has(neighbor):
+					stations.append(station)
+		return stations
+
+	func are_connected(platform1: Platform, platform2: Platform) -> bool:
+		return _connected_platform_positions(Vector2i(platform1.position)).has(Vector2i(platform2.position))
+
+	func _connected_platform_positions(pos: Vector2i) -> Array[Vector2i]:
+		var connected_positions: Array[Vector2i] = [pos]
+		var possible_connected_platforms := track_set.positions_connected_to(pos)
+		while possible_connected_platforms:
+			var new_pos = possible_connected_platforms.pop_back()
+			if new_pos not in connected_positions and new_pos in _platforms:
+				connected_positions.append(new_pos)
+				possible_connected_platforms.append_array(track_set.positions_connected_to(new_pos))
+		return connected_positions
+
+	func platform_endpoints(pos: Vector2i) -> Array[Vector2i]:
+		var platform_positions = _connected_platform_positions(pos)
+		# Sort by x if x are different else sort by y
+		platform_positions.sort_custom(func(a: Vector2i, b: Vector2i): return a.x < b.x if a.y == b.y else a.y < b.y)
+		return [platform_positions[0], platform_positions[-1]]
+
+
+	func recreate_platforms(positions: Array[Vector2i], all_stations: Array[Station], create_platform: Callable):
+		# 1. collect stations adjacent to the new positions
+		var stations: Dictionary[Station, int] = {}
+		for station in all_stations:
+			for pos in Global.orthogonally_adjacent(station.position):
+				if positions.has(pos):
+					stations[station] = 0
+		# 2. collect platforms at or adjacent to the new positions
+		var platform_positions: Dictionary[Vector2i, int] = {}
+		for pos in positions:
+			if pos in _platforms:
+				platform_positions[pos] = 0
+			for connected_position in track_set.positions_connected_to(pos):
+				if connected_position in _platforms:
+					platform_positions[connected_position] = 0
+		# 3. extend stations to encompass those adjacent to the platforms
+		for platform_position in platform_positions:
+			for station in stations_connected_to_platform(platform_position, all_stations):
+				stations[station] = 0
+		# 4. extend platforms to encoompass those connected to the
+		#    existing platform positions
+		var platforms_to_recreate = platform_positions
+		for platform_position in platform_positions:
+			for pos in _connected_platform_positions(platform_position):
+				platforms_to_recreate[pos] = 0
+		# 5. Destroy platforms
+		for pos in platforms_to_recreate:
+			_platforms[pos].queue_free()
+			_platforms.erase(pos)
+		# 4. Recreate platforms
+		create_platforms(stations.keys(), create_platform)
 
 class TrackSet:
 # The keys are provided by Track.position_rotation()
@@ -262,7 +375,7 @@ func _try_create_tracks():
 	for i in range(1, len(ids)):
 		astar.connect_points(ids[i - 1], ids[i])
 	bank.buy(Global.Asset.TRACK, len(ghost_tracks))
-	_recreate_platforms(ghost_track_tile_positions)
+	platform_set.recreate_platforms(ghost_track_tile_positions, _real_stations(), _create_platform)
 	ghost_tracks.clear()
 
 func _add_position_to_astar(new_position: Vector2i):
@@ -276,10 +389,7 @@ func _track_clicked(track: Track):
 		astar.disconnect_points(astar_id_from_position[track.pos1], astar_id_from_position[track.pos2])
 		track_set.erase(track)
 		bank.destroy(Global.Asset.TRACK)
-
-		_recreate_platforms([track.pos1, track.pos2])
-
-
+		platform_set.recreate_platforms([track.pos1, track.pos2], _real_stations(), _create_platform)
 ##################################################################
 
 func _on_trackbutton_toggled(toggled_on: bool) -> void:
@@ -340,22 +450,11 @@ func _try_create_station(station_position: Vector2i):
 	station.station_clicked.connect(_station_clicked)
 	add_child(station)
 	bank.buy(Global.Asset.STATION)
-	_create_platforms([station])
+	platform_set.create_platforms([station], _create_platform)
 
 func _station_clicked(station: Station):
 	if gui_state == GuiState.DESTROY:
-		# Remove adjacent platforms and recreate them if they are close to other stations
-		# Using dictionary as a set. List of stations adjacent to adjacent platforms.
-		var station_set: Dictionary[Station, int] = {}
-		for adjacent_position in Global.orthogonally_adjacent(station.position):
-			if adjacent_position in platforms:
-				for other_station in _stations_connected_to_platform(adjacent_position):
-					if not other_station == station:
-						station_set[other_station] = 0
-				for pos in _connected_platform_positions(adjacent_position):
-					platforms[pos].queue_free()
-					platforms.erase(pos)
-		_create_platforms(station_set.keys())
+		platform_set.remove_adjacent_platforms(station, _real_stations())
 
 		station.queue_free()
 		bank.destroy(Global.Asset.STATION)
@@ -365,7 +464,7 @@ func _platform_clicked(platform: Platform):
 		var id1 = astar_id_from_position[Vector2i(platform.position)]
 		for other_platform: Platform in get_tree().get_nodes_in_group("platforms"):
 			other_platform.modulate = Color(1, 1, 1, 1)
-			if not _are_connected(platform, other_platform):
+			if not platform_set.are_connected(platform, other_platform):
 				var id2 = astar_id_from_position[Vector2i(other_platform.position)]
 				if astar.get_point_path(id1, id2):
 					other_platform.modulate = Color(0, 1, 0, 1)
@@ -378,14 +477,14 @@ func _platform_clicked(platform: Platform):
 func _try_create_train(platform1: Platform, platform2: Platform):
 	if not bank.can_afford(Global.Asset.TRAIN):
 		return
-	if _are_connected(platform1, platform2):
+	if platform_set.are_connected(platform1, platform2):
 		return
 
 	# Get path from the beginning of the first platform to the end
 	# of the target platform
 	var point_paths: Array[PackedVector2Array] = []
-	for p1 in _platform_endpoints(platform1.position):
-		for p2 in _platform_endpoints(platform2.position):
+	for p1 in platform_set.platform_endpoints(platform1.position):
+		for p2 in platform_set.platform_endpoints(platform2.position):
 			var id1 = astar_id_from_position[Vector2i(p1)]
 			var id2 = astar_id_from_position[Vector2i(p2)]
 			point_paths.append(astar.get_point_path(id1, id2))
@@ -420,7 +519,7 @@ func _on_timer_timeout():
 ######################################################################
 	
 func _on_train_reaches_end(train: Train):
-	for station in _stations_connected_to_platform(train.get_train_position().snapped(TILE)):
+	for station in platform_set.stations_connected_to_platform(train.get_train_position().snapped(TILE), _real_stations()):
 		while station.ore > 0 and train.ore() < train.max_capacity():
 			train.add_ore(Ore.OreType.COAL)
 			station.remove_ore()
@@ -432,101 +531,7 @@ func _on_train_reaches_end(train: Train):
 
 ######################################################################
 
-func _create_platforms(stations: Array[Station]):
-	var legal_platform_positions_and_rotations = _get_legal_platform_positions_and_rotations()
-	var evaluated_platform_positions = []
-	for station in stations:
-		var potential_platform_positions = Global.orthogonally_adjacent(Vector2i(station.position))
-		while potential_platform_positions:
-			var pos = potential_platform_positions.pop_back()
-			if pos not in evaluated_platform_positions and pos in legal_platform_positions_and_rotations:
-				evaluated_platform_positions.append(pos)
-				potential_platform_positions.append_array(track_set.positions_connected_to(pos))
-				if pos in platforms:
-					continue
-				var platform = PLATFORM.instantiate()
-				platform.position = pos
-				platform.rotation = legal_platform_positions_and_rotations[pos]
-				platform.platform_clicked.connect(_platform_clicked)
-				add_child(platform)
-				platforms[pos] = platform
-
-	
-func _get_legal_platform_positions_and_rotations() -> Dictionary[Vector2i, float]:
-	var legal_platform_positions_and_rotations: Dictionary[Vector2i, float] = {}
-	for track_position in track_set.positions_with_track():
-		match track_set.get_track_count(track_position):
-			1:
-				var other_track_position = track_set.positions_connected_to(track_position)[0]
-				if Global.is_orthogonally_adjacent(track_position, other_track_position):
-					var rotation_ = 0.0 if track_position.y == other_track_position.y else PI / 2
-					legal_platform_positions_and_rotations[track_position] = rotation_
-			2:
-				var connected_positions = track_set.positions_connected_to(track_position)
-				var are_on_horizontal_line = (track_position.y == connected_positions[0].y and track_position.y == connected_positions[1].y)
-				var are_on_vertical_line = (track_position.x == connected_positions[0].x and track_position.x == connected_positions[1].x)
-				if are_on_horizontal_line or are_on_vertical_line:
-					var rotation_ = 0.0 if are_on_horizontal_line else PI / 2
-					legal_platform_positions_and_rotations[track_position] = rotation_
-	return legal_platform_positions_and_rotations
-
-func _are_connected(platform1: Platform, platform2: Platform) -> bool:
-	return _connected_platform_positions(Vector2i(platform1.position)).has(Vector2i(platform2.position))
-
-func _connected_platform_positions(pos: Vector2i) -> Array[Vector2i]:
-	var connected_positions: Array[Vector2i] = [pos]
-	var possible_connected_platforms := track_set.positions_connected_to(pos)
-	while possible_connected_platforms:
-		var new_pos = possible_connected_platforms.pop_back()
-		if new_pos not in connected_positions and new_pos in platforms:
-			connected_positions.append(new_pos)
-			possible_connected_platforms.append_array(track_set.positions_connected_to(new_pos))
-	return connected_positions
-
-func _platform_endpoints(pos: Vector2i) -> Array[Vector2i]:
-	var platform_positions = _connected_platform_positions(pos)
-	# Sort by x if x are different else sort by y
-	platform_positions.sort_custom(func(a: Vector2i, b: Vector2i): return a.x < b.x if a.y == b.y else a.y < b.y)
-	return [platform_positions[0], platform_positions[-1]]
-
-
-func _stations_connected_to_platform(pos: Vector2i) -> Array[Station]:
-	var connected_positions = _connected_platform_positions(pos)
-	var stations: Array[Station] = []
-	for station in _real_stations():
-		for neighbor in Global.orthogonally_adjacent(Vector2i(station.position)):
-			if connected_positions.has(neighbor):
-				stations.append(station)
-	return stations
-
-func _recreate_platforms(positions: Array[Vector2i]):
-	# 1. collect stations adjacent to the new positions
-	var stations: Dictionary[Station, int] = {}
-	for station in _real_stations():
-		for pos in Global.orthogonally_adjacent(station.position):
-			if positions.has(pos):
-				stations[station] = 0
-	# 2. collect platforms at or adjacent to the new positions
-	var platform_positions: Dictionary[Vector2i, int] = {}
-	for pos in positions:
-		if pos in platforms:
-			platform_positions[pos] = 0
-		for connected_position in track_set.positions_connected_to(pos):
-			if connected_position in platforms:
-				platform_positions[connected_position] = 0
-	# 3. extend stations to encompass those adjacent to the platforms
-	for platform_position in platform_positions:
-		for station in _stations_connected_to_platform(platform_position):
-			stations[station] = 0
-	# 4. extend platforms to encoompass those connected to the
-	#    existing platform positions
-	var platforms_to_recreate = platform_positions
-	for platform_position in platform_positions:
-		for pos in _connected_platform_positions(platform_position):
-			platforms_to_recreate[pos] = 0
-	# 5. Destroy platforms
-	for pos in platforms_to_recreate:
-		platforms[pos].queue_free()
-		platforms.erase(pos)
-	# 4. Recreate platforms
-	_create_platforms(stations.keys())
+# Called by PlatformSet
+func _create_platform(platform: Platform):
+	platform.platform_clicked.connect(_platform_clicked)
+	add_child(platform)

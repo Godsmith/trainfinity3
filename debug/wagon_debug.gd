@@ -6,8 +6,3 @@ func _ready() -> void:
 	for i in 12:
 		$Wagon.add_ore(Ore.OreType.COAL)
 		await get_tree().create_timer(1.0).timeout
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
