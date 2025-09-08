@@ -9,7 +9,6 @@
 
 ## TODO
 - keyboard shortcuts
-- first train should be free
 - load train when first starting
 - ensure platforms are only built if length is at least 2
 - show ghost platforms when building station

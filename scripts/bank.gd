@@ -4,19 +4,25 @@ class_name Bank
 
 const _start_price := {
     Global.Asset.TRACK: 1.0,
-    Global.Asset.STATION: 5.0,
-    Global.Asset.TRAIN: 10.0
+    Global.Asset.STATION: 10.0,
+    Global.Asset.TRAIN: 20.0
 }
 var _current_price: Dictionary[Global.Asset, float] = {
     Global.Asset.TRACK: _start_price[Global.Asset.TRACK],
-    Global.Asset.STATION: _start_price[Global.Asset.STATION],
-    Global.Asset.TRAIN: _start_price[Global.Asset.TRAIN]
+    Global.Asset.STATION: 0.0,
+    Global.Asset.TRAIN: 0.0
 }
 
 var _asset_count: Dictionary[Global.Asset, int] = {
     Global.Asset.TRACK: 0,
     Global.Asset.STATION: 0,
     Global.Asset.TRAIN: 0
+}
+
+var _free_asset_count: Dictionary[Global.Asset, int] = {
+    Global.Asset.TRACK: 0,
+    Global.Asset.STATION: 2,
+    Global.Asset.TRAIN: 1
 }
 
 const _INCREASE_FACTOR := 1.5
@@ -47,7 +53,10 @@ func _update_prices():
         if asset == Global.Asset.TRACK:
             _current_price[asset] = _start_price[asset] * (1 + _asset_count[asset] / 10)
         else:
-            _current_price[asset] = _start_price[asset] * _INCREASE_FACTOR ** _asset_count[asset]
+            if _asset_count[asset] < _free_asset_count[asset]:
+                _current_price[asset] = 0.0
+            else:
+                _current_price[asset] = _start_price[asset] * _INCREASE_FACTOR ** _asset_count[asset]
     gui.update_prices(_current_price)
 
 func earn(amount: int):
