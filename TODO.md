@@ -30,7 +30,7 @@
     - x when deleting station
     - x when creating tracks going off at the wrong angle from existing platforms
     - x bug where two stations can be connected by a track at the wrong angle
-    - bug where when removing track preventing extension of platform platform is not extended
+    - x bug where when removing track preventing extension of platform platform is not extended
   - ensure platforms are only built if length is at least 2
   - show ghost platforms of the above when building station
   - show ghost platforms of the above when building track

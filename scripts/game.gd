@@ -499,23 +499,34 @@ func _stations_connected_to_platform(pos: Vector2i) -> Array[Station]:
 				stations.append(station)
 	return stations
 
-func _recreate_platforms(platform_positions: Array[Vector2i]):
-	# 1. Collect stations:
-	#    - adjacent to the new positions
-	#    - connected to platform at the new positions
-	# 2. Remove platforms connected to the new position
-	# 3. Create new platforms adjacent to the stations
-	# The stations Dictionary is used as a set
+func _recreate_platforms(positions: Array[Vector2i]):
+	# 1. collect stations adjacent to the new positions
 	var stations: Dictionary[Station, int] = {}
 	for station in _real_stations():
 		for pos in Global.orthogonally_adjacent(station.position):
-			if platform_positions.has(pos):
+			if positions.has(pos):
 				stations[station] = 0
+	# 2. collect platforms at or adjacent to the new positions
+	var platform_positions: Dictionary[Vector2i, int] = {}
+	for pos in positions:
+		if pos in platforms:
+			platform_positions[pos] = 0
+		for connected_position in track_set.positions_connected_to(pos):
+			if connected_position in platforms:
+				platform_positions[connected_position] = 0
+	# 3. extend stations to encompass those adjacent to the platforms
 	for platform_position in platform_positions:
-		if platform_position in platforms:
-			for station in _stations_connected_to_platform(platform_position):
-				stations[station] = 0
-			for pos in _connected_platform_positions(platform_position):
-				platforms[pos].queue_free()
-				platforms.erase(pos)
+		for station in _stations_connected_to_platform(platform_position):
+			stations[station] = 0
+	# 4. extend platforms to encoompass those connected to the
+	#    existing platform positions
+	var platforms_to_recreate = platform_positions
+	for platform_position in platform_positions:
+		for pos in _connected_platform_positions(platform_position):
+			platforms_to_recreate[pos] = 0
+	# 5. Destroy platforms
+	for pos in platforms_to_recreate:
+		platforms[pos].queue_free()
+		platforms.erase(pos)
+	# 4. Recreate platforms
 	_create_platforms(stations.keys())
