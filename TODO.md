@@ -24,7 +24,7 @@
   - x Paths should go all the way to the furthest point of the target station's platform.
   - x When following the path, should start some way into the path; at the end of the station closest to the
       target station.
-  - Since one station can have multiple platforms, should click platforms instead of stations.
+  - x Since one station can have multiple platforms, should click platforms instead of stations.
   - Reevaluate platforms (also update platforms variable)
     - when deleting rail
     - when deleting station
