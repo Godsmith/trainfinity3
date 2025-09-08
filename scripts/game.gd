@@ -349,7 +349,7 @@ func _platform_clicked(platform: Platform):
 		var id1 = astar_id_from_position[Vector2i(platform.position)]
 		for other_platform: Platform in get_tree().get_nodes_in_group("platforms"):
 			other_platform.modulate = Color(1, 1, 1, 1)
-			if other_platform != platform:
+			if not _are_connected(platform, other_platform):
 				var id2 = astar_id_from_position[Vector2i(other_platform.position)]
 				if astar.get_point_path(id1, id2):
 					other_platform.modulate = Color(0, 1, 0, 1)
@@ -362,16 +362,17 @@ func _platform_clicked(platform: Platform):
 func _try_create_train(platform1: Platform, platform2: Platform):
 	if not bank.can_afford(Global.Asset.TRAIN):
 		return
+	if _are_connected(platform1, platform2):
+		return
 	var id1 = astar_id_from_position[Vector2i(platform1.position)]
 	var id2 = astar_id_from_position[Vector2i(platform2.position)]
-	if id1 != id2:
-		var point_path = astar.get_point_path(id1, id2)
-		if point_path:
-			var train = TRAIN.instantiate()
-			train.set_path(point_path)
-			train.end_reached.connect(_on_train_reaches_end)
-			add_child(train)
-			bank.buy(Global.Asset.TRAIN)
+	var point_path = astar.get_point_path(id1, id2)
+	if point_path:
+		var train = TRAIN.instantiate()
+		train.set_path(point_path)
+		train.end_reached.connect(_on_train_reaches_end)
+		add_child(train)
+		bank.buy(Global.Asset.TRAIN)
 
 	
 ###################################################################
@@ -445,15 +446,21 @@ func _get_legal_platform_positions_and_rotations() -> Dictionary[Vector2i, float
 					legal_platform_positions_and_rotations[track_position] = rotation_
 	return legal_platform_positions_and_rotations
 
-func _stations_connected_to_platform(pos: Vector2i):
-	var connected_positions := [pos]
+func _are_connected(platform1: Platform, platform2: Platform) -> bool:
+	return _connected_platform_positions(Vector2i(platform1.position)).has(Vector2i(platform2.position))
+
+func _connected_platform_positions(pos: Vector2i) -> Array[Vector2i]:
+	var connected_positions: Array[Vector2i] = [pos]
 	var possible_connected_platforms := track_set.positions_connected_to(pos)
 	while possible_connected_platforms:
 		var new_pos = possible_connected_platforms.pop_back()
 		if new_pos not in connected_positions and new_pos in platforms:
 			connected_positions.append(new_pos)
 			possible_connected_platforms.append_array(track_set.positions_connected_to(new_pos))
-	
+	return connected_positions
+
+func _stations_connected_to_platform(pos: Vector2i):
+	var connected_positions = _connected_platform_positions(pos)
 	var stations = []
 	for station in _real_stations():
 		for neighbor in Global.orthogonally_adjacent(Vector2i(station.position)):
