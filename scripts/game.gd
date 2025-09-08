@@ -130,36 +130,33 @@ class PlatformSet:
 		return [platform_positions[0], platform_positions[-1]]
 
 
-	func recreate_platforms(positions: Array[Vector2i], all_stations: Array[Station], create_platform: Callable):
-		# 1. collect stations adjacent to the new positions
+	func destroy_and_recreate_connected_platforms(positions: Array[Vector2i], all_stations: Array[Station], create_platform: Callable):
+		# 1. Extend the given positions with all adjacent connected positions.
+		var all_positions: Dictionary[Vector2i, int] = {}
+		for position in positions:
+			all_positions[position] = 0
+			for other_position in track_set.positions_connected_to(position):
+				all_positions[other_position] = 0
+		# 2. collect stations adjacent to these positions
 		var stations: Dictionary[Station, int] = {}
 		for station in all_stations:
 			for pos in Global.orthogonally_adjacent(station.position):
-				if positions.has(pos):
+				if pos in all_positions:
 					stations[station] = 0
-		# 2. collect platforms at or adjacent to the new positions
+		# 3. Narrow it down to only platform positions
 		var platform_positions: Dictionary[Vector2i, int] = {}
-		for pos in positions:
-			if pos in _platforms:
-				platform_positions[pos] = 0
-			for connected_position in track_set.positions_connected_to(pos):
-				if connected_position in _platforms:
-					platform_positions[connected_position] = 0
-		# 3. extend stations to encompass those adjacent to the platforms
+		for position in all_positions:
+			if position in _platforms:
+				platform_positions[position] = 0
+		# 4. collect stations connected to any positions that are platforms
 		for platform_position in platform_positions:
 			for station in stations_connected_to_platform(platform_position, all_stations):
 				stations[station] = 0
-		# 4. extend platforms to encoompass those connected to the
-		#    existing platform positions
-		var platforms_to_recreate = platform_positions
-		for platform_position in platform_positions:
-			for pos in _connected_platform_positions(platform_position):
-				platforms_to_recreate[pos] = 0
 		# 5. Destroy platforms
-		for pos in platforms_to_recreate:
+		for pos in platform_positions:
 			_platforms[pos].queue_free()
 			_platforms.erase(pos)
-		# 4. Recreate platforms
+		# 6. Recreate platforms
 		create_platforms(stations.keys(), create_platform)
 
 class TrackSet:
@@ -387,7 +384,7 @@ func _try_create_tracks():
 	for i in range(1, len(ids)):
 		astar.connect_points(ids[i - 1], ids[i])
 	bank.buy(Global.Asset.TRACK, len(ghost_tracks))
-	platform_set.recreate_platforms(ghost_track_tile_positions, _real_stations(), _create_platform)
+	platform_set.destroy_and_recreate_connected_platforms(ghost_track_tile_positions, _real_stations(), _create_platform)
 	ghost_tracks.clear()
 
 func _add_position_to_astar(new_position: Vector2i):
@@ -401,7 +398,7 @@ func _track_clicked(track: Track):
 		astar.disconnect_points(astar_id_from_position[track.pos1], astar_id_from_position[track.pos2])
 		track_set.erase(track)
 		bank.destroy(Global.Asset.TRACK)
-		platform_set.recreate_platforms([track.pos1, track.pos2], _real_stations(), _create_platform)
+		platform_set.destroy_and_recreate_connected_platforms([track.pos1, track.pos2], _real_stations(), _create_platform)
 ##################################################################
 
 func _on_trackbutton_toggled(toggled_on: bool) -> void:
