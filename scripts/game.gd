@@ -132,32 +132,37 @@ class PlatformSet:
 
 	func destroy_and_recreate_connected_platforms(positions: Array[Vector2i], all_stations: Array[Station], create_platform: Callable):
 		# 1. Extend the given positions with all adjacent connected positions.
-		var all_positions: Dictionary[Vector2i, int] = {}
-		for position in positions:
-			all_positions[position] = 0
-			for other_position in track_set.positions_connected_to(position):
-				all_positions[other_position] = 0
-		# 2. collect stations adjacent to these positions
-		var stations: Dictionary[Station, int] = {}
-		for station in all_stations:
-			for pos in Global.orthogonally_adjacent(station.position):
-				if pos in all_positions:
-					stations[station] = 0
+		var all_positions = _positions_connected_to(positions)
+		# 2. Collect stations adjacent to these positions
+		var stations = _stations_adjacent_to(all_positions, all_stations)
 		# 3. Narrow it down to only platform positions
-		var platform_positions: Dictionary[Vector2i, int] = {}
-		for position in all_positions:
-			if position in _platforms:
-				platform_positions[position] = 0
-		# 4. collect stations connected to any positions that are platforms
+		var platform_positions = all_positions.keys().filter(func(p): return p in _platforms)
+		# 4. Add stations connected to any positions that are platforms
 		for platform_position in platform_positions:
 			for station in stations_connected_to_platform(platform_position, all_stations):
-				stations[station] = 0
+				stations.append(station)
 		# 5. Destroy platforms
 		for pos in platform_positions:
 			_platforms[pos].queue_free()
 			_platforms.erase(pos)
 		# 6. Recreate platforms
-		create_platforms(stations.keys(), create_platform)
+		create_platforms(stations, create_platform)
+
+	func _positions_connected_to(positions: Array[Vector2i]) -> Dictionary[Vector2i, int]:
+		var all_positions: Dictionary[Vector2i, int] = {}
+		for position in positions:
+			all_positions[position] = 0
+			for other_position in track_set.positions_connected_to(position):
+				all_positions[other_position] = 0
+		return all_positions
+
+	static func _stations_adjacent_to(positions: Dictionary[Vector2i, int], all_stations: Array[Station]) -> Array[Station]:
+		var stations: Array[Station] = []
+		for station in all_stations:
+			for pos in Global.orthogonally_adjacent(station.position):
+				if pos in positions:
+					stations.append(station)
+		return stations
 
 class TrackSet:
 # The keys are provided by Track.position_rotation()

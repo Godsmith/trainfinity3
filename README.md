@@ -31,6 +31,7 @@
   - cannot be done until we have pathfinding that takes other trains into account/signals/manual paths
 
 ### Bugs
+- train disappeared when going to station with no coal
 - cargo wans can spawn with strange rotation
   - will be solved once too-long trains cannot spawn
 - cargo wagons are loaded in slightly wrong order
