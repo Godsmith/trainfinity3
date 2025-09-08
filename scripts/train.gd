@@ -8,7 +8,7 @@ signal end_reached(train: Train)
 
 @export var max_speed := 20.0
 @export var absolute_speed := 0.0
-@export var acceleration := 0.1
+@export var acceleration := 6.0
 @export var wagons: Array = []
 
 var direction := 1
@@ -18,10 +18,12 @@ var on_rails := true
 # TODO: consider changing to "starting wagon count"
 # and retrieving the number of wagons dynamically instead
 var wagon_count = 3
+var is_stopped = false
 
 @onready var path_follow := $PathFollow2D
 @onready var polygon := $RigidBody2D/LightOccluder2D
 @onready var rigid_body := $RigidBody2D
+@onready var timer := $Timer
 
 func _ready() -> void:
 	for i in wagon_count:
@@ -56,11 +58,14 @@ func derail(delta):
 
 
 func _process(delta):
+	if is_stopped:
+		return
+
 	if not on_rails:
 		return
 
 	if absolute_speed < max_speed:
-		absolute_speed += acceleration
+		absolute_speed += acceleration * delta
 
 	for i in curve.point_count:
 		var point = curve.get_point_position(i)
@@ -86,13 +91,18 @@ func loop_movement(delta: Variant):
 		var wagon_progress = path_follow.progress - direction * Global.TILE_SIZE * (i + 1)
 		wagon.progress = clamp(wagon_progress, 0.0, curve.get_baked_length())
 	if path_follow.progress >= curve.get_baked_length() or path_follow.progress == 0.0:
-		absolute_speed = 0
-		direction *= -1
 		end_reached.emit(self)
+		is_stopped = true
+
+func restart_after_station():
+	direction *= -1
 	if path_follow.progress >= curve.get_baked_length():
 		path_follow.progress = curve.get_baked_length() - wagon_count * Global.TILE_SIZE
 	if path_follow.progress == 0.0:
 		path_follow.progress = wagon_count * Global.TILE_SIZE
+	is_stopped = false
+	
+
 func set_path(path: Array[Vector2]):
 	curve = Curve2D.new()
 	for p in path:
@@ -110,6 +120,8 @@ func max_capacity() -> int:
 func add_ore(type: Ore.OreType):
 	for wagon in wagons:
 		if not wagon.ore == wagon.max_capacity:
+			timer.start()
+			await timer.timeout
 			wagon.add_ore(type)
 			break
 
@@ -124,4 +136,6 @@ func remove_all_ore():
 	for i in len(wagons):
 		var wagon = wagons[-i - 1]
 		while wagon.ore > 0:
+			timer.start()
+			await timer.timeout
 			wagon.remove_ore()

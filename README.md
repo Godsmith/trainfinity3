@@ -7,10 +7,12 @@
 - Select Train and click two platforms in succession to create a train and a route
 
 ## TODO
+- wagons unloaded in the wrong direction
+- first train should be free
+- load train when first starting
 - ensure platforms are only built if length is at least 2
 - show ghost platforms when building station
 - show ghost platforms when building track
-- make trains wait at stations
 - put track rails and sleepers on different layers
 - disallow creating stations on water and mountains
 - disallow creating stations on top of stations
@@ -30,6 +32,7 @@
 ### Bugs
 - cargo wans can spawn with strange rotation
   - will be solved once too-long trains cannot spawn
+- cargo wagons are loaded in slightly wrong order
 
 ### In-game upgrades
 - range of stations (start with 1) - though it looks ugly when they are too far from ore

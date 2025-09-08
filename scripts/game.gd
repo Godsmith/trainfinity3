@@ -521,12 +521,13 @@ func _on_timer_timeout():
 func _on_train_reaches_end(train: Train):
 	for station in platform_set.stations_connected_to_platform(train.get_train_position().snapped(TILE), _real_stations()):
 		while station.ore > 0 and train.ore() < train.max_capacity():
-			train.add_ore(Ore.OreType.COAL)
 			station.remove_ore()
+			await train.add_ore(Ore.OreType.COAL)
 		for factory in get_tree().get_nodes_in_group("factories"):
 			if Global.is_orthogonally_adjacent(factory.get_global_position(), station.position):
 				bank.earn(train.ore())
-				train.remove_all_ore()
+				await train.remove_all_ore()
+	train.restart_after_station()
 
 
 ######################################################################
