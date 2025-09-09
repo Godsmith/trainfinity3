@@ -21,6 +21,10 @@ var on_rails := true
 var wagon_count = 3
 var is_stopped = false
 
+# A progress position where, when the train passes here, it has passed the last
+# sharp corner and can accelerate up to max speed again
+var progress_point_past_sharp_corner = 0.0
+
 @onready var path_follow := $PathFollow2D
 @onready var polygon := $RigidBody2D/LightOccluder2D
 @onready var rigid_body := $RigidBody2D
@@ -66,7 +70,12 @@ func _process(delta):
 		absolute_speed += acceleration * delta
 
 	if _approaching_sharp_corner():
-		absolute_speed = 0.0
+		target_speed = 5.0
+		absolute_speed = target_speed
+		progress_point_past_sharp_corner = path_follow.progress + direction * Global.TILE_SIZE * wagon_count
+
+	if (direction == 1 and path_follow.progress > progress_point_past_sharp_corner) or (direction == -1 and path_follow.progress < progress_point_past_sharp_corner):
+		target_speed = max_speed
 
 	loop_movement(delta)
 

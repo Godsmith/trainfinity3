@@ -27,7 +27,6 @@
 - show ghost platforms when building track
 - disallow building out of bounds
 - iron
-- trains should not slow down as much when approaching sharp corner, and not speed up until the entire train has passed
 - heavier trains should have slower acceleration
 - change train paths when changing length of starting or ending station
 - do something - stop train? delete train? - when removing starting or ending station
