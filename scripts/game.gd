@@ -153,6 +153,11 @@ func _reset_ghost_tracks():
 
 
 func _try_create_tracks():
+	if len(ghost_track_tile_positions) < 2:
+		# Creating 0 tracks can have some strange consequences, for example an
+		# astar point will be created at the position, and the position will be
+		# evaluated for platforms, etc.
+		return
 	if not bank.can_afford(Global.Asset.TRACK, len(ghost_tracks)):
 		_reset_ghost_tracks()
 		return
