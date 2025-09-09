@@ -282,6 +282,7 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	train.end_reached.connect(_on_train_reaches_end)
 	add_child(train)
 	bank.buy(Global.Asset.TRAIN)
+	_on_train_reaches_end(train, platform1.position, false)
 
 	
 ###################################################################
@@ -305,7 +306,8 @@ func _on_timer_timeout():
 
 ######################################################################
 	
-func _on_train_reaches_end(train: Train, platform_position: Vector2i):
+func _on_train_reaches_end(train: Train, platform_position: Vector2i, turn_around: bool):
+	# turn_around needed if the train has arrived at a terminus station
 	for station in platform_set.stations_connected_to_platform(platform_position, _real_stations()):
 		while station.ore > 0 and train.ore() < train.max_capacity():
 			station.remove_ore()
@@ -314,7 +316,7 @@ func _on_train_reaches_end(train: Train, platform_position: Vector2i):
 			if Global.is_orthogonally_adjacent(factory.get_global_position(), station.position):
 				bank.earn(train.ore())
 				await train.remove_all_ore()
-	train.restart_after_station()
+	train.start_from_station(turn_around)
 
 
 ######################################################################

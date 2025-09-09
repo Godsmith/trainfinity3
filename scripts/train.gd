@@ -7,7 +7,7 @@ const WAGON = preload("res://scenes/wagon.tscn")
 signal end_reached(train: Train)
 
 @export var max_speed := 20.0
-@export var target_speed := max_speed
+@export var target_speed := 0.0
 @export var absolute_speed := 0.0
 @export var acceleration := 6.0
 @export var wagons: Array = []
@@ -90,11 +90,13 @@ func loop_movement(delta: Variant):
 		wagon.progress = clamp(wagon_progress, 0.0, curve.get_baked_length())
 	if (path_follow.progress >= curve.get_baked_length() or path_follow.progress == 0.0) and target_speed > 0.0:
 		target_speed = 0.0
-		end_reached.emit(self, get_train_position().snapped(Global.TILE))
+		end_reached.emit(self, get_train_position().snapped(Global.TILE), true)
 		absolute_speed = 0.0
 
-func restart_after_station():
-	direction *= -1
+func start_from_station(turn_around: bool):
+	# turn_around needed if the train has arrived at a terminus station
+	if turn_around:
+		direction *= -1
 	if path_follow.progress >= curve.get_baked_length():
 		path_follow.progress = curve.get_baked_length() - wagon_count * Global.TILE_SIZE
 	if path_follow.progress == 0.0:

@@ -14,7 +14,6 @@
 - disallow creating stations on top of rail
 - disallow creating rail on top of stations
 - keyboard shortcuts
-- load train when first starting
 - ensure platforms are only built if length is at least 2
 - show ghost platforms when building station
 - show ghost platforms when building track
