@@ -36,3 +36,10 @@ func extract_ore():
 func remove_ore():
 	_chunks.pop_back().queue_free()
 	ore -= 1
+
+func set_color(is_ghostly: bool, is_allowed: bool):
+	var r = 1.0
+	var g = 1.0 if is_allowed else 0.5
+	var b = 1.0 if is_allowed else 0.5
+	var a = 0.5 if is_ghostly else 1.0
+	modulate = Color(r, g, b, a)

@@ -16,10 +16,8 @@
 
 
 ## TODO
-- disallow creating stations on water and mountains
-- disallow creating stations on top of stations
-- disallow creating stations on top of rail
-- disallow creating rail on top of stations
+- disallow creating rail on top of factory
+- z-order ghost factory on top of factory
 - popup when earning money
 - put track rails and sleepers on different layers
 - follow train

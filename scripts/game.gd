@@ -98,14 +98,18 @@ func _unhandled_input(event: InputEvent) -> void:
 		ghost_track.position = mouse_position
 		ghost_station.position = mouse_position
 		ghost_light.position = mouse_position
+
 		if is_left_mouse_button_held_down:
 			if gui_state == Gui.State.TRACK and is_left_mouse_button_held_down:
 				var new_ghost_track_tile_positions = _positions_between(start_track_location, mouse_position)
 				if new_ghost_track_tile_positions != ghost_track_tile_positions:
 					_show_ghost_track(new_ghost_track_tile_positions)
-					
+
+		if gui_state == Gui.State.STATION:
+			ghost_station.set_color(true, _is_legal_station_position(mouse_position))
 		if is_right_mouse_button_held_down:
 			camera.position -= event.get_relative() / camera.zoom.x
+		
 
 	elif event is InputEventKey and event.pressed and not event.is_echo():
 		match event.keycode:
@@ -239,7 +243,14 @@ func _change_gui_state(new_state: Gui.State):
 
 ###################################################################
 
+func _is_legal_station_position(station_position: Vector2i):
+	return (station_position not in terrain.obstacle_position_set and
+			station_position not in _real_stations() and
+			station_position not in track_set.positions_with_track())
+			
 func _try_create_station(station_position: Vector2i):
+	if not _is_legal_station_position(station_position):
+		return
 	if not bank.can_afford(Global.Asset.STATION):
 		return
 	var station = STATION.instantiate()
