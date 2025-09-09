@@ -9,18 +9,21 @@
 - Prices increase with the number of objects built
 
 ## TODO
+- disallow creating stations on water and mountains
+- disallow creating stations on top of stations
+- disallow creating stations on top of rail
+- disallow creating rail on top of stations
 - keyboard shortcuts
 - load train when first starting
 - ensure platforms are only built if length is at least 2
 - show ghost platforms when building station
 - show ghost platforms when building track
 - put track rails and sleepers on different layers
-- disallow creating stations on water and mountains
-- disallow creating stations on top of stations
 - popup when earning money
 - follow train
-- disallow creating stuff out of bounds
+- disallow building out of bounds
 - iron
+- heavier trains should have slower acceleration
 - change train paths when changing length of starting or ending station
 - do something - stop train? delete train? - when removing starting or ending station
 - prevent scrolling past edges of the map
