@@ -65,19 +65,24 @@ func _process(delta):
 	if absolute_speed < target_speed:
 		absolute_speed += acceleration * delta
 
+	if _approaching_sharp_corner():
+		absolute_speed = 0.0
+
+	loop_movement(delta)
+
+func _approaching_sharp_corner() -> bool:
 	for i in curve.point_count:
 		var point = curve.get_point_position(i)
 		if point.distance_squared_to(path_follow.position) < 4.0:
 			if not point == last_corner_checked:
 				if i > 0 and i < curve.point_count - 1:
-					var angle = angle_between_points(curve.get_point_position(i - 1), point, curve.get_point_position(i + 1))
+					var angle = _angle_between_points(curve.get_point_position(i - 1), point, curve.get_point_position(i + 1))
 					if angle < PI / 2 + 0.05: # 90 degrees or lower
-						absolute_speed = 0.0
+						return true
 				last_corner_checked = point
+	return false
 
-	loop_movement(delta)
-
-func angle_between_points(a: Vector2, b: Vector2, c: Vector2) -> float:
+static func _angle_between_points(a: Vector2, b: Vector2, c: Vector2) -> float:
 	var ba = a - b
 	var bc = c - b
 	return abs(ba.angle_to(bc)) # signed angle in radians (-π..π)
