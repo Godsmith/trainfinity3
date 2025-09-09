@@ -4,16 +4,22 @@
 - Stations built next to mines will get filled with coal
 - Stations built next to the factory accepts coal
 - Build a stretch of rail adjacent to a station to create a platform
+- Prices increase with the number of objects built
+
+## Controls
+- elect Track and click and drag to build track
+- Select Station and click an empty location (preferrably next to a station or factory) to build a station
 - Select Train and click two platforms in succession to create a train and a route.
   - Train length is equal to the shortest platform length
-- Prices increase with the number of objects built
+- Select Destroy and click on track and stations to destroy them
+- Modes can also be selected with the number keys (1 to build track etc)
+
 
 ## TODO
 - disallow creating stations on water and mountains
 - disallow creating stations on top of stations
 - disallow creating stations on top of rail
 - disallow creating rail on top of stations
-- keyboard shortcuts
 - ensure platforms are only built if length is at least 2
 - show ghost platforms when building station
 - show ghost platforms when building track
