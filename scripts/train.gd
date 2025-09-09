@@ -62,7 +62,7 @@ func _process(delta):
 	if not on_rails:
 		return
 
-	if absolute_speed < max_speed:
+	if absolute_speed < target_speed:
 		absolute_speed += acceleration * delta
 
 	for i in curve.point_count:
