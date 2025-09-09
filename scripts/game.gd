@@ -13,6 +13,7 @@ const LIGHT = preload("res://scenes/light.tscn")
 @onready var ghost_track = $GhostTrack
 @onready var ghost_station = $GhostStation
 @onready var ghost_light = $GhostLight
+@onready var track_creation_arrow = $TrackCreationArrow
 
 var gui_state := Gui.State.NONE
 var is_left_mouse_button_held_down := false
@@ -67,6 +68,7 @@ func _ready():
 	$Gui/HBoxContainer/LightButton.connect("toggled", _on_lightbutton_toggled)
 	$Gui/HBoxContainer/DestroyButton.connect("toggled", _on_destroybutton_toggled)
 	$Timer.connect("timeout", _on_timer_timeout)
+	track_creation_arrow.visible = false
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -74,8 +76,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			is_left_mouse_button_held_down = event.is_pressed()
 			if gui_state == Gui.State.TRACK:
-				start_track_location = Vector2i(get_local_mouse_position().snapped(Global.TILE))
+				var snapped_mouse_position = Vector2i(get_local_mouse_position().snapped(Global.TILE))
+				start_track_location = snapped_mouse_position
 				ghost_track.visible = false
+				track_creation_arrow.position = snapped_mouse_position
+				track_creation_arrow.visible = true
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			is_right_mouse_button_held_down = event.is_pressed()
 		elif event.button_index == MOUSE_BUTTON_WHEEL_UP and not event.is_echo():
@@ -102,6 +107,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if is_left_mouse_button_held_down:
 			if gui_state == Gui.State.TRACK and is_left_mouse_button_held_down:
 				var new_ghost_track_tile_positions = _positions_between(start_track_location, mouse_position)
+				track_creation_arrow.visible = (len(new_ghost_track_tile_positions) == 1)
 				if new_ghost_track_tile_positions != ghost_track_tile_positions:
 					_show_ghost_track(new_ghost_track_tile_positions)
 
@@ -153,6 +159,7 @@ func _reset_ghost_tracks():
 
 
 func _try_create_tracks():
+	track_creation_arrow.visible = false
 	if len(ghost_track_tile_positions) < 2:
 		# Creating 0 tracks can have some strange consequences, for example an
 		# astar point will be created at the position, and the position will be
