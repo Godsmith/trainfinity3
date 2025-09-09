@@ -20,14 +20,14 @@
 - disallow creating stations on top of stations
 - disallow creating stations on top of rail
 - disallow creating rail on top of stations
-- ensure platforms are only built if length is at least 2
+- popup when earning money
+- put track rails and sleepers on different layers
+- follow train
 - show ghost platforms when building station
 - show ghost platforms when building track
-- put track rails and sleepers on different layers
-- popup when earning money
-- follow train
 - disallow building out of bounds
 - iron
+- trains should not slow down as much when approaching sharp corner, and not speed up until the entire train has passed
 - heavier trains should have slower acceleration
 - change train paths when changing length of starting or ending station
 - do something - stop train? delete train? - when removing starting or ending station
