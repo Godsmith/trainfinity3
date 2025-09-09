@@ -4,7 +4,8 @@
 - Stations built next to mines will get filled with coal
 - Stations built next to the factory accepts coal
 - Build a stretch of rail adjacent to a station to create a platform
-- Select Train and click two platforms in succession to create a train and a route
+- Select Train and click two platforms in succession to create a train and a route.
+  - Train length is equal to the shortest platform length
 - Prices increase with the number of objects built
 
 ## TODO

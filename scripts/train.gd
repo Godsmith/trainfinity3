@@ -90,7 +90,7 @@ func loop_movement(delta: Variant):
 		wagon.progress = clamp(wagon_progress, 0.0, curve.get_baked_length())
 	if (path_follow.progress >= curve.get_baked_length() or path_follow.progress == 0.0) and target_speed > 0.0:
 		target_speed = 0.0
-		end_reached.emit(self)
+		end_reached.emit(self, get_train_position().snapped(Global.TILE))
 		absolute_speed = 0.0
 
 func restart_after_station():

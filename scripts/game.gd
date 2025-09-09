@@ -2,7 +2,6 @@ extends Node2D
 
 class_name Game
 
-const TILE := Vector2(Global.TILE_SIZE, Global.TILE_SIZE)
 const SCALE_FACTOR := 2 # Don't remember where I set this
 enum GuiState {NONE, TRACK, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY}
 
@@ -76,7 +75,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			is_left_mouse_button_held_down = event.is_pressed()
 			if gui_state == GuiState.TRACK:
-				start_track_location = Vector2i(get_local_mouse_position().snapped(TILE))
+				start_track_location = Vector2i(get_local_mouse_position().snapped(Global.TILE))
 				ghost_track.visible = false
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			is_right_mouse_button_held_down = event.is_pressed()
@@ -91,12 +90,12 @@ func _unhandled_input(event: InputEvent) -> void:
 				_try_create_tracks()
 				ghost_track.visible = true
 			GuiState.STATION:
-				_try_create_station(Vector2i(get_local_mouse_position().snapped(TILE)))
+				_try_create_station(Vector2i(get_local_mouse_position().snapped(Global.TILE)))
 			GuiState.LIGHT:
-				_create_light(get_local_mouse_position().snapped(TILE))
+				_create_light(get_local_mouse_position().snapped(Global.TILE))
 	
 	if event is InputEventMouseMotion:
-		var mouse_position = Vector2i(get_local_mouse_position().snapped(TILE))
+		var mouse_position = Vector2i(get_local_mouse_position().snapped(Global.TILE))
 		ghost_track.position = mouse_position
 		ghost_station.position = mouse_position
 		ghost_light.position = mouse_position
@@ -279,6 +278,7 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 
 	var train = TRAIN.instantiate()
 	train.set_path(point_paths[-1])
+	train.wagon_count = min(platform_set.platform_size(platform1.position), platform_set.platform_size(platform2.position)) - 1
 	train.end_reached.connect(_on_train_reaches_end)
 	add_child(train)
 	bank.buy(Global.Asset.TRAIN)
@@ -305,8 +305,8 @@ func _on_timer_timeout():
 
 ######################################################################
 	
-func _on_train_reaches_end(train: Train):
-	for station in platform_set.stations_connected_to_platform(train.get_train_position().snapped(TILE), _real_stations()):
+func _on_train_reaches_end(train: Train, platform_position: Vector2i):
+	for station in platform_set.stations_connected_to_platform(platform_position, _real_stations()):
 		while station.ore > 0 and train.ore() < train.max_capacity():
 			station.remove_ore()
 			await train.add_ore(Ore.OreType.COAL)

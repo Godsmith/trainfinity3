@@ -3,6 +3,7 @@ extends Node
 class_name Global
 
 const TILE_SIZE := 16
+const TILE := Vector2(TILE_SIZE, TILE_SIZE)
 
 enum Asset {TRACK, STATION, TRAIN}
 

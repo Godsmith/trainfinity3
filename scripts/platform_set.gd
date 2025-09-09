@@ -90,6 +90,9 @@ func _connected_platform_positions(pos: Vector2i) -> Array[Vector2i]:
 			possible_connected_platforms.append_array(track_set.positions_connected_to(new_pos))
 	return connected_positions
 
+func platform_size(pos: Vector2i) -> int:
+	return len(_connected_platform_positions(pos))
+
 func platform_endpoints(pos: Vector2i) -> Array[Vector2i]:
 	var platform_positions = _connected_platform_positions(pos)
 	# Sort by x if x are different else sort by y
