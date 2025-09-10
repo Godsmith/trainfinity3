@@ -19,7 +19,8 @@ var on_rails := true
 # TODO: consider changing to "starting wagon count"
 # and retrieving the number of wagons dynamically instead
 var wagon_count = 3
-var is_stopped = false
+var is_stopped_at_station = false
+var is_in_sharp_corner = false
 
 # A progress position where, when the train passes here, it has passed the last
 # sharp corner and can accelerate up to max speed again
@@ -73,9 +74,13 @@ func _process(delta):
 		target_speed = 5.0
 		absolute_speed = target_speed
 		progress_point_past_sharp_corner = path_follow.progress + direction * Global.TILE_SIZE * wagon_count
+		is_in_sharp_corner = true
 
-	if (direction == 1 and path_follow.progress > progress_point_past_sharp_corner) or (direction == -1 and path_follow.progress < progress_point_past_sharp_corner):
-		target_speed = max_speed
+	if is_in_sharp_corner:
+		if ((direction == 1 and path_follow.progress > progress_point_past_sharp_corner) or
+		   (direction == -1 and path_follow.progress < progress_point_past_sharp_corner)):
+			target_speed = max_speed
+			is_in_sharp_corner = false
 
 	loop_movement(delta)
 
@@ -102,10 +107,11 @@ func loop_movement(delta: Variant):
 		var wagon = wagons[i]
 		var wagon_progress = path_follow.progress - direction * Global.TILE_SIZE * (i + 1)
 		wagon.progress = clamp(wagon_progress, 0.0, curve.get_baked_length())
-	if (path_follow.progress >= curve.get_baked_length() or path_follow.progress == 0.0) and target_speed > 0.0:
+	if (path_follow.progress >= curve.get_baked_length() or path_follow.progress == 0.0) and target_speed > 0.0 and not is_stopped_at_station:
 		target_speed = 0.0
 		end_reached.emit(self, get_train_position().snapped(Global.TILE), true)
 		absolute_speed = 0.0
+		is_stopped_at_station = true
 
 func start_from_station(turn_around: bool):
 	# turn_around needed if the train has arrived at a terminus station
@@ -116,6 +122,7 @@ func start_from_station(turn_around: bool):
 	if path_follow.progress == 0.0:
 		path_follow.progress = wagon_count * Global.TILE_SIZE
 	target_speed = max_speed
+	is_stopped_at_station = false
 	
 
 func set_path(path: Array[Vector2]):
