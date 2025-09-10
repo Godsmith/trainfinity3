@@ -37,9 +37,6 @@
 ### Bugs
 - wagons unloaded in the wrong direction
 - train disappeared when going to station with no coal
-- cargo wans can spawn with strange rotation
-  - will be solved once too-long trains cannot spawn
-- cargo wagons are loaded in slightly wrong order
 
 ### In-game upgrades
 - range of stations (start with 1) - though it looks ugly when they are too far from ore
