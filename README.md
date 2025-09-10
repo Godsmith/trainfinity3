@@ -7,7 +7,7 @@
 - Prices increase with the number of objects built
 
 ## Controls
-- elect Track and click and drag to build track
+- Select Track and click and drag to build track
 - Select Station and click an empty location (preferrably next to a station or factory) to build a station
 - Select Train and click two platforms in succession to create a train and a route.
   - Train length is equal to the shortest platform length
