@@ -8,6 +8,7 @@ const STATION = preload("res://scenes/station.tscn")
 const TRAIN = preload("res://scenes/train.tscn")
 const TRACK = preload("res://scenes/track.tscn")
 const LIGHT = preload("res://scenes/light.tscn")
+const POPUP = preload("res://scenes/popup.tscn")
 
 @onready var terrain = $Terrain
 @onready var ghost_track = $GhostTrack
@@ -348,9 +349,17 @@ func _on_train_reaches_end(train: Train, platform_position: Vector2i, turn_aroun
 			await train.add_ore(Ore.OreType.COAL)
 		for factory in get_tree().get_nodes_in_group("factories"):
 			if Global.is_orthogonally_adjacent(factory.get_global_position(), station.position):
+				if train.ore() > 0:
+					_show_popup("$%s" % train.ore(), train.get_train_position())
 				bank.earn(train.ore())
 				await train.remove_all_ore()
 	train.start_from_station(turn_around)
+
+func _show_popup(text: String, pos: Vector2):
+	var popup = POPUP.instantiate()
+	popup.position = pos
+	add_child(popup)
+	popup.show_popup(text)
 
 
 ######################################################################

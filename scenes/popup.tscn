@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://bteguxh20ptih"]
+
+[ext_resource type="Script" uid="uid://thdexnbrav87" path="res://scripts/popup.gd" id="1_4ebxx"]
+
+[node name="MoneyPopup" type="Label"]
+z_index = 1000
+offset_right = 1.0
+offset_bottom = 23.0
+scale = Vector2(0.4, 0.4)
+script = ExtResource("1_4ebxx")

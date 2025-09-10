@@ -18,7 +18,6 @@
 ## TODO
 - disallow creating rail on top of factory
 - z-order ghost factory on top of factory
-- popup when earning money
 - put track rails and sleepers on different layers
 - follow train
 - show ghost platforms when building station
