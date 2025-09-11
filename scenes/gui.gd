@@ -2,7 +2,7 @@ extends CanvasLayer
 
 class_name Gui
 
-enum State {NONE, TRACK, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY}
+enum State {NONE, TRACK1, TRACK2, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY}
 
 func show_money(money: int):
 	$HBoxContainer/Money.text = "$%s" % money
@@ -19,7 +19,7 @@ func _unpress_all():
 func set_pressed_no_signal(gui_state: State):
 	_unpress_all()
 	match gui_state:
-		State.TRACK:
+		State.TRACK1, State.TRACK2:
 			$HBoxContainer/TrackButton.set_pressed_no_signal(true)
 		State.STATION:
 			$HBoxContainer/StationButton.set_pressed_no_signal(true)

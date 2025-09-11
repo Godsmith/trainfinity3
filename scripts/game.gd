@@ -17,7 +17,6 @@ const POPUP = preload("res://scenes/popup.tscn")
 @onready var track_creation_arrow = $TrackCreationArrow
 
 var gui_state := Gui.State.NONE
-var is_left_mouse_button_held_down := false
 var is_right_mouse_button_held_down := false
 
 var start_track_location := Vector2i()
@@ -73,15 +72,17 @@ func _ready():
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	var snapped_mouse_position = Vector2i(get_local_mouse_position().snapped(Global.TILE))
 	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			is_left_mouse_button_held_down = event.is_pressed()
-			if gui_state == Gui.State.TRACK:
-				var snapped_mouse_position = Vector2i(get_local_mouse_position().snapped(Global.TILE))
-				start_track_location = snapped_mouse_position
-				ghost_track.visible = false
-				track_creation_arrow.position = snapped_mouse_position
-				track_creation_arrow.visible = true
+		if event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+			match gui_state:
+				Gui.State.TRACK1:
+					_change_gui_state(Gui.State.TRACK2)
+					start_track_location = snapped_mouse_position
+					ghost_track.visible = false
+				Gui.State.TRACK2:
+					if snapped_mouse_position == start_track_location:
+						_change_gui_state(Gui.State.TRACK1)
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			is_right_mouse_button_held_down = event.is_pressed()
 		elif event.button_index == MOUSE_BUTTON_WHEEL_UP and not event.is_echo():
@@ -91,29 +92,30 @@ func _unhandled_input(event: InputEvent) -> void:
 	
 	if event is InputEventMouseButton and event.is_released() and event.button_index == MOUSE_BUTTON_LEFT:
 		match gui_state:
-			Gui.State.TRACK:
-				_try_create_tracks()
-				ghost_track.visible = true
+			Gui.State.TRACK2:
+				if snapped_mouse_position != start_track_location:
+					_try_create_tracks()
+					ghost_track.visible = true
+					_change_gui_state(Gui.State.TRACK1)
 			Gui.State.STATION:
-				_try_create_station(Vector2i(get_local_mouse_position().snapped(Global.TILE)))
+				_try_create_station(snapped_mouse_position)
 			Gui.State.LIGHT:
-				_create_light(get_local_mouse_position().snapped(Global.TILE))
+				_create_light(snapped_mouse_position)
 	
 	elif event is InputEventMouseMotion:
-		var mouse_position = Vector2i(get_local_mouse_position().snapped(Global.TILE))
-		ghost_track.position = mouse_position
-		ghost_station.position = mouse_position
-		ghost_light.position = mouse_position
+		ghost_track.position = snapped_mouse_position
+		ghost_station.position = snapped_mouse_position
+		ghost_light.position = snapped_mouse_position
 
-		if is_left_mouse_button_held_down:
-			if gui_state == Gui.State.TRACK and is_left_mouse_button_held_down:
-				var new_ghost_track_tile_positions = _positions_between(start_track_location, mouse_position)
-				track_creation_arrow.visible = (len(new_ghost_track_tile_positions) == 1)
-				if new_ghost_track_tile_positions != ghost_track_tile_positions:
-					_show_ghost_track(new_ghost_track_tile_positions)
+		if gui_state == Gui.State.TRACK2:
+			var new_ghost_track_tile_positions = _positions_between(start_track_location, snapped_mouse_position)
+			track_creation_arrow.position = start_track_location
+			track_creation_arrow.visible = (len(new_ghost_track_tile_positions) == 1)
+			if new_ghost_track_tile_positions != ghost_track_tile_positions:
+				_show_ghost_track(new_ghost_track_tile_positions)
 
 		if gui_state == Gui.State.STATION:
-			ghost_station.set_color(true, _is_legal_station_position(mouse_position))
+			ghost_station.set_color(true, _is_legal_station_position(snapped_mouse_position))
 		if is_right_mouse_button_held_down:
 			camera.position -= event.get_relative() / camera.zoom.x
 		
@@ -121,7 +123,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventKey and event.pressed and not event.is_echo():
 		match event.keycode:
 			KEY_1:
-				_change_gui_state(Gui.State.TRACK)
+				_change_gui_state(Gui.State.TRACK1)
 			KEY_2:
 				_change_gui_state(Gui.State.STATION)
 			KEY_3:
@@ -160,7 +162,6 @@ func _reset_ghost_tracks():
 
 
 func _try_create_tracks():
-	track_creation_arrow.visible = false
 	if len(ghost_track_tile_positions) < 2:
 		# Creating 0 tracks can have some strange consequences, for example an
 		# astar point will be created at the position, and the position will be
@@ -208,7 +209,7 @@ func _track_clicked(track: Track):
 
 func _on_trackbutton_toggled(toggled_on: bool) -> void:
 	if toggled_on:
-		_change_gui_state(Gui.State.TRACK)
+		_change_gui_state(Gui.State.TRACK1)
 
 func _on_stationbutton_toggled(toggled_on: bool) -> void:
 	if toggled_on:
@@ -243,12 +244,17 @@ func _change_gui_state(new_state: Gui.State):
 		for platform: Platform in get_tree().get_nodes_in_group("platforms"):
 			platform.modulate = Color(1, 1, 1, 1)
 		
-	if new_state == Gui.State.TRACK:
+	if new_state == Gui.State.TRACK1:
 		ghost_track.visible = true
 	elif new_state == Gui.State.STATION:
 		ghost_station.visible = true
 	elif new_state == Gui.State.LIGHT:
 		ghost_light.visible = true
+
+	if new_state != Gui.State.TRACK1:
+		_reset_ghost_tracks()
+	if new_state != Gui.State.TRACK2:
+		track_creation_arrow.visible = false
 	
 	gui.set_pressed_no_signal(new_state)
 

@@ -7,7 +7,8 @@
 - Prices increase with the number of objects built
 
 ## Controls
-- Select Track and click and drag to build track
+- To build track, select Track and either click start and then end positions, or drag from start
+  position to end position
 - Select Station and click an empty location (preferrably next to a station or factory) to build a station
 - Select Train and click two platforms in succession to create a train and a route.
   - Train length is equal to the shortest platform length
@@ -16,6 +17,8 @@
 
 
 ## TODO
+- drag to destroy in Destroy mode
+- build platforms instead of stations
 - disallow creating rail on top of factory
 - z-order ghost factory on top of factory
 - put track rails and sleepers on different layers
