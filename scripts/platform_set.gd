@@ -7,12 +7,13 @@ const PLATFORM = preload("res://scenes/platform.tscn")
 
 var _platforms: Dictionary[Vector2i, Node2D] = {}
 var track_set: TrackSet
+var maximum_platform_size = 3
 
 func _init(track_set_: TrackSet):
 	track_set = track_set_
 
 func create_platforms(stations: Array[Station], create_platform: Callable):
-	var legal_platform_positions = _get_legal_platform_positions()
+	var positions_with_track_suitable_for_platforms = _get_positions_with_track_suitable_for_platforms()
 	var evaluated_platform_positions = []
 	for station in stations:
 		var potential_platform_positions = Global.orthogonally_adjacent(Vector2i(station.position))
@@ -20,9 +21,11 @@ func create_platforms(stations: Array[Station], create_platform: Callable):
 			var pos = potential_platform_positions.pop_back()
 			if pos in evaluated_platform_positions:
 				continue
-			if pos not in legal_platform_positions:
+			if pos not in positions_with_track_suitable_for_platforms:
 				continue
 			evaluated_platform_positions.append(pos)
+			if _would_platform_here_exceed_maximum_platform_size(pos):
+				continue
 			potential_platform_positions.append_array(track_set.positions_connected_to(pos))
 			# Need to check if there is already a platform here *after* adding 
 			# potential_platform_positions in order to search "through" existing platforms
@@ -33,6 +36,12 @@ func create_platforms(stations: Array[Station], create_platform: Callable):
 			platform.rotation = _get_platform_rotation(pos)
 			create_platform.call(platform)
 			_platforms[pos] = platform
+
+func _would_platform_here_exceed_maximum_platform_size(pos: Vector2i):
+	for neighbour in track_set.positions_connected_to(pos):
+		if platform_size(neighbour) == maximum_platform_size:
+			return true
+	return false
 
 func remove_adjacent_platforms(station: Station, all_stations: Array[Station]):
 	# Remove adjacent platforms that are not connected to any other station
@@ -52,7 +61,7 @@ func _get_platform_rotation(track_position: Vector2i) -> float:
 	var other_track_position = track_set.positions_connected_to(track_position)[0]
 	return 0.0 if track_position.y == other_track_position.y else PI / 2
 
-func _get_legal_platform_positions() -> Array[Vector2i]:
+func _get_positions_with_track_suitable_for_platforms() -> Array[Vector2i]:
 	var out: Array[Vector2i] = []
 	for track_position in track_set.positions_with_track():
 		match track_set.get_track_count(track_position):
