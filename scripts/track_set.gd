@@ -36,6 +36,9 @@ func positions_connected_to(position: Vector2i) -> Array[Vector2i]:
 		positions.append(track.other_position(position))
 	return positions
 
+func has_rail(position: Vector2i) -> bool:
+	return get_track_count(position) > 0
+
 func erase(track: Track):
 	_tracks.erase(track.position_rotation())
 	_tracks_from_position[track.pos1].erase(track)

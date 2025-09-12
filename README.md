@@ -17,8 +17,6 @@
 
 
 ## TODO
-- platform max length
-- 
 - drag to destroy in Destroy mode
 - disallow creating rail on top of factory
 - z-order ghost factory on top of factory
@@ -63,7 +61,6 @@
 - creating track at end of station back diagonally along station removes
   platform from one too many tracks
 - wagons unloaded in the wrong direction
-- train disappeared when going to station with no coal
 
 ### In-game upgrades
 - range of stations (start with 1) - though it looks ugly when they are too far from ore

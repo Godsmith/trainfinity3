@@ -35,10 +35,10 @@ var astar_id_from_position: Dictionary[Vector2i, int] = {}
 
 var selected_platform: Platform = null
 
-func _real_stations() -> Array[Station]:
+func _real_stations(exception: Station = null) -> Array[Station]:
 	var stations: Array[Station] = []
 	for station in get_tree().get_nodes_in_group("stations"):
-		if station is Station and !station.is_ghost:
+		if station is Station and !station.is_ghost and not station == exception:
 			stations.append(station)
 	return stations
 
@@ -281,8 +281,11 @@ func _try_create_station(station_position: Vector2i):
 
 func _station_clicked(station: Station):
 	if gui_state == Gui.State.DESTROY:
-		platform_set.remove_adjacent_platforms(station, _real_stations())
-
+		for adjacent_position in Global.orthogonally_adjacent(station.position):
+			if not track_set.has_rail(adjacent_position):
+				continue
+			platform_set.destroy_and_recreate_connected_platforms(
+				[adjacent_position], _real_stations(station), _create_platform)
 		station.queue_free()
 		bank.destroy(Global.Asset.STATION)
 

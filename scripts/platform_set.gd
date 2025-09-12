@@ -43,19 +43,6 @@ func _would_platform_here_exceed_maximum_platform_size(pos: Vector2i):
 			return true
 	return false
 
-func remove_adjacent_platforms(station: Station, all_stations: Array[Station]):
-	# Remove adjacent platforms that are not connected to any other station
-	for adjacent_position in Global.orthogonally_adjacent(station.position):
-		if not adjacent_position in _platforms:
-			# Only look at positions with platforms
-			continue
-		if len(stations_connected_to_platform(adjacent_position, all_stations)) > 1:
-			# Skip platforms used by other stations
-			continue
-		for pos in _connected_platform_positions(adjacent_position):
-			_platforms[pos].queue_free()
-			_platforms.erase(pos)
-
 func _get_platform_rotation(track_position: Vector2i) -> float:
 	# Vector2i must be a legal platform position
 	var other_track_position = track_set.positions_connected_to(track_position)[0]
@@ -108,37 +95,28 @@ func platform_endpoints(pos: Vector2i) -> Array[Vector2i]:
 	platform_positions.sort_custom(func(a: Vector2i, b: Vector2i): return a.x < b.x if a.y == b.y else a.y < b.y)
 	return [platform_positions[0], platform_positions[-1]]
 
-
 func destroy_and_recreate_connected_platforms(positions: Array[Vector2i], all_stations: Array[Station], create_platform: Callable):
-	# 1. Extend the given positions with all adjacent connected positions.
-	var all_positions = _positions_connected_to(positions)
-	# 2. Collect stations adjacent to these positions
-	var stations = _stations_adjacent_to(all_positions, all_stations)
-	# 3. Narrow it down to only platform positions
-	var platform_positions = all_positions.keys().filter(func(p): return p in _platforms)
-	# 4. Extend to connected platform positions. Use Dictionary as set
-	var connected_platform_positions: Dictionary[Vector2i, int] = {}
-	for platform_position in platform_positions:
-		for connected_platform_position in _connected_platform_positions(platform_position):
-			connected_platform_positions[connected_platform_position] = 0
-	# 5. Add stations connected to any of the connected platform positions
-	for platform_position in connected_platform_positions:
-		for station in stations_connected_to_platform(platform_position, all_stations):
-			stations.append(station)
-	# 6. Destroy platforms
-	for pos in connected_platform_positions:
+	var all_positions = _positions_orthogonally_linked_to(positions)
+	for pos in all_positions:
+		if pos not in _platforms:
+			continue
 		_platforms[pos].queue_free()
 		_platforms.erase(pos)
-	# 7. Recreate platforms
+	var stations = _stations_adjacent_to(all_positions, all_stations)
 	create_platforms(stations, create_platform)
 
-func _positions_connected_to(positions: Array[Vector2i]) -> Dictionary[Vector2i, int]:
-	var all_positions: Dictionary[Vector2i, int] = {}
-	for position in positions:
-		all_positions[position] = 0
+func _positions_orthogonally_linked_to(positions: Array[Vector2i]) -> Dictionary[Vector2i, int]:
+	var collected_positions: Dictionary[Vector2i, int] = {}
+	var positions_to_evaluate := positions
+	while positions_to_evaluate:
+		var position = positions_to_evaluate.pop_back()
+		collected_positions[position] = 0
 		for other_position in track_set.positions_connected_to(position):
-			all_positions[other_position] = 0
-	return all_positions
+			if other_position in collected_positions:
+				continue
+			if other_position.x == position.x or other_position.y == position.y:
+				positions_to_evaluate.append(other_position)
+	return collected_positions
 
 static func _stations_adjacent_to(positions: Dictionary[Vector2i, int], all_stations: Array[Station]) -> Array[Station]:
 	var stations: Array[Station] = []
