@@ -265,7 +265,7 @@ func _change_gui_state(new_state: Gui.State):
 func _is_legal_station_position(station_position: Vector2i):
 	return (station_position not in terrain.obstacle_position_set and
 			station_position not in _real_stations() and
-			station_position not in track_set.positions_with_track())
+			track_set.get_track_count(station_position) == 0)
 			
 func _try_create_station(station_position: Vector2i):
 	if not _is_legal_station_position(station_position):

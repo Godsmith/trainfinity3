@@ -62,7 +62,6 @@
 ### Bugs
 - creating track at end of station back diagonally along station removes
   platform from one too many tracks
-- cannot create station where there has previously been rail
 - wagons unloaded in the wrong direction
 - train disappeared when going to station with no coal
 
