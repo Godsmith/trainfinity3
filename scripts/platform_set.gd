@@ -116,15 +116,20 @@ func destroy_and_recreate_connected_platforms(positions: Array[Vector2i], all_st
 	var stations = _stations_adjacent_to(all_positions, all_stations)
 	# 3. Narrow it down to only platform positions
 	var platform_positions = all_positions.keys().filter(func(p): return p in _platforms)
-	# 4. Add stations connected to any positions that are platforms
+	# 4. Extend to connected platform positions. Use Dictionary as set
+	var connected_platform_positions: Dictionary[Vector2i, int] = {}
 	for platform_position in platform_positions:
+		for connected_platform_position in _connected_platform_positions(platform_position):
+			connected_platform_positions[connected_platform_position] = 0
+	# 5. Add stations connected to any of the connected platform positions
+	for platform_position in connected_platform_positions:
 		for station in stations_connected_to_platform(platform_position, all_stations):
 			stations.append(station)
-	# 5. Destroy platforms
-	for pos in platform_positions:
+	# 6. Destroy platforms
+	for pos in connected_platform_positions:
 		_platforms[pos].queue_free()
 		_platforms.erase(pos)
-	# 6. Recreate platforms
+	# 7. Recreate platforms
 	create_platforms(stations, create_platform)
 
 func _positions_connected_to(positions: Array[Vector2i]) -> Dictionary[Vector2i, int]:
