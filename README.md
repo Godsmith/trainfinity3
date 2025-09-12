@@ -17,8 +17,9 @@
 
 
 ## TODO
+- platform max length
+- 
 - drag to destroy in Destroy mode
-- build platforms instead of stations
 - disallow creating rail on top of factory
 - z-order ghost factory on top of factory
 - put track rails and sleepers on different layers
@@ -36,8 +37,32 @@
 - saving the game
 - train collisions
   - cannot be done until we have pathfinding that takes other trains into account/signals/manual paths
+- build platforms instead of stations
+  - done on create-platform-like-track branchs, had some issues; 
+    turned out to be a bit fiddly for the user
+
+### Issues
+
+- How to prevent the situation when, if a mine and the factory aligns, just create one
+  long station that connects them both?
+    1. In map generation, make sure that related resources aren't spawning less than X
+       tiles from each other, where X is the maximum platform length
+       - puts restrictions on map generation
+       + this might be wanted anyway; regardless of solution, not much fun if source
+         and target are too close to each other. Also unrealistic to even consider
+         transferring wares via train if that is the case.
+- If there is a platform max length, 
+  1. what to do if placing a station just outside the station max length?
+    1. Create a new platform there. If so, has to make sure that we visualize the end
+       of platforms.
+  2. what to do if connecting two stations of length X-2 with a new rail?
+    1. Extend one of them. Might lead to platforms changing length. Perhaps not a big
+       problem, try it out.
 
 ### Bugs
+- creating track at end of station back diagonally along station removes
+  platform from one too many tracks
+- cannot create station where there has previously been rail
 - wagons unloaded in the wrong direction
 - train disappeared when going to station with no coal
 
@@ -48,6 +73,7 @@
 - the ability to tear down/build track on mountain
 - bridges
 - train loading speed
+- platform max length/train max length
 
 ### Between-round upgrades
 - starting everything above
