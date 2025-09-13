@@ -17,8 +17,6 @@
 
 
 ## TODO
-- cities can be built on water and mountains
-- improve look of TrackCreationArrow
 - change graphics for end of station, so it can't look like two stations are one
   large station
 - drag to destroy in Destroy mode
@@ -60,6 +58,7 @@
        problem, try it out.
 
 ### Bugs
+- cities can be built on water and mountains
 - creating track at end of station back diagonally along station removes
   platform from one too many tracks
 - wagons sometimes unloaded in the wrong direction
