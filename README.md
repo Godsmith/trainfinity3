@@ -19,7 +19,6 @@
 ## TODO
 - change graphics for end of station, so it can't look like two stations are one
   large station
-- disallow creating rail on top of factory
 - follow train
 - show ghost platforms when building station
 - show ghost platforms when building track

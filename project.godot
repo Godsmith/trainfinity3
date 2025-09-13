@@ -27,6 +27,10 @@ window/size/viewport_height=720
 
 project/assembly_name="Trainfinity"
 
+[global_group]
+
+buildings=""
+
 [gui]
 
 common/snap/snap_2d_transforms_to_pixel=true

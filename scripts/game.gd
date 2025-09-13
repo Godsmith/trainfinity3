@@ -154,12 +154,16 @@ func _show_ghost_track(positions: Array[Vector2i]):
 	for track in ghost_tracks:
 		track.queue_free()
 	ghost_tracks.clear()
+	var illegal_positions: Dictionary[Vector2i, int] = {}
+	for node in get_tree().get_nodes_in_group("buildings") + _real_stations():
+		illegal_positions[Vector2i(node.position)] = 0
 	for i in len(ghost_track_tile_positions) - 1:
 		var pos1 = ghost_track_tile_positions[i]
 		var pos2 = ghost_track_tile_positions[i + 1]
 		var track := Track.create(pos1, pos2)
 		# TODO: add other stuff beside walls here
-		var is_allowed = (pos1 not in terrain.obstacle_position_set and pos2 not in terrain.obstacle_position_set)
+		var is_allowed = (pos1 not in terrain.obstacle_position_set and pos2 not in terrain.obstacle_position_set and
+						  pos1 not in illegal_positions and pos2 not in illegal_positions)
 		track.set_color(true, is_allowed)
 		var midway_position = Vector2(pos1).lerp(pos2, 0.5)
 		track.position = midway_position
@@ -186,6 +190,12 @@ func _try_create_tracks():
 		if Vector2i(ghost_track_tile_position) in terrain.obstacle_position_set:
 			_reset_ghost_tracks()
 			return
+
+	for node in get_tree().get_nodes_in_group("buildings") + _real_stations():
+		for ghost_track_tile_position in ghost_track_tile_positions:
+			if Vector2i(node.position) == ghost_track_tile_position:
+				_reset_ghost_tracks()
+				return
 	
 	for track in ghost_tracks:
 		if track_set.exists(track):
@@ -278,9 +288,14 @@ func _change_gui_state(new_state: Gui.State):
 ###################################################################
 
 func _is_legal_station_position(station_position: Vector2i):
-	return (station_position not in terrain.obstacle_position_set and
-			station_position not in _real_stations() and
-			track_set.get_track_count(station_position) == 0)
+	for node in get_tree().get_nodes_in_group("buildings") + _real_stations():
+		if Vector2i(node.position) == station_position:
+			return false
+	if station_position in terrain.obstacle_position_set:
+		return false
+	if track_set.has_track(station_position):
+		return false
+	return true
 			
 func _try_create_station(station_position: Vector2i):
 	if not _is_legal_station_position(station_position):
