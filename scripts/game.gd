@@ -342,16 +342,8 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 
 	# Get path from the beginning of the first platform to the end
 	# of the target platform
-	var point_paths: Array[PackedVector2Array] = []
-	for p1 in platform_set.platform_endpoints(platform1.position):
-		for p2 in platform_set.platform_endpoints(platform2.position):
-			var id1 = astar_id_from_position[Vector2i(p1)]
-			var id2 = astar_id_from_position[Vector2i(p2)]
-			point_paths.append(astar.get_point_path(id1, id2))
-	point_paths.sort_custom(func(a, b): return len(a) < len(b))
-
 	var train = TRAIN.instantiate()
-	train.set_path(point_paths[-1])
+	train.calculate_and_set_path(platform1, platform2, platform_set, astar_id_from_position, astar)
 	train.wagon_count = min(platform_set.platform_size(platform1.position), platform_set.platform_size(platform2.position)) - 1
 	train.end_reached.connect(_on_train_reaches_end)
 	add_child(train)
