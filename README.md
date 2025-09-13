@@ -17,6 +17,8 @@
 
 
 ## TODO
+- change graphics for end of station, so it can't look like two stations are one
+  large station
 - drag to destroy in Destroy mode
 - disallow creating rail on top of factory
 - z-order ghost factory on top of factory

@@ -95,7 +95,7 @@ func platform_endpoints(pos: Vector2i) -> Array[Vector2i]:
 	platform_positions.sort_custom(func(a: Vector2i, b: Vector2i): return a.x < b.x if a.y == b.y else a.y < b.y)
 	return [platform_positions[0], platform_positions[-1]]
 
-func destroy_and_recreate_connected_platforms(positions: Array[Vector2i], all_stations: Array[Station], create_platform: Callable):
+func destroy_and_recreate_platforms_orthogonally_linked_to(positions: Array[Vector2i], all_stations: Array[Station], create_platform: Callable):
 	var all_positions = _positions_orthogonally_linked_to(positions)
 	for pos in all_positions:
 		if pos not in _platforms:
@@ -104,6 +104,12 @@ func destroy_and_recreate_connected_platforms(positions: Array[Vector2i], all_st
 		_platforms.erase(pos)
 	var stations = _stations_adjacent_to(all_positions, all_stations)
 	create_platforms(stations, create_platform)
+
+func create_platforms_orthogonally_linked_to(positions: Array[Vector2i], all_stations: Array[Station], create_platform: Callable):
+	var all_positions = _positions_orthogonally_linked_to(positions)
+	var stations = _stations_adjacent_to(all_positions, all_stations)
+	create_platforms(stations, create_platform)
+
 
 func _positions_orthogonally_linked_to(positions: Array[Vector2i]) -> Dictionary[Vector2i, int]:
 	var collected_positions: Dictionary[Vector2i, int] = {}

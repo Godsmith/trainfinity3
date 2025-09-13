@@ -190,7 +190,7 @@ func _try_create_tracks():
 	for i in range(1, len(ids)):
 		astar.connect_points(ids[i - 1], ids[i])
 	bank.buy(Global.Asset.TRACK, len(ghost_tracks))
-	platform_set.destroy_and_recreate_connected_platforms(ghost_track_tile_positions, _real_stations(), _create_platform)
+	platform_set.create_platforms_orthogonally_linked_to(ghost_track_tile_positions, _real_stations(), _create_platform)
 	ghost_tracks.clear()
 
 func _add_position_to_astar(new_position: Vector2i):
@@ -204,7 +204,7 @@ func _track_clicked(track: Track):
 		astar.disconnect_points(astar_id_from_position[track.pos1], astar_id_from_position[track.pos2])
 		track_set.erase(track)
 		bank.destroy(Global.Asset.TRACK)
-		platform_set.destroy_and_recreate_connected_platforms([track.pos1, track.pos2], _real_stations(), _create_platform)
+		platform_set.destroy_and_recreate_platforms_orthogonally_linked_to([track.pos1, track.pos2], _real_stations(), _create_platform)
 ##################################################################
 
 func _on_trackbutton_toggled(toggled_on: bool) -> void:
@@ -284,7 +284,7 @@ func _station_clicked(station: Station):
 		for adjacent_position in Global.orthogonally_adjacent(station.position):
 			if not track_set.has_rail(adjacent_position):
 				continue
-			platform_set.destroy_and_recreate_connected_platforms(
+			platform_set.destroy_and_recreate_platforms_orthogonally_linked_to(
 				[adjacent_position], _real_stations(station), _create_platform)
 		station.queue_free()
 		bank.destroy(Global.Asset.STATION)
