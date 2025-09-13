@@ -80,6 +80,8 @@ func _unhandled_input(event: InputEvent) -> void:
 					_change_gui_state(Gui.State.TRACK2)
 					start_track_location = snapped_mouse_position
 					ghost_track.visible = false
+					track_creation_arrow.position = snapped_mouse_position
+					track_creation_arrow.visible = true
 				Gui.State.TRACK2:
 					if snapped_mouse_position == start_track_location:
 						_change_gui_state(Gui.State.TRACK1)
@@ -109,7 +111,6 @@ func _unhandled_input(event: InputEvent) -> void:
 
 		if gui_state == Gui.State.TRACK2:
 			var new_ghost_track_tile_positions = _positions_between(start_track_location, snapped_mouse_position)
-			track_creation_arrow.position = start_track_location
 			track_creation_arrow.visible = (len(new_ghost_track_tile_positions) == 1)
 			if new_ghost_track_tile_positions != ghost_track_tile_positions:
 				_show_ghost_track(new_ghost_track_tile_positions)
