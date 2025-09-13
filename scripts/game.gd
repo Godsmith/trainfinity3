@@ -212,12 +212,12 @@ func _add_position_to_astar(new_position: Vector2i):
 func _destroy_track(positions: Array[Vector2i]):
 	var track_positions: Dictionary[Vector2i, int] = {}
 	for pos in positions:
-		for track in track_set.tracks_at_position(pos):
+		for track in track_set.tracks_at_position(pos).duplicate():
 			astar.disconnect_points(astar_id_from_position[track.pos1], astar_id_from_position[track.pos2])
-			track_set.erase(track)
 			bank.destroy(Global.Asset.TRACK)
 			track_positions[track.pos1] = 0
 			track_positions[track.pos2] = 0
+			track_set.erase(track)
 	# Might not work, since we have already removed the tracks?
 	platform_set.destroy_and_recreate_platforms_orthogonally_linked_to(track_positions.keys(), _real_stations(), _create_platform)
 ##################################################################
