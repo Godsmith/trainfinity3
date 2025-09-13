@@ -23,9 +23,7 @@ func get_all_tracks():
 	return _tracks.values()
 
 func get_track_count(position: Vector2i) -> int:
-	if not position in _tracks_from_position:
-		_tracks_from_position[position] = []
-	return len(_tracks_from_position[position])
+	return len(tracks_at_position(position))
 
 func positions_with_track() -> Array[Vector2i]:
 	return _tracks_from_position.keys()
@@ -36,8 +34,13 @@ func positions_connected_to(position: Vector2i) -> Array[Vector2i]:
 		positions.append(track.other_position(position))
 	return positions
 
-func has_rail(position: Vector2i) -> bool:
+func has_track(position: Vector2i) -> bool:
 	return get_track_count(position) > 0
+
+func tracks_at_position(position: Vector2i) -> Array:
+	if not position in _tracks_from_position:
+		_tracks_from_position[position] = []
+	return _tracks_from_position[position]
 
 func erase(track: Track):
 	_tracks.erase(track.position_rotation())

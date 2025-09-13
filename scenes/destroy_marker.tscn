@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://ngyurpnyljtj"]
+
+[node name="DestroyMarker" type="Polygon2D"]
+modulate = Color(1, 1, 1, 0.313726)
+z_index = -200
+color = Color(1, 0, 0, 1)
+polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)

@@ -19,7 +19,6 @@
 ## TODO
 - change graphics for end of station, so it can't look like two stations are one
   large station
-- drag to destroy in Destroy mode
 - disallow creating rail on top of factory
 - follow train
 - show ghost platforms when building station
@@ -89,6 +88,7 @@ they will always be in front.
     -200 GhostTrack
     -200 GhostPlatform
     -200 GhostLight
+    -200 DestroyMarker
 
     -350 Train
     -375 Station (building)
