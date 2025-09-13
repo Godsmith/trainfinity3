@@ -17,12 +17,12 @@
 
 
 ## TODO
+- cities can be built on water and mountains
+- improve look of TrackCreationArrow
 - change graphics for end of station, so it can't look like two stations are one
   large station
 - drag to destroy in Destroy mode
 - disallow creating rail on top of factory
-- z-order ghost factory on top of factory
-- put track rails and sleepers on different layers
 - follow train
 - show ghost platforms when building station
 - show ghost platforms when building track
@@ -62,7 +62,8 @@
 ### Bugs
 - creating track at end of station back diagonally along station removes
   platform from one too many tracks
-- wagons unloaded in the wrong direction
+- wagons sometimes unloaded in the wrong direction
+  - probably because i don't distinguish between wagon rotated w/e and n/s
 
 ### In-game upgrades
 - range of stations (start with 1) - though it looks ugly when they are too far from ore
@@ -76,3 +77,30 @@
 ### Between-round upgrades
 - starting everything above
 - amount of ore per tile
+
+## Z-order
+
+Front to back. Keep all below 0, so if new scenes do not have a z order assigned,
+they will always be in front.
+
+    -100 GUI (probably not needed, always in front)
+    -100 Popup (probably not needed, always in front)
+    -150 TrackCreationArrow
+    -200 GhostStation
+    -200 GhostTrack
+    -200 GhostPlatform
+    -200 GhostLight
+
+    -350 Train
+    -375 Station (building)
+    -400 Track (rail)
+    -450 Track (sleepers)
+    -600 Station (platform)
+    -600 Platform
+    -650 Factory
+    -700 Ore
+    -725 City
+    -750 Wall
+    -800 Water
+    -850 Sand
+    -900 Background

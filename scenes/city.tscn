@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bjqm0dxfaigfq"]
 
 [node name="City" type="Node2D"]
+z_index = -725
 
 [node name="Building7" type="Polygon2D" parent="."]
 position = Vector2(-21, 7)

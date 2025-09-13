@@ -22,7 +22,7 @@ script = ExtResource("3_mg5ko")
 [node name="Gui" parent="." instance=ExtResource("2_lgfhw")]
 
 [node name="Background" type="Polygon2D" parent="."]
-z_index = -10
+z_index = -900
 position = Vector2(-16, 0)
 color = Color(0.337255, 0.490196, 0.27451, 1)
 polygon = PackedVector2Array(-1008, -1024, -1008, 959.32, -1008, 1024, 1040, 1024, 1040, -1024)
@@ -30,22 +30,26 @@ polygon = PackedVector2Array(-1008, -1024, -1008, 959.32, -1008, 1024, 1040, 102
 [node name="GhostTrack" parent="." instance=ExtResource("4_tl2kb")]
 visible = false
 modulate = Color(1, 1, 1, 0.501961)
+z_index = -200
 position = Vector2(-88, 104)
 
 [node name="GhostStation" parent="." instance=ExtResource("5_ilnf8")]
 visible = false
 modulate = Color(1, 1, 1, 0.501961)
+z_index = -200
 position = Vector2(-96, 56)
 is_ghost = true
 
 [node name="GhostLight" parent="." instance=ExtResource("6_6dr8u")]
 visible = false
+z_index = -200
 position = Vector2(-96, -64)
 
 [node name="Timer" type="Timer" parent="."]
 autostart = true
 
 [node name="TrackCreationArrow" type="Polygon2D" parent="."]
+z_index = -150
 scale = Vector2(2, 2)
 color = Color(0, 0, 0, 1)
 offset = Vector2(0, 8)

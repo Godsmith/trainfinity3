@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://cw8bx3sgw8egc" path="res://scripts/platform.gd" id="1_ba0x2"]
 
 [node name="Platform" type="Node2D" groups=["platforms"]]
-z_index = -1
+z_index = -600
 script = ExtResource("1_ba0x2")
 
 [node name="Area2D" type="Area2D" parent="."]

@@ -3,6 +3,8 @@
 [ext_resource type="Script" uid="uid://bk3wlpgvcqbqe" path="res://scripts/ore.gd" id="1_84iim"]
 
 [node name="Ore" type="Node2D" groups=["ores"]]
+z_index = -700
+z_as_relative = false
 script = ExtResource("1_84iim")
 
 [node name="Chunk1" type="Polygon2D" parent="."]

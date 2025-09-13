@@ -6,65 +6,68 @@
 script = ExtResource("1_s1rm4")
 
 [node name="Sleeper1" type="Line2D" parent="."]
+z_index = -450
+z_as_relative = false
 position = Vector2(-6, -5)
 points = PackedVector2Array(0, 0, 0, 10)
 width = 2.0
 default_color = Color(0.316029, 0.210545, 0.0370625, 1)
 
-[node name="Sleeper2" type="Line2D" parent="."]
-position = Vector2(-2, -5)
+[node name="Sleeper5" type="Line2D" parent="Sleeper1"]
+visible = false
+position = Vector2(16, 0)
 points = PackedVector2Array(0, 0, 0, 10)
 width = 2.0
 default_color = Color(0.316029, 0.210545, 0.0370625, 1)
 
-[node name="Sleeper3" type="Line2D" parent="."]
-position = Vector2(2, -5)
+[node name="Sleeper2" type="Line2D" parent="Sleeper1"]
+position = Vector2(4, 0)
 points = PackedVector2Array(0, 0, 0, 10)
 width = 2.0
 default_color = Color(0.316029, 0.210545, 0.0370625, 1)
 
-[node name="Sleeper4" type="Line2D" parent="."]
-position = Vector2(6, -5)
+[node name="Sleeper3" type="Line2D" parent="Sleeper1"]
+position = Vector2(8, 0)
+points = PackedVector2Array(0, 0, 0, 10)
+width = 2.0
+default_color = Color(0.316029, 0.210545, 0.0370625, 1)
+
+[node name="Sleeper4" type="Line2D" parent="Sleeper1"]
+position = Vector2(12, 0)
+points = PackedVector2Array(0, 0, 0, 10)
+width = 2.0
+default_color = Color(0.316029, 0.210545, 0.0370625, 1)
+
+[node name="Sleeper6" type="Line2D" parent="Sleeper1"]
+visible = false
+position = Vector2(-4, 0)
 points = PackedVector2Array(0, 0, 0, 10)
 width = 2.0
 default_color = Color(0.316029, 0.210545, 0.0370625, 1)
 
 [node name="Rail1" type="Line2D" parent="."]
+z_index = -400
+z_as_relative = false
 position = Vector2(-8, 2)
 points = PackedVector2Array(0, -4, 16, -4)
 width = 1.0
 default_color = Color(0.60933, 0.60933, 0.60933, 1)
 
-[node name="Rail2" type="Line2D" parent="."]
-position = Vector2(-8, 2)
+[node name="Rail2" type="Line2D" parent="Rail1"]
 points = PackedVector2Array(0, 0, 16, 0)
 width = 1.0
 default_color = Color(0.60933, 0.60933, 0.60933, 1)
 
-[node name="Sleeper5" type="Line2D" parent="."]
+[node name="LongRail1" type="Line2D" parent="Rail1"]
 visible = false
-position = Vector2(10, -5)
-points = PackedVector2Array(0, 0, 0, 10)
-width = 2.0
-default_color = Color(0.316029, 0.210545, 0.0370625, 1)
-
-[node name="Sleeper6" type="Line2D" parent="."]
-visible = false
-position = Vector2(-10, -5)
-points = PackedVector2Array(0, 0, 0, 10)
-width = 2.0
-default_color = Color(0.316029, 0.210545, 0.0370625, 1)
-
-[node name="LongRail1" type="Line2D" parent="."]
-visible = false
-position = Vector2(-11, 2)
+position = Vector2(-3, 0)
 points = PackedVector2Array(-1, -4, 23, -4)
 width = 1.0
 default_color = Color(0.60933, 0.60933, 0.60933, 1)
 
-[node name="LongRail2" type="Line2D" parent="."]
+[node name="LongRail2" type="Line2D" parent="Rail1"]
 visible = false
-position = Vector2(-11, 6)
+position = Vector2(-3, 4)
 points = PackedVector2Array(-1, -4, 23, -4)
 width = 1.0
 default_color = Color(0.60933, 0.60933, 0.60933, 1)
@@ -73,6 +76,7 @@ default_color = Color(0.60933, 0.60933, 0.60933, 1)
 position = Vector2(-16, 16)
 
 [node name="CollisionShape2D" type="CollisionPolygon2D" parent="Area2D"]
+visible = false
 position = Vector2(16, -16)
 polygon = PackedVector2Array(-8, -5, 8, -5, 8, 5, -8, 5)
 

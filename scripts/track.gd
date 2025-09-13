@@ -33,16 +33,16 @@ func set_rotation_and_adjust_length(radians: float):
 	rotation = radians
 
 func _set_length_normal():
-	$Sleeper5.visible = false
-	$Sleeper6.visible = false
-	$LongRail1.visible = false
-	$LongRail2.visible = false
+	$Sleeper1/Sleeper5.visible = false
+	$Sleeper1/Sleeper6.visible = false
+	$Rail1/LongRail1.visible = false
+	$Rail1/LongRail2.visible = false
 
 func _set_length_extended():
-	$Sleeper5.visible = true
-	$Sleeper6.visible = true
-	$LongRail1.visible = true
-	$LongRail2.visible = true
+	$Sleeper1/Sleeper5.visible = true
+	$Sleeper1/Sleeper6.visible = true
+	$Rail1/LongRail1.visible = true
+	$Rail1/LongRail2.visible = true
 
 func set_color(is_ghostly: bool, is_allowed: bool):
 	var r = 1.0
