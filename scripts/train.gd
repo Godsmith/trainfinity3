@@ -103,11 +103,8 @@ static func _angle_between_points(a: Vector2, b: Vector2, c: Vector2) -> float:
 	
 func loop_movement(delta: Variant):
 	path_follow.progress += delta * absolute_speed
+	_fix_wagon_location()
 	#print("Progress: %.10f/%.10f" % [path_follow.progress, curve.get_baked_length()])
-	for i in len(wagons):
-		var wagon = wagons[i]
-		var wagon_progress = path_follow.progress - Global.TILE_SIZE * (i + 1)
-		wagon.progress = clamp(wagon_progress, 0.0, curve.get_baked_length())
 	if path_follow.progress >= curve.get_baked_length() and target_speed > 0.0 and not is_stopped_at_station:
 		print("train at at end of curve")
 		target_speed = 0.0
@@ -115,12 +112,22 @@ func loop_movement(delta: Variant):
 		is_stopped_at_station = true
 		end_reached.emit(self, get_train_position().snapped(Global.TILE))
 
+func _fix_wagon_location():
+	for i in len(wagons):
+		var wagon = wagons[i]
+		var wagon_progress = path_follow.progress - Global.TILE_SIZE * (i + 1)
+		wagon.progress = clamp(wagon_progress, 0.0, curve.get_baked_length())
+
 func start_from_station():
 	print("starting from station")
 	# turn_around needed if the train has arrived at a terminus station
 	path_follow.progress = wagon_count * Global.TILE_SIZE
 	target_speed = max_speed
 	is_stopped_at_station = false
+	# Need to fix wagon location here; if we are waiting for when it is done in the
+	# main loop the wagons will visibly jump because the path was changed before
+	# it is corrected.
+	_fix_wagon_location()
 	
 func calculate_and_set_path(platform1: Platform,
 							platform2: Platform,
@@ -138,9 +145,12 @@ func calculate_and_set_path(platform1: Platform,
 	var p2: Platform = platform_set._platforms[Vector2i(point_paths[-1][-1])]
 	platforms = [p1, p2] as Array[Platform]
 
-	curve = Curve2D.new()
+	var new_curve = Curve2D.new()
 	for p in point_paths[-1]:
-		curve.add_point(p)
+		new_curve.add_point(p)
+	print("wagon progress before:", wagons[0].progress)
+	curve = new_curve
+	print("wagon progress after:", wagons[0].progress)
 
 func next_platform(platform) -> Platform:
 	for i in len(platforms):
