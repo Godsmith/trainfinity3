@@ -104,9 +104,7 @@ static func _angle_between_points(a: Vector2, b: Vector2, c: Vector2) -> float:
 func loop_movement(delta: Variant):
 	path_follow.progress += delta * absolute_speed
 	_fix_wagon_location()
-	#print("Progress: %.10f/%.10f" % [path_follow.progress, curve.get_baked_length()])
 	if path_follow.progress >= curve.get_baked_length() and target_speed > 0.0 and not is_stopped_at_station:
-		print("train at at end of curve")
 		target_speed = 0.0
 		absolute_speed = 0.0
 		is_stopped_at_station = true
@@ -119,15 +117,8 @@ func _fix_wagon_location():
 		wagon.progress = clamp(wagon_progress, 0.0, curve.get_baked_length())
 
 func start_from_station():
-	print("starting from station")
-	# turn_around needed if the train has arrived at a terminus station
-	path_follow.progress = wagon_count * Global.TILE_SIZE
 	target_speed = max_speed
 	is_stopped_at_station = false
-	# Need to fix wagon location here; if we are waiting for when it is done in the
-	# main loop the wagons will visibly jump because the path was changed before
-	# it is corrected.
-	_fix_wagon_location()
 	
 func calculate_and_set_path(platform1: Platform,
 							platform2: Platform,
@@ -148,9 +139,13 @@ func calculate_and_set_path(platform1: Platform,
 	var new_curve = Curve2D.new()
 	for p in point_paths[-1]:
 		new_curve.add_point(p)
-	print("wagon progress before:", wagons[0].progress)
 	curve = new_curve
-	print("wagon progress after:", wagons[0].progress)
+
+	path_follow.progress = wagon_count * Global.TILE_SIZE
+	# Need to fix wagon location here; if we are waiting for when it is done in the
+	# main loop the wagons will visibly jump because the path was changed before
+	# it is corrected.
+	_fix_wagon_location()
 
 func next_platform(platform) -> Platform:
 	for i in len(platforms):

@@ -368,8 +368,6 @@ func _on_train_reaches_end(train: Train, platform_position: Vector2i):
 				await train.remove_all_ore()
 	
 	var platform = platform_set._platforms[platform_position]
-	print("platform position is", platform.position)
-	print("new platform position is", train.next_platform(platform).position)
 	train.calculate_and_set_path(platform, train.next_platform(platform), platform_set, astar_id_from_position, astar)
 	train.start_from_station()
 
