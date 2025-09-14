@@ -319,6 +319,8 @@ func _destroy_stations(positions: Array[Vector2i]):
 			station.queue_free()
 			bank.destroy(Global.Asset.STATION)
 
+############################################################################
+
 func _platform_clicked(platform: Platform):
 	if gui_state == Gui.State.TRAIN1:
 		var id1 = astar_id_from_position[Vector2i(platform.position)]
@@ -334,6 +336,7 @@ func _platform_clicked(platform: Platform):
 		_try_create_train(selected_platform, platform)
 		_change_gui_state(Gui.State.TRAIN1)
 
+
 func _try_create_train(platform1: Platform, platform2: Platform):
 	if not bank.can_afford(Global.Asset.TRAIN):
 		return
@@ -343,37 +346,15 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	# Get path from the beginning of the first platform to the end
 	# of the target platform
 	var train = TRAIN.instantiate()
-	train.calculate_and_set_path(platform1, platform2, platform_set, astar_id_from_position, astar)
 	train.wagon_count = min(platform_set.platform_size(platform1.position), platform_set.platform_size(platform2.position)) - 1
 	train.end_reached.connect(_on_train_reaches_end)
 	add_child(train)
+	train.calculate_and_set_path(platform1, platform2, platform_set, astar_id_from_position, astar)
 	bank.buy(Global.Asset.TRAIN)
-	_on_train_reaches_end(train, platform1.position, false)
+	_on_train_reaches_end(train, train.platforms[0].position)
 
 	
-###################################################################
-
-func _create_light(light_position: Vector2):
-	var light = LIGHT.instantiate()
-	light.position = light_position
-	light.light_clicked.connect(_light_clicked)
-	add_child(light)
-
-func _light_clicked(light: Light):
-	# TODO: this does not work anymore
-	if gui_state == Gui.State.DESTROY1:
-		light.queue_free()
-
-
-######################################################################
-	
-func _on_timer_timeout():
-	for station: Station in _real_stations():
-		station.extract_ore()
-
-######################################################################
-	
-func _on_train_reaches_end(train: Train, platform_position: Vector2i, turn_around: bool):
+func _on_train_reaches_end(train: Train, platform_position: Vector2i):
 	# turn_around needed if the train has arrived at a terminus station
 	for station in platform_set.stations_connected_to_platform(platform_position, _real_stations()):
 		while station.ore > 0 and train.ore() < train.max_capacity():
@@ -385,7 +366,12 @@ func _on_train_reaches_end(train: Train, platform_position: Vector2i, turn_aroun
 					_show_popup("$%s" % train.ore(), train.get_train_position())
 				bank.earn(train.ore())
 				await train.remove_all_ore()
-	train.start_from_station(turn_around)
+	
+	var platform = platform_set._platforms[platform_position]
+	print("platform position is", platform.position)
+	print("new platform position is", train.next_platform(platform).position)
+	train.calculate_and_set_path(platform, train.next_platform(platform), platform_set, astar_id_from_position, astar)
+	train.start_from_station()
 
 func _show_popup(text: String, pos: Vector2):
 	var popup = POPUP.instantiate()
@@ -427,3 +413,25 @@ func _destroy_under_destroy_markers():
 		positions.append(Vector2i(marker.position))
 	_destroy_track(positions)
 	_destroy_stations(positions)
+
+###################################################################
+
+func _create_light(light_position: Vector2):
+	var light = LIGHT.instantiate()
+	light.position = light_position
+	light.light_clicked.connect(_light_clicked)
+	add_child(light)
+
+func _light_clicked(light: Light):
+	# TODO: this does not work anymore
+	if gui_state == Gui.State.DESTROY1:
+		light.queue_free()
+
+
+######################################################################
+	
+func _on_timer_timeout():
+	for station: Station in _real_stations():
+		station.extract_ore()
+
+######################################################################

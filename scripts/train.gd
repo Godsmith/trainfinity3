@@ -12,7 +12,6 @@ signal end_reached(train: Train)
 @export var acceleration := 6.0
 @export var wagons: Array = []
 
-var direction := 1
 var last_progress := 0.0
 var last_corner_checked = Vector2(0.0, 0.0)
 var on_rails := true
@@ -31,6 +30,8 @@ var progress_point_past_sharp_corner = 0.0
 @onready var rigid_body := $RigidBody2D
 @onready var timer := $Timer
 
+var platforms: Array[Platform] = []
+
 func _ready() -> void:
 	for i in wagon_count:
 		var wagon = WAGON.instantiate()
@@ -40,7 +41,7 @@ func _ready() -> void:
 
 func get_linear_velocity(path_follow_: PathFollow2D, delta: float):
 	var current_pos = path_follow_.global_position
-	path_follow_.progress += delta * absolute_speed * direction
+	path_follow_.progress += delta * absolute_speed
 	var next_pos = path_follow_.global_position
 
 	var velocity = (next_pos - current_pos) / delta
@@ -50,7 +51,7 @@ func get_linear_velocity(path_follow_: PathFollow2D, delta: float):
 func _physics_process(_delta: float) -> void:
 	if on_rails:
 		rigid_body.global_position = path_follow.global_position
-		rigid_body.rotation = path_follow.rotation if direction == 1 else path_follow.rotation + PI
+		rigid_body.rotation = path_follow.rotation
 	# if <collision>:
 	#	derail(delta)
 
@@ -73,12 +74,11 @@ func _process(delta):
 	if _approaching_sharp_corner():
 		target_speed = 5.0
 		absolute_speed = target_speed
-		progress_point_past_sharp_corner = path_follow.progress + direction * Global.TILE_SIZE * wagon_count
+		progress_point_past_sharp_corner = path_follow.progress + Global.TILE_SIZE * wagon_count
 		is_in_sharp_corner = true
 
 	if is_in_sharp_corner:
-		if ((direction == 1 and path_follow.progress > progress_point_past_sharp_corner) or
-		   (direction == -1 and path_follow.progress < progress_point_past_sharp_corner)):
+		if path_follow.progress > progress_point_past_sharp_corner:
 			target_speed = max_speed
 			is_in_sharp_corner = false
 
@@ -102,25 +102,23 @@ static func _angle_between_points(a: Vector2, b: Vector2, c: Vector2) -> float:
 	return abs(ba.angle_to(bc)) # signed angle in radians (-π..π)
 	
 func loop_movement(delta: Variant):
-	path_follow.progress += delta * absolute_speed * direction
+	path_follow.progress += delta * absolute_speed
+	#print("Progress: %.10f/%.10f" % [path_follow.progress, curve.get_baked_length()])
 	for i in len(wagons):
 		var wagon = wagons[i]
-		var wagon_progress = path_follow.progress - direction * Global.TILE_SIZE * (i + 1)
+		var wagon_progress = path_follow.progress - Global.TILE_SIZE * (i + 1)
 		wagon.progress = clamp(wagon_progress, 0.0, curve.get_baked_length())
-	if (path_follow.progress >= curve.get_baked_length() or path_follow.progress == 0.0) and target_speed > 0.0 and not is_stopped_at_station:
+	if path_follow.progress >= curve.get_baked_length() and target_speed > 0.0 and not is_stopped_at_station:
+		print("train at at end of curve")
 		target_speed = 0.0
-		end_reached.emit(self, get_train_position().snapped(Global.TILE), true)
 		absolute_speed = 0.0
 		is_stopped_at_station = true
+		end_reached.emit(self, get_train_position().snapped(Global.TILE))
 
-func start_from_station(turn_around: bool):
+func start_from_station():
+	print("starting from station")
 	# turn_around needed if the train has arrived at a terminus station
-	if turn_around:
-		direction *= -1
-	if path_follow.progress >= curve.get_baked_length():
-		path_follow.progress = curve.get_baked_length() - wagon_count * Global.TILE_SIZE
-	if path_follow.progress == 0.0:
-		path_follow.progress = wagon_count * Global.TILE_SIZE
+	path_follow.progress = wagon_count * Global.TILE_SIZE
 	target_speed = max_speed
 	is_stopped_at_station = false
 	
@@ -136,10 +134,20 @@ func calculate_and_set_path(platform1: Platform,
 			var id2 = astar_id_from_position[Vector2i(p2)]
 			point_paths.append(astar.get_point_path(id1, id2))
 	point_paths.sort_custom(func(a, b): return len(a) < len(b))
+	var p1: Platform = platform_set._platforms[Vector2i(point_paths[-1][0])]
+	var p2: Platform = platform_set._platforms[Vector2i(point_paths[-1][-1])]
+	platforms = [p1, p2] as Array[Platform]
 
 	curve = Curve2D.new()
 	for p in point_paths[-1]:
 		curve.add_point(p)
+
+func next_platform(platform) -> Platform:
+	for i in len(platforms):
+		if platforms[i] == platform:
+			return platforms[(i + 1) % len(platforms)]
+	assert(false, "platform sent to next_platform() not in list")
+	return null
 
 func get_train_position() -> Vector2:
 	return rigid_body.global_position
