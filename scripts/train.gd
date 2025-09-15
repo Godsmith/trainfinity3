@@ -30,7 +30,7 @@ var progress_point_past_sharp_corner = 0.0
 @onready var rigid_body := $RigidBody2D
 @onready var timer := $Timer
 
-var platforms: Array[Platform] = []
+var target_positions: Array[Vector2i] = []
 
 func _ready() -> void:
 	for i in wagon_count:
@@ -117,42 +117,46 @@ func _fix_wagon_location():
 		wagon.progress = clamp(wagon_progress, 0.0, curve.get_baked_length())
 
 func start_from_station():
+	path_follow.progress = wagon_count * Global.TILE_SIZE
+	# Need to fix wagon location here; if we are waiting for when it is done in the
+	# main loop the wagons will visibly jump because the path was changed before
+	# it is corrected.
+	_fix_wagon_location()
 	target_speed = max_speed
 	is_stopped_at_station = false
 	
-func calculate_and_set_path(platform1: Platform,
-							platform2: Platform,
+func calculate_and_set_path(position1: Vector2i,
+							position2: Vector2i,
 							platform_set: PlatformSet,
 							astar_id_from_position: Dictionary[Vector2i, int],
 							astar: AStar2D):
 	var point_paths: Array[PackedVector2Array] = []
-	for p1 in platform_set.platform_endpoints(platform1.position):
-		for p2 in platform_set.platform_endpoints(platform2.position):
+	for p1 in platform_set.platform_endpoints(position1):
+		for p2 in platform_set.platform_endpoints(position2):
 			var id1 = astar_id_from_position[Vector2i(p1)]
 			var id2 = astar_id_from_position[Vector2i(p2)]
-			point_paths.append(astar.get_point_path(id1, id2))
+			var point_path = astar.get_point_path(id1, id2)
+			# if not point_path:
+			# 	TODO: add message etc
+			point_paths.append(point_path)
 	point_paths.sort_custom(func(a, b): return len(a) < len(b))
-	var p1: Platform = platform_set._platforms[Vector2i(point_paths[-1][0])]
-	var p2: Platform = platform_set._platforms[Vector2i(point_paths[-1][-1])]
-	platforms = [p1, p2] as Array[Platform]
+	# TODO: handle when all point_paths are empty (no path)
+	var target1 = Vector2i(point_paths[-1][0])
+	var target2 = Vector2i(point_paths[-1][-1])
+	target_positions = [target1, target2] as Array[Vector2i]
 
 	var new_curve = Curve2D.new()
 	for p in point_paths[-1]:
 		new_curve.add_point(p)
 	curve = new_curve
 
-	path_follow.progress = wagon_count * Global.TILE_SIZE
-	# Need to fix wagon location here; if we are waiting for when it is done in the
-	# main loop the wagons will visibly jump because the path was changed before
-	# it is corrected.
-	_fix_wagon_location()
 
-func next_platform(platform) -> Platform:
-	for i in len(platforms):
-		if platforms[i] == platform:
-			return platforms[(i + 1) % len(platforms)]
-	assert(false, "platform sent to next_platform() not in list")
-	return null
+func next_target(pos: Vector2i) -> Vector2i:
+	for i in len(target_positions):
+		if target_positions[i] == pos:
+			return target_positions[(i + 1) % len(target_positions)]
+	assert(false, "pos sent to next_target is not in list")
+	return Vector2i()
 
 func get_train_position() -> Vector2:
 	return rigid_body.global_position

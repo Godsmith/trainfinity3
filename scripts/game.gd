@@ -349,9 +349,9 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	train.wagon_count = min(platform_set.platform_size(platform1.position), platform_set.platform_size(platform2.position)) - 1
 	train.end_reached.connect(_on_train_reaches_end)
 	add_child(train)
-	train.calculate_and_set_path(platform1, platform2, platform_set, astar_id_from_position, astar)
+	train.calculate_and_set_path(platform1.position, platform2.position, platform_set, astar_id_from_position, astar)
 	bank.buy(Global.Asset.TRAIN)
-	_on_train_reaches_end(train, train.platforms[0].position)
+	_on_train_reaches_end(train, train.target_positions[0])
 
 	
 func _on_train_reaches_end(train: Train, platform_position: Vector2i):
@@ -367,8 +367,7 @@ func _on_train_reaches_end(train: Train, platform_position: Vector2i):
 				bank.earn(train.ore())
 				await train.remove_all_ore()
 	
-	var platform = platform_set._platforms[platform_position]
-	train.calculate_and_set_path(platform, train.next_platform(platform), platform_set, astar_id_from_position, astar)
+	train.calculate_and_set_path(platform_position, train.next_target(platform_position), platform_set, astar_id_from_position, astar)
 	train.start_from_station()
 
 func _show_popup(text: String, pos: Vector2):
