@@ -5,6 +5,7 @@ class_name Train
 const WAGON = preload("res://scenes/wagon.tscn")
 
 signal end_reached(train: Train)
+signal tile_reached(train: Train, position: Vector2i)
 
 @export var max_speed := 20.0
 @export var target_speed := 0.0
@@ -20,6 +21,7 @@ var on_rails := true
 var wagon_count = 3
 var is_stopped_at_station = false
 var is_in_sharp_corner = false
+var last_delta = 0.0
 
 # A progress position where, when the train passes here, it has passed the last
 # sharp corner and can accelerate up to max speed again
@@ -40,12 +42,12 @@ func _ready() -> void:
 		add_child(wagon)
 	path_follow.progress = wagon_count * Global.TILE_SIZE
 
-func get_linear_velocity(path_follow_: PathFollow2D, delta: float):
+func _get_linear_velocity(path_follow_: PathFollow2D):
 	var current_pos = path_follow_.global_position
-	path_follow_.progress += delta * absolute_speed
+	path_follow_.progress += last_delta * absolute_speed
 	var next_pos = path_follow_.global_position
 
-	var velocity = (next_pos - current_pos) / delta
+	var velocity = (next_pos - current_pos) / last_delta
 	return velocity
 
 
@@ -53,56 +55,43 @@ func _physics_process(_delta: float) -> void:
 	if on_rails:
 		rigid_body.global_position = path_follow.global_position
 		rigid_body.rotation = path_follow.rotation
-	# if <collision>:
-	#	derail(delta)
 
-func derail(delta):
+func derail():
 	on_rails = false
-	rigid_body.linear_velocity = get_linear_velocity(path_follow, delta)
+	rigid_body.linear_velocity = _get_linear_velocity(path_follow)
 	for wagon in wagons:
-		wagon.rigid_body.linear_velocity = get_linear_velocity(wagon, delta)
+		wagon.rigid_body.linear_velocity = _get_linear_velocity(wagon)
 		wagon.collision_shape.disabled = false
+		var global_pos = wagon.rigid_body.global_position
 		get_parent().add_child(wagon.rigid_body)
-
+		# Global position changes after reparenting, so need to restore it
+		wagon.rigid_body.global_position = global_pos
 
 func _process(delta):
+	last_delta = delta
 	if not on_rails:
 		return
 
 	if absolute_speed < target_speed:
 		absolute_speed += acceleration * delta
 
-	if _approaching_sharp_corner():
-		target_speed = 5.0
-		absolute_speed = target_speed
-		progress_point_past_sharp_corner = path_follow.progress + Global.TILE_SIZE * wagon_count
-		is_in_sharp_corner = true
+	var curve_point_index = _approaching_curve_point()
+
+	if curve_point_index > 0 and curve_point_index < curve.point_count - 1:
+		var angle = _angle_between_points(curve.get_point_position(curve_point_index - 1),
+										  curve.get_point_position(curve_point_index),
+										  curve.get_point_position(curve_point_index + 1))
+		if angle < PI / 2 + 0.05: # 90 degrees or lower
+			target_speed = 5.0
+			absolute_speed = target_speed
+			progress_point_past_sharp_corner = path_follow.progress + Global.TILE_SIZE * wagon_count
+			is_in_sharp_corner = true
 
 	if is_in_sharp_corner:
 		if path_follow.progress > progress_point_past_sharp_corner:
 			target_speed = max_speed
 			is_in_sharp_corner = false
 
-	loop_movement(delta)
-
-func _approaching_sharp_corner() -> bool:
-	for i in curve.point_count:
-		var point = curve.get_point_position(i)
-		if point.distance_squared_to(path_follow.position) < 4.0:
-			if not point == last_corner_checked:
-				if i > 0 and i < curve.point_count - 1:
-					var angle = _angle_between_points(curve.get_point_position(i - 1), point, curve.get_point_position(i + 1))
-					if angle < PI / 2 + 0.05: # 90 degrees or lower
-						return true
-				last_corner_checked = point
-	return false
-
-static func _angle_between_points(a: Vector2, b: Vector2, c: Vector2) -> float:
-	var ba = a - b
-	var bc = c - b
-	return abs(ba.angle_to(bc)) # signed angle in radians (-π..π)
-	
-func loop_movement(delta: Variant):
 	path_follow.progress += delta * absolute_speed
 	_fix_wagon_location()
 	if path_follow.progress >= curve.get_baked_length() and target_speed > 0.0 and not is_stopped_at_station:
@@ -110,6 +99,26 @@ func loop_movement(delta: Variant):
 		absolute_speed = 0.0
 		is_stopped_at_station = true
 		end_reached.emit(self, get_train_position().snapped(Global.TILE))
+	
+	# Need to do this at the end of the method, so that we don't adjust wagons etc 
+	# after on_rails is set to false
+	if curve_point_index != -1:
+		tile_reached.emit(self, Vector2i(curve.get_point_position(curve_point_index)))
+
+func _approaching_curve_point() -> int:
+	for i in curve.point_count:
+		var point = curve.get_point_position(i)
+		if point.distance_squared_to(path_follow.position) < 4.0:
+			if not point == last_corner_checked:
+				last_corner_checked = point
+				return i
+	return -1
+
+static func _angle_between_points(a: Vector2, b: Vector2, c: Vector2) -> float:
+	var ba = a - b
+	var bc = c - b
+	return abs(ba.angle_to(bc)) # signed angle in radians (-π..π)
+	
 
 func _fix_wagon_location():
 	for i in len(wagons):

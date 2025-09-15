@@ -348,6 +348,7 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	var train = TRAIN.instantiate()
 	train.wagon_count = min(platform_set.platform_size(platform1.position), platform_set.platform_size(platform2.position)) - 1
 	train.end_reached.connect(_on_train_reaches_end)
+	train.tile_reached.connect(_on_train_reaches_tile)
 	add_child(train)
 	train.curve = train.get_new_curve(platform1.position, platform2.position, platform_set, astar_id_from_position, astar)
 	bank.buy(Global.Asset.TRAIN)
@@ -374,6 +375,12 @@ func _on_train_reaches_end(train: Train, platform_position: Vector2i):
 		new_curve = train.get_new_curve(platform_position, train.next_target(platform_position), platform_set, astar_id_from_position, astar)
 	train.curve = new_curve
 	train.start_from_station()
+
+func _on_train_reaches_tile(train: Train, pos: Vector2i):
+	if not track_set.has_track(pos):
+		train.derail()
+
+###################################################################################
 
 func _show_popup(text: String, pos: Vector2):
 	var popup = POPUP.instantiate()
