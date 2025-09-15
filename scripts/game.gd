@@ -349,7 +349,7 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	train.wagon_count = min(platform_set.platform_size(platform1.position), platform_set.platform_size(platform2.position)) - 1
 	train.end_reached.connect(_on_train_reaches_end)
 	add_child(train)
-	train.calculate_and_set_path(platform1.position, platform2.position, platform_set, astar_id_from_position, astar)
+	train.curve = train.get_new_curve(platform1.position, platform2.position, platform_set, astar_id_from_position, astar)
 	bank.buy(Global.Asset.TRAIN)
 	_on_train_reaches_end(train, train.target_positions[0])
 
@@ -366,8 +366,13 @@ func _on_train_reaches_end(train: Train, platform_position: Vector2i):
 					_show_popup("$%s" % train.ore(), train.get_train_position())
 				bank.earn(train.ore())
 				await train.remove_all_ore()
-	
-	train.calculate_and_set_path(platform_position, train.next_target(platform_position), platform_set, astar_id_from_position, astar)
+	var new_curve = train.get_new_curve(platform_position, train.next_target(platform_position), platform_set, astar_id_from_position, astar)
+	while new_curve.point_count == 0:
+		_show_popup("Cannot find route!", train.get_train_position())
+		train.no_route_timer.start()
+		await train.no_route_timer.timeout
+		new_curve = train.get_new_curve(platform_position, train.next_target(platform_position), platform_set, astar_id_from_position, astar)
+	train.curve = new_curve
 	train.start_from_station()
 
 func _show_popup(text: String, pos: Vector2):

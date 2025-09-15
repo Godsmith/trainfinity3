@@ -18,7 +18,6 @@
 
 ## TODO
 - if you remove the path for a train, it should take another path
-  - step 1: recalculate route for train each time when starting from station
   - step 2: recalculate when destroying track
     - create method track_set.get_tracks_from_route
     - when creating a train, make it subscribe to destroy signals from all tracks

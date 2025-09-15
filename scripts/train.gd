@@ -28,7 +28,8 @@ var progress_point_past_sharp_corner = 0.0
 @onready var path_follow := $PathFollow2D
 @onready var polygon := $RigidBody2D/LightOccluder2D
 @onready var rigid_body := $RigidBody2D
-@onready var timer := $Timer
+@onready var ore_timer := $OreTimer
+@onready var no_route_timer := $NoRouteTimer
 
 var target_positions: Array[Vector2i] = []
 
@@ -125,19 +126,19 @@ func start_from_station():
 	target_speed = max_speed
 	is_stopped_at_station = false
 	
-func calculate_and_set_path(position1: Vector2i,
-							position2: Vector2i,
-							platform_set: PlatformSet,
-							astar_id_from_position: Dictionary[Vector2i, int],
-							astar: AStar2D):
+func get_new_curve(position1: Vector2i,
+				   position2: Vector2i,
+				   platform_set: PlatformSet,
+				   astar_id_from_position: Dictionary[Vector2i, int],
+				   astar: AStar2D) -> Curve2D:
 	var point_paths: Array[PackedVector2Array] = []
 	for p1 in platform_set.platform_endpoints(position1):
 		for p2 in platform_set.platform_endpoints(position2):
 			var id1 = astar_id_from_position[Vector2i(p1)]
 			var id2 = astar_id_from_position[Vector2i(p2)]
 			var point_path = astar.get_point_path(id1, id2)
-			# if not point_path:
-			# 	TODO: add message etc
+			if not point_path:
+				return Curve2D.new()
 			point_paths.append(point_path)
 	point_paths.sort_custom(func(a, b): return len(a) < len(b))
 	# TODO: handle when all point_paths are empty (no path)
@@ -148,7 +149,7 @@ func calculate_and_set_path(position1: Vector2i,
 	var new_curve = Curve2D.new()
 	for p in point_paths[-1]:
 		new_curve.add_point(p)
-	curve = new_curve
+	return new_curve
 
 
 func next_target(pos: Vector2i) -> Vector2i:
@@ -170,8 +171,8 @@ func max_capacity() -> int:
 func add_ore(type: Ore.OreType):
 	for wagon in wagons:
 		if not wagon.ore == wagon.max_capacity:
-			timer.start()
-			await timer.timeout
+			ore_timer.start()
+			await ore_timer.timeout
 			wagon.add_ore(type)
 			break
 
@@ -186,6 +187,6 @@ func remove_all_ore():
 	for i in len(wagons):
 		var wagon = wagons[-i - 1]
 		while wagon.ore > 0:
-			timer.start()
-			await timer.timeout
+			ore_timer.start()
+			await ore_timer.timeout
 			wagon.remove_ore()
