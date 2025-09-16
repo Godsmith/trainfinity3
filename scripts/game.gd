@@ -154,16 +154,12 @@ func _show_ghost_track(positions: Array[Vector2i]):
 	for track in ghost_tracks:
 		track.queue_free()
 	ghost_tracks.clear()
-	var illegal_positions: Dictionary[Vector2i, int] = {}
-	for node in get_tree().get_nodes_in_group("buildings") + _real_stations():
-		illegal_positions[Vector2i(node.position)] = 0
+	var illegal_positions = _illegal_track_positions(positions)
 	for i in len(ghost_track_tile_positions) - 1:
 		var pos1 = ghost_track_tile_positions[i]
 		var pos2 = ghost_track_tile_positions[i + 1]
 		var track := Track.create(pos1, pos2)
-		# TODO: add other stuff beside walls here
-		var is_allowed = (pos1 not in terrain.obstacle_position_set and pos2 not in terrain.obstacle_position_set and
-						  pos1 not in illegal_positions and pos2 not in illegal_positions)
+		var is_allowed = not (pos1 in illegal_positions or pos2 in illegal_positions)
 		track.set_color(true, is_allowed)
 		var midway_position = Vector2(pos1).lerp(pos2, 0.5)
 		track.position = midway_position
@@ -186,16 +182,9 @@ func _try_create_tracks():
 		_reset_ghost_tracks()
 		return
 
-	for ghost_track_tile_position in ghost_track_tile_positions:
-		if Vector2i(ghost_track_tile_position) in terrain.obstacle_position_set:
-			_reset_ghost_tracks()
-			return
-
-	for node in get_tree().get_nodes_in_group("buildings") + _real_stations():
-		for ghost_track_tile_position in ghost_track_tile_positions:
-			if Vector2i(node.position) == ghost_track_tile_position:
-				_reset_ghost_tracks()
-				return
+	if _illegal_track_positions(ghost_track_tile_positions):
+		_reset_ghost_tracks()
+		return
 	
 	for track in ghost_tracks:
 		if track_set.exists(track):
@@ -212,6 +201,21 @@ func _try_create_tracks():
 	bank.buy(Global.Asset.TRACK, len(ghost_tracks))
 	platform_set.create_platforms_orthogonally_linked_to(ghost_track_tile_positions, _real_stations(), _create_platform)
 	ghost_tracks.clear()
+
+func _illegal_track_positions(positions: Array[Vector2i]) -> Array[Vector2i]:
+	var out: Array[Vector2i] = []
+	for pos in positions:
+		if pos in terrain.obstacle_position_set:
+			out.append(pos)
+	for node in get_tree().get_nodes_in_group("buildings") + _real_stations():
+		print("building positions")
+		print(Vector2i(node.position))
+		print("track positions")
+		print(positions)
+		if Vector2i(node.position) in positions:
+			out.append(Vector2i(node.position))
+	return out
+
 
 func _add_position_to_astar(new_position: Vector2i):
 	if not new_position in astar_id_from_position:

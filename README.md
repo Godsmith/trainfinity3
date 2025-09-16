@@ -17,13 +17,13 @@
 
 
 ## TODO
+- prevent building track at an odd angle to station
 - if you remove the path for a train, it should take another path
   - step 2: recalculate when destroying track
     - create method track_set.get_tracks_from_route
     - when creating a train, make it subscribe to destroy signals from all tracks
       along route
     - when getting such a signal, recalculate route to destination
-
 - change graphics for end of station, so it can't look like two stations are one
   large station
 - follow train
