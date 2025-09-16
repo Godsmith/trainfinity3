@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bjqm0dxfaigfq"]
 
-[node name="City" type="Node2D"]
+[node name="City" type="Node2D" groups=["buildings"]]
 z_index = -725
 
 [node name="Building7" type="Polygon2D" parent="."]
