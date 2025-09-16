@@ -9,6 +9,9 @@ const TRACK = preload("res://scenes/track.tscn")
 var pos1: Vector2i
 var pos2: Vector2i
 
+var is_ghostly := false
+var is_allowed := true
+
 static func create(p1: Vector2i, p2: Vector2i) -> Track:
 	var track: Track = TRACK.instantiate()
 	track.pos1 = p1
@@ -44,7 +47,15 @@ func _set_length_extended():
 	$Rail1/LongRail1.visible = true
 	$Rail1/LongRail2.visible = true
 
-func set_color(is_ghostly: bool, is_allowed: bool):
+func set_ghostly(is_ghostly_: bool):
+	is_ghostly = is_ghostly_
+	_set_color()
+
+func set_allowed(is_allowed_: bool):
+	is_allowed = is_allowed_
+	_set_color()
+
+func _set_color():
 	var r = 1.0
 	var g = 1.0 if is_allowed else 0.5
 	var b = 1.0 if is_allowed else 0.5

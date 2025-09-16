@@ -145,7 +145,6 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if OS.is_debug_build() and event is InputEventKey and event.is_pressed() and event.keycode == KEY_X:
 		bank.earn(10000)
-			
 
 #######################################################################
 
@@ -160,47 +159,12 @@ func _show_ghost_track(positions: Array[Vector2i]):
 		var pos2 = ghost_track_tile_positions[i + 1]
 		var track := Track.create(pos1, pos2)
 		var is_allowed = not (pos1 in illegal_positions or pos2 in illegal_positions)
-		track.set_color(true, is_allowed)
+		track.set_allowed(is_allowed)
+		track.set_ghostly(true)
 		var midway_position = Vector2(pos1).lerp(pos2, 0.5)
 		track.position = midway_position
 		ghost_tracks.append(track)
 		$".".add_child(track)
-
-func _reset_ghost_tracks():
-	for track in ghost_tracks:
-		track.queue_free()
-	ghost_tracks.clear()
-
-
-func _try_create_tracks():
-	if len(ghost_track_tile_positions) < 2:
-		# Creating 0 tracks can have some strange consequences, for example an
-		# astar point will be created at the position, and the position will be
-		# evaluated for platforms, etc.
-		return
-	if not bank.can_afford(Global.Asset.TRACK, len(ghost_tracks)):
-		_reset_ghost_tracks()
-		return
-
-	if _illegal_track_positions(ghost_track_tile_positions):
-		_reset_ghost_tracks()
-		return
-	
-	for track in ghost_tracks:
-		if track_set.exists(track):
-			track.queue_free()
-		else:
-			track_set.add(track)
-			track.set_color(false, true)
-	var ids = []
-	for ghost_track_position in ghost_track_tile_positions:
-		_add_position_to_astar(ghost_track_position)
-		ids.append(astar_id_from_position[ghost_track_position])
-	for i in range(1, len(ids)):
-		astar.connect_points(ids[i - 1], ids[i])
-	bank.buy(Global.Asset.TRACK, len(ghost_tracks))
-	platform_set.create_platforms_orthogonally_linked_to(ghost_track_tile_positions, _real_stations(), _create_platform)
-	ghost_tracks.clear()
 
 func _illegal_track_positions(positions: Array[Vector2i]) -> Array[Vector2i]:
 	var out: Array[Vector2i] = []
@@ -216,6 +180,40 @@ func _illegal_track_positions(positions: Array[Vector2i]) -> Array[Vector2i]:
 			out.append(Vector2i(node.position))
 	return out
 
+func _try_create_tracks():
+	if len(ghost_track_tile_positions) < 2:
+		# Creating 0 tracks can have some strange consequences, for example an
+		# astar point will be created at the position, and the position will be
+		# evaluated for platforms, etc.
+		return
+	if not bank.can_afford(Global.Asset.TRACK, len(ghost_tracks)):
+		_reset_ghost_tracks()
+		return
+
+	if ghost_tracks.any(func(x): return not x.is_allowed):
+		_reset_ghost_tracks()
+		return
+	
+	for track in ghost_tracks:
+		if track_set.exists(track):
+			track.queue_free()
+		else:
+			track_set.add(track)
+			track.set_ghostly(false)
+	var ids = []
+	for ghost_track_position in ghost_track_tile_positions:
+		_add_position_to_astar(ghost_track_position)
+		ids.append(astar_id_from_position[ghost_track_position])
+	for i in range(1, len(ids)):
+		astar.connect_points(ids[i - 1], ids[i])
+	bank.buy(Global.Asset.TRACK, len(ghost_tracks))
+	platform_set.create_platforms_orthogonally_linked_to(ghost_track_tile_positions, _real_stations(), _create_platform)
+	ghost_tracks.clear()
+
+func _reset_ghost_tracks():
+	for track in ghost_tracks:
+		track.queue_free()
+	ghost_tracks.clear()
 
 func _add_position_to_astar(new_position: Vector2i):
 	if not new_position in astar_id_from_position:
@@ -234,6 +232,7 @@ func _destroy_track(positions: Array[Vector2i]):
 			track_set.erase(track)
 	# Might not work, since we have already removed the tracks?
 	platform_set.destroy_and_recreate_platforms_orthogonally_linked_to(track_positions.keys(), _real_stations(), _create_platform)
+
 ##################################################################
 
 func _on_trackbutton_toggled(toggled_on: bool) -> void:
