@@ -62,9 +62,9 @@
        problem, try it out.
 
 ### Bugs
+- immediately after starting, train and wagons are bunched up
 - cities can be built on water and mountains
-- creating track at end of station back diagonally along station removes
-  platform from one too many tracks
+- can build stations and track on cities sometimes
 - wagons sometimes unloaded in the wrong direction
   - probably because i don't distinguish between wagon rotated w/e and n/s
 

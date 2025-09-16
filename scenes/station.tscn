@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://b1064yqqmy7mf"]
+[gd_scene load_steps=4 format=3 uid="uid://b1064yqqmy7mf"]
 
 [ext_resource type="Script" uid="uid://b2y7rsqb0bxqi" path="res://scripts/station.gd" id="1_rod8h"]
+[ext_resource type="PackedScene" uid="uid://dfqsthsrw4g1g" path="res://scenes/chunk.tscn" id="2_0r0hh"]
 
 [sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_rod8h"]
 cull_mode = 2
@@ -48,10 +49,7 @@ polygon = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 visible = false
 occluder = SubResource("OccluderPolygon2D_rod8h")
 
-[node name="Chunk" type="Polygon2D" parent="."]
-visible = false
-z_index = 1
+[node name="Chunk" parent="." instance=ExtResource("2_0r0hh")]
 position = Vector2(0, 2)
-polygon = PackedVector2Array(-4, -2, -2, -2, -2, -4, -4, -4)
 
 [connection signal="input_event" from="Area2D" to="." method="_on_input_event"]

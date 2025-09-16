@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://dfqsthsrw4g1g"]
+
+[ext_resource type="Script" uid="uid://db4b8xc5kvbhx" path="res://scripts/chunk.gd" id="1_jas4a"]
+
+[node name="Chunk" type="Polygon2D"]
+visible = false
+z_index = 1
+polygon = PackedVector2Array(-4, -2, -2, -2, -2, -4, -4, -4)
+script = ExtResource("1_jas4a")

@@ -357,17 +357,8 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 
 	
 func _on_train_reaches_end(train: Train, platform_position: Vector2i):
+	await _load_and_unload(train, platform_position)
 	# turn_around needed if the train has arrived at a terminus station
-	for station in platform_set.stations_connected_to_platform(platform_position, _real_stations()):
-		while station.ore > 0 and train.ore() < train.max_capacity():
-			station.remove_ore()
-			await train.add_ore(Ore.OreType.COAL)
-		for factory in get_tree().get_nodes_in_group("factories"):
-			if Global.is_orthogonally_adjacent(factory.get_global_position(), station.position):
-				if train.ore() > 0:
-					_show_popup("$%s" % train.ore(), train.get_train_position())
-				bank.earn(train.ore())
-				await train.remove_all_ore()
 	var new_curve = train.get_new_curve(platform_position, train.next_target(platform_position), platform_set, astar_id_from_position, astar)
 	while new_curve.point_count == 0:
 		_show_popup("Cannot find route!", train.get_train_position())
@@ -376,6 +367,19 @@ func _on_train_reaches_end(train: Train, platform_position: Vector2i):
 		new_curve = train.get_new_curve(platform_position, train.next_target(platform_position), platform_set, astar_id_from_position, astar)
 	train.curve = new_curve
 	train.start_from_station()
+
+func _load_and_unload(train: Train, platform_position: Vector2i):
+	for station in platform_set.stations_connected_to_platform(platform_position, _real_stations()):
+		while station.get_total_ore_count() > 0 and train.get_total_ore_count() < train.max_capacity():
+			var ore_type = station.remove_ore()
+			await train.add_ore(ore_type)
+		for factory in get_tree().get_nodes_in_group("factories"):
+			if Global.is_orthogonally_adjacent(factory.get_global_position(), station.position):
+				var coal_count = train.get_ore_count(Ore.OreType.COAL)
+				if coal_count > 0:
+					_show_popup("$%s" % coal_count, train.get_train_position())
+				bank.earn(coal_count)
+				await train.remove_all_ore(Ore.OreType.COAL)
 
 func _on_train_reaches_tile(train: Train, pos: Vector2i):
 	if not track_set.has_track(pos):

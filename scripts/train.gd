@@ -179,23 +179,28 @@ func max_capacity() -> int:
 
 func add_ore(type: Ore.OreType):
 	for wagon in wagons:
-		if not wagon.ore == wagon.max_capacity:
+		if not wagon.get_total_ore_count() == wagon.max_capacity:
 			ore_timer.start()
 			await ore_timer.timeout
 			wagon.add_ore(type)
 			break
 
-func ore() -> int:
+func get_total_ore_count() -> int:
 	var amount := 0
-	for wagon in wagons:
-		amount += wagon.ore
+	for ore_type in Ore.OreType.values():
+		amount += get_ore_count(ore_type)
 	return amount
 
+func get_ore_count(ore_type: Ore.OreType) -> int:
+	var amount := 0
+	for wagon in wagons:
+		amount += wagon.get_ore_count(ore_type)
+	return amount
 
-func remove_all_ore():
+func remove_all_ore(ore_type):
 	for i in len(wagons):
 		var wagon = wagons[-i - 1]
-		while wagon.ore > 0:
+		while wagon.get_ore_count(ore_type) > 0:
 			ore_timer.start()
 			await ore_timer.timeout
-			wagon.remove_ore()
+			wagon.remove_ore(ore_type)

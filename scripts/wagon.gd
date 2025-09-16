@@ -5,18 +5,36 @@ extends PathFollow2D
 @onready var rigid_body: RigidBody2D = $RigidBody2D
 @onready var collision_shape: CollisionShape2D = $RigidBody2D/CollisionShape2D
 
-var ore := 0
-
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	for chunk in _chunks:
 		chunk.visible = false
 
 func add_ore(type: Ore.OreType):
-	_chunks[ore].color = Ore.ORE_COLOR[type]
-	_chunks[ore].visible = true
-	ore += 1
+	for chunk in _chunks:
+		if not chunk.visible:
+			chunk.color = Ore.ORE_COLOR[type]
+			chunk.visible = true
+			return
+	assert(false, "Trying to add chunk to full wagon")
 
-func remove_ore():
-	ore -= 1
-	_chunks[ore].visible = false
+func get_total_ore_count() -> int:
+	var count := 0
+	for chunk in _chunks:
+		if chunk.visible:
+			count += 1
+	return count
+
+func get_ore_count(ore_type: Ore.OreType) -> int:
+	var count := 0
+	for chunk in _chunks:
+		if chunk.visible and chunk.ore_type == ore_type:
+			count += 1
+	return count
+
+func remove_ore(ore_type):
+	for chunk in _chunks:
+		if chunk.visible and chunk.ore_type == ore_type:
+			chunk.visible = false
+			return
+	assert(false, "Trying to remove ore type that did not exist")

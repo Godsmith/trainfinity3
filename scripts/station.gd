@@ -5,7 +5,6 @@ class_name Station
 signal station_clicked(station: Station)
 
 @export var is_ghost := false
-@export var ore = 0
 
 var adjacent_ores = []
 var _chunks = []
@@ -23,19 +22,24 @@ func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> voi
 
 func extract_ore():
 	for adjacent_ore: Ore in adjacent_ores:
-		ore += 1
 		var new_chunk := $Chunk.duplicate()
 		# Some magic position numbers to not place ores too much outside. Will probably be changed anyway.
 		new_chunk.position = Vector2(randf_range(-Global.TILE_SIZE / 2 + 5, Global.TILE_SIZE / 2 + 1),
 									 randf_range(-Global.TILE_SIZE / 2 + 5, Global.TILE_SIZE / 2 + 1))
 		new_chunk.visible = true
-		new_chunk.color = adjacent_ore.ORE_COLOR[adjacent_ore.ore_type]
+		new_chunk.ore_type = adjacent_ore.ore_type
+		new_chunk.color = Ore.ORE_COLOR[adjacent_ore.ore_type]
 		_chunks.append(new_chunk)
 		add_child(new_chunk)
+
+func get_total_ore_count() -> int:
+	return len(_chunks)
 		
-func remove_ore():
-	_chunks.pop_back().queue_free()
-	ore -= 1
+func remove_ore() -> Ore.OreType:
+	var chunk = _chunks.pop_back()
+	var ore_type = chunk.ore_type
+	chunk.queue_free()
+	return ore_type
 
 func set_color(is_ghostly: bool, is_allowed: bool):
 	var r = 1.0
