@@ -17,7 +17,6 @@
 
 
 ## TODO
-- prevent building track at an odd angle to station
 - if you remove the path for a train, it should take another path
   - step 2: recalculate when destroying track
     - create method track_set.get_tracks_from_route

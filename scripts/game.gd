@@ -158,7 +158,9 @@ func _show_ghost_track(positions: Array[Vector2i]):
 		var pos1 = ghost_track_tile_positions[i]
 		var pos2 = ghost_track_tile_positions[i + 1]
 		var track := Track.create(pos1, pos2)
-		var is_allowed = not (pos1 in illegal_positions or pos2 in illegal_positions)
+		var is_allowed = (pos1 not in illegal_positions and
+						  pos2 not in illegal_positions and
+						  platform_set.is_new_track_in_legal_position(track))
 		track.set_allowed(is_allowed)
 		track.set_ghostly(true)
 		var midway_position = Vector2(pos1).lerp(pos2, 0.5)
@@ -172,10 +174,6 @@ func _illegal_track_positions(positions: Array[Vector2i]) -> Array[Vector2i]:
 		if pos in terrain.obstacle_position_set:
 			out.append(pos)
 	for node in get_tree().get_nodes_in_group("buildings") + _real_stations():
-		print("building positions")
-		print(Vector2i(node.position))
-		print("track positions")
-		print(positions)
 		if Vector2i(node.position) in positions:
 			out.append(Vector2i(node.position))
 	return out

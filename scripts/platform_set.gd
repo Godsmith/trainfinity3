@@ -131,3 +131,18 @@ static func _stations_adjacent_to(positions: Dictionary[Vector2i, int], all_stat
 			if pos in positions:
 				stations.append(station)
 	return stations
+
+func is_new_track_in_legal_position(track: Track):
+	# Checks so that the new track is not at an odd angle into an existing platform
+	var affected_platforms: Array[Platform] = []
+	for pos in [track.pos1, track.pos2]:
+		if pos in _platforms:
+			affected_platforms.append(_platforms[pos])
+	for platform in affected_platforms:
+		if platform.rotation == 0.0: # Horizontal
+			if track.pos1.y != track.pos2.y:
+				return false
+		else: # Vertical
+			if track.pos1.x != track.pos2.x:
+				return false
+	return true
