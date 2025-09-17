@@ -163,8 +163,7 @@ func _show_ghost_track(positions: Array[Vector2i]):
 		var pos2 = ghost_track_tile_positions[i + 1]
 		var track := Track.create(pos1, pos2)
 		var is_allowed = (pos1 not in illegal_positions and
-						  pos2 not in illegal_positions and
-						  platform_set.is_new_track_in_legal_position(track))
+						  pos2 not in illegal_positions)
 		track.set_allowed(is_allowed)
 		track.set_ghostly(true)
 		var midway_position = Vector2(pos1).lerp(pos2, 0.5)
@@ -209,7 +208,7 @@ func _try_create_tracks():
 	for i in range(1, len(ids)):
 		astar.connect_points(ids[i - 1], ids[i])
 	bank.buy(Global.Asset.TRACK, len(ghost_tracks))
-	platform_set.create_platforms_orthogonally_linked_to(ghost_track_tile_positions, _get_stations(), _create_platform)
+	platform_set.destroy_and_recreate_platforms_orthogonally_linked_to(ghost_track_tile_positions, _get_stations(), _create_platform)
 	ghost_tracks.clear()
 
 func _reset_ghost_tracks():

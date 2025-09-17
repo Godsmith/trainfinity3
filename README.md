@@ -46,6 +46,17 @@
   - will be useful for debugging as well, since can load into a certain state
 - train collisions
   - cannot be done until we have pathfinding that takes other trains into account/signals/manual paths
+  - pathfinding that takes other trains into account:
+    - tricky
+    - not realistic
+    - might make it too easy?
+  - signals
+    - time-consuming to get right
+    - fun
+  - one-way rail
+    - a bit boring and ugly
+    - takes a lot of rail
+    - not very compact
 - build platforms instead of stations
   - done on create-platform-like-track branchs, had some issues; 
     turned out to be a bit fiddly for the user
@@ -67,6 +78,8 @@
   2. what to do if connecting two stations of length X-2 with a new rail?
     1. Extend one of them. Might lead to platforms changing length. Perhaps not a big
        problem, try it out.
+- When creating and removing rail, sometimes existing stations will be unexpectedly 
+  rejigged.
 
 ### Bugs
 
