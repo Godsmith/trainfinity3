@@ -30,6 +30,7 @@ project/assembly_name="Trainfinity"
 [global_group]
 
 buildings=""
+resource_producers=""
 
 [gui]
 

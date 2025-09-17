@@ -62,9 +62,9 @@
        problem, try it out.
 
 ### Bugs
+- cities does not seem to be on the visible locations
 - immediately after starting, train and wagons are bunched up
 - cities can be built on water and mountains
-- can build stations and track on cities sometimes
 - wagons sometimes unloaded in the wrong direction
   - probably because i don't distinguish between wagon rotated w/e and n/s
 
