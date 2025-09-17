@@ -2,9 +2,10 @@
 
 [ext_resource type="Script" uid="uid://dqmg0j7vkk74g" path="res://scripts/city.gd" id="1_bih7l"]
 
-[node name="City" type="Node2D" groups=["buildings", "resource_producers"]]
+[node name="City" type="Node2D" groups=["buildings", "resource_consumer", "resource_consumers", "resource_producers"]]
 z_index = -725
 script = ExtResource("1_bih7l")
+consumes = Array[int]([1])
 
 [node name="Frame" type="Polygon2D" parent="."]
 position = Vector2(-5, 7)

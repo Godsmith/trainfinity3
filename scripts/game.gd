@@ -370,16 +370,18 @@ func _on_train_reaches_end(train: Train, platform_position: Vector2i):
 
 func _load_and_unload(train: Train, platform_position: Vector2i):
 	for station in platform_set.stations_connected_to_platform(platform_position, _real_stations()):
+		for consumer in get_tree().get_nodes_in_group("resource_consumers"):
+			print(consumer.get_global_position(), station.position)
+			if Global.is_orthogonally_adjacent(consumer.get_global_position(), station.position):
+				for ore_type in consumer.consumes:
+					var ore_count = train.get_ore_count(ore_type)
+					if ore_count > 0:
+						_show_popup("$%s" % ore_count, train.get_train_position())
+					bank.earn(ore_count)
+					await train.remove_all_ore(ore_type)
 		while station.get_total_ore_count() > 0 and train.get_total_ore_count() < train.max_capacity():
 			var ore_type = station.remove_ore()
 			await train.add_ore(ore_type)
-		for factory in get_tree().get_nodes_in_group("factories"):
-			if Global.is_orthogonally_adjacent(factory.get_global_position(), station.position):
-				var coal_count = train.get_ore_count(Ore.OreType.COAL)
-				if coal_count > 0:
-					_show_popup("$%s" % coal_count, train.get_train_position())
-				bank.earn(coal_count)
-				await train.remove_all_ore(Ore.OreType.COAL)
 
 func _on_train_reaches_tile(train: Train, pos: Vector2i):
 	if not track_set.has_track(pos):
