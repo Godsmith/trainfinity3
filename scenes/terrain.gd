@@ -38,6 +38,17 @@ func _ready() -> void:
 	var grid_positions: Array[Vector2i] = []
 	var noise_from_position: Dictionary[Vector2i, float] = {}
 	
+	# Store every type of node under a separate node, since the Godot editor
+	# is very slow when it has to show all nodes at ones in the tree view
+	var water_node = Node.new()
+	var sand_node = Node.new()
+	var wall_node = Node.new()
+	var city_node = Node.new()
+	add_child(water_node)
+	add_child(sand_node)
+	add_child(wall_node)
+	add_child(city_node)
+
 	for x in range(-HALF_GRID_SIZE, HALF_GRID_SIZE):
 		for y in range(-HALF_GRID_SIZE, HALF_GRID_SIZE):
 			if x >= -1 and x <= 1 and y >= -1 and y <= 1:
@@ -53,17 +64,17 @@ func _ready() -> void:
 			var water_position = pos
 			water.position = water_position
 			obstacle_position_set[water_position] = water
-			add_child(water)
+			water_node.add_child(water)
 		elif noise_level < sand_level:
 			var sand = SAND.instantiate()
 			sand.position = pos
-			add_child(sand)
+			sand_node.add_child(sand)
 		elif noise_level > mountain_level:
 			var wall = WALL.instantiate()
 			var wall_position = pos
 			wall.position = wall_position
 			obstacle_position_set[wall_position] = wall
-			add_child(wall)
+			wall_node.add_child(wall)
 
 			# maybe add ore inside this wall
 			if randf() < ore_chance:
@@ -104,7 +115,7 @@ func _ready() -> void:
 		var city = CITY.instantiate()
 		city_positions.append(city_position)
 		city.position = city_position
-		add_child(city)
+		city_node.add_child(city)
 	
 	print("Starting city extension")
 	for original_city_position in city_positions:
@@ -121,5 +132,6 @@ func _ready() -> void:
 				possible_new_city_positions.append_array(Global.orthogonally_adjacent(new_city_position))
 				var city = CITY.instantiate()
 				city.position = new_city_position
+				print(new_city_position)
 				add_child(city)
 	print("City extension done")
