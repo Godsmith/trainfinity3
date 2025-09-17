@@ -350,8 +350,8 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	train.wagon_count = min(platform_set.platform_size(platform1.position), platform_set.platform_size(platform2.position)) - 1
 	train.end_reached.connect(_on_train_reaches_end)
 	train.tile_reached.connect(_on_train_reaches_tile)
-	add_child(train)
 	train.curve = train.get_new_curve(platform1.position, platform2.position, platform_set, astar_id_from_position, astar)
+	add_child(train)
 	bank.buy(Global.Asset.TRAIN)
 	_on_train_reaches_end(train, train.target_positions[0])
 
