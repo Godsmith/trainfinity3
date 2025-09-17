@@ -43,15 +43,6 @@ func _process(delta: float) -> void:
 	if follow_train:
 		camera.position = follow_train.get_train_position()
 
-
-func _real_stations(exception: Station = null) -> Array[Station]:
-	var stations: Array[Station] = []
-	for station in get_tree().get_nodes_in_group("stations"):
-		if station is Station and !station.is_ghost and not station == exception:
-			stations.append(station)
-	return stations
-
-
 func _positions_between(start: Vector2i, stop: Vector2i) -> Array[Vector2i]:
 	# start and stop must be on the grid.
 	var out: Array[Vector2i] = []
@@ -78,6 +69,10 @@ func _ready():
 	$Gui/HBoxContainer/DestroyButton.connect("toggled", _on_destroybutton_toggled)
 	$Gui/HBoxContainer/FollowTrainButton.connect("toggled", _on_followtrainbutton_toggled)
 	$Timer.connect("timeout", _on_timer_timeout)
+	# Remove ghost station from groups so that it does begin to gather ore etc
+	ghost_station.remove_from_group("stations")
+	ghost_station.remove_from_group("buildings")
+
 	track_creation_arrow.visible = false
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -182,7 +177,7 @@ func _illegal_track_positions(positions: Array[Vector2i]) -> Array[Vector2i]:
 	for pos in positions:
 		if pos in terrain.obstacle_position_set:
 			out.append(pos)
-	for node in get_tree().get_nodes_in_group("buildings") + _real_stations():
+	for node in get_tree().get_nodes_in_group("buildings"):
 		if Vector2i(node.position) in positions:
 			out.append(Vector2i(node.position))
 	return out
@@ -214,7 +209,7 @@ func _try_create_tracks():
 	for i in range(1, len(ids)):
 		astar.connect_points(ids[i - 1], ids[i])
 	bank.buy(Global.Asset.TRACK, len(ghost_tracks))
-	platform_set.create_platforms_orthogonally_linked_to(ghost_track_tile_positions, _real_stations(), _create_platform)
+	platform_set.create_platforms_orthogonally_linked_to(ghost_track_tile_positions, _get_stations(), _create_platform)
 	ghost_tracks.clear()
 
 func _reset_ghost_tracks():
@@ -238,7 +233,7 @@ func _destroy_track(positions: Array[Vector2i]):
 			track_positions[track.pos2] = 0
 			track_set.erase(track)
 	# Might not work, since we have already removed the tracks?
-	platform_set.destroy_and_recreate_platforms_orthogonally_linked_to(track_positions.keys(), _real_stations(), _create_platform)
+	platform_set.destroy_and_recreate_platforms_orthogonally_linked_to(track_positions.keys(), _get_stations(), _create_platform)
 
 ##################################################################
 
@@ -302,7 +297,7 @@ func _change_gui_state(new_state: Gui.State):
 ###################################################################
 
 func _is_legal_station_position(station_position: Vector2i):
-	for node in get_tree().get_nodes_in_group("buildings") + _real_stations():
+	for node in get_tree().get_nodes_in_group("buildings"):
 		if Vector2i(node.position) == station_position:
 			return false
 	if station_position in terrain.obstacle_position_set:
@@ -323,15 +318,23 @@ func _try_create_station(station_position: Vector2i):
 	platform_set.create_platforms([station], _create_platform)
 
 func _destroy_stations(positions: Array[Vector2i]):
-	for station in _real_stations():
+	var stations: Array[Station] = _get_stations()
+	for station in stations:
 		if Vector2i(station.position) in positions:
 			for adjacent_position in Global.orthogonally_adjacent(station.position):
 				if not track_set.has_track(adjacent_position):
 					continue
 				platform_set.destroy_and_recreate_platforms_orthogonally_linked_to(
-					[adjacent_position], _real_stations(station), _create_platform)
+					[adjacent_position], stations, _create_platform)
 			station.queue_free()
 			bank.destroy(Global.Asset.STATION)
+
+func _get_stations() -> Array[Station]:
+	var stations: Array[Station] = []
+	for node in get_tree().get_nodes_in_group("stations"):
+		if node is Station:
+			stations.append(node)
+	return stations
 
 ############################################################################
 
@@ -383,7 +386,7 @@ func _on_train_reaches_end(train: Train, platform_position: Vector2i):
 	train.start_from_station()
 
 func _load_and_unload(train: Train, platform_position: Vector2i):
-	for station in platform_set.stations_connected_to_platform(platform_position, _real_stations()):
+	for station in platform_set.stations_connected_to_platform(platform_position, _get_stations()):
 		for consumer in get_tree().get_nodes_in_group("resource_consumers"):
 			print(consumer.get_global_position(), station.position)
 			if Global.is_orthogonally_adjacent(consumer.get_global_position(), station.position):
@@ -464,7 +467,7 @@ func _light_clicked(light: Light):
 ######################################################################
 	
 func _on_timer_timeout():
-	for station: Station in _real_stations():
+	for station: Station in _get_stations():
 		station.extract_ore()
 
 ######################################################################
