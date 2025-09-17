@@ -3,10 +3,11 @@ extends Node2D
 class_name Ore
 
 # TODO: move this out of class and rename to Resource
-enum OreType {COAL, MAIL}
+enum OreType {COAL, IRON, MAIL}
 
 const ORE_COLOR = {
 	OreType.COAL: Color(0, 0, 0, 1),
+	OreType.IRON: Color(0.5, 0.5, 0.5, 1.0),
 	OreType.MAIL: Color(0.95, 0.95, 0.7, 1.0)
 }
 
