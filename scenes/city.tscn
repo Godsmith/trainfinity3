@@ -1,59 +1,62 @@
-[gd_scene format=3 uid="uid://bjqm0dxfaigfq"]
+[gd_scene load_steps=2 format=3 uid="uid://bjqm0dxfaigfq"]
 
-[node name="City" type="Node2D" groups=["buildings"]]
+[ext_resource type="Script" uid="uid://dqmg0j7vkk74g" path="res://scripts/city.gd" id="1_bih7l"]
+
+[node name="City" type="Node2D" groups=["buildings", "resource_producers"]]
 z_index = -725
+script = ExtResource("1_bih7l")
 
-[node name="Building7" type="Polygon2D" parent="."]
+[node name="Frame" type="Polygon2D" parent="."]
 position = Vector2(-21, 7)
 color = Color(0.197937, 0.197937, 0.197937, 1)
 polygon = PackedVector2Array(-2, 0, 3.16998, 0, 12, 0, 12, -14, -2, -14)
 
-[node name="Building2" type="Polygon2D" parent="."]
+[node name="Wall" type="Polygon2D" parent="."]
 position = Vector2(-18, -4)
 color = Color(0.505344, 0.505344, 0.505344, 1)
 polygon = PackedVector2Array(-4, -2, -4, 11, 8, 11, 8, -2)
 
-[node name="Building12" type="Polygon2D" parent="."]
+[node name="Window1" type="Polygon2D" parent="."]
 position = Vector2(-19, -2)
 color = Color(0.197937, 0.197937, 0.197937, 1)
 polygon = PackedVector2Array(-2, -1, 0, -1, 0, -3, -2, -3)
 
-[node name="Building13" type="Polygon2D" parent="."]
+[node name="Window2" type="Polygon2D" parent="."]
 position = Vector2(-15, -2)
 color = Color(0.197937, 0.197937, 0.197937, 1)
 polygon = PackedVector2Array(-2, -1, 0, -1, 0, -3, -2, -3)
 
-[node name="Building16" type="Polygon2D" parent="."]
-position = Vector2(-19, 2)
-color = Color(0.197937, 0.197937, 0.197937, 1)
-polygon = PackedVector2Array(-2, -1, 0, -1, 0, -3, -2, -3)
-
-[node name="Building17" type="Polygon2D" parent="."]
-position = Vector2(-15, 2)
-color = Color(0.197937, 0.197937, 0.197937, 1)
-polygon = PackedVector2Array(-2, -1, 0, -1, 0, -3, -2, -3)
-
-[node name="Building18" type="Polygon2D" parent="."]
-position = Vector2(-11, 2)
-color = Color(0.197937, 0.197937, 0.197937, 1)
-polygon = PackedVector2Array(-2, -1, 0, -1, 0, -3, -2, -3)
-
-[node name="Building19" type="Polygon2D" parent="."]
-position = Vector2(-11, 6)
-color = Color(0.197937, 0.197937, 0.197937, 1)
-polygon = PackedVector2Array(-2, -1, 0, -1, 0, -3, -2, -3)
-
-[node name="Building20" type="Polygon2D" parent="."]
-position = Vector2(-19, 6)
-color = Color(0.197937, 0.197937, 0.197937, 1)
-polygon = PackedVector2Array(-2, -1, 0, -1, 0, -3, -2, -3)
-
-[node name="Building14" type="Polygon2D" parent="."]
+[node name="Window3" type="Polygon2D" parent="."]
 position = Vector2(-11, -2)
 color = Color(0.197937, 0.197937, 0.197937, 1)
 polygon = PackedVector2Array(-2, -1, 0, -1, 0, -3, -2, -3)
 
-[node name="Building15" type="Polygon2D" parent="."]
+[node name="Window4" type="Polygon2D" parent="."]
+position = Vector2(-19, 2)
+color = Color(0.197937, 0.197937, 0.197937, 1)
+polygon = PackedVector2Array(-2, -1, 0, -1, 0, -3, -2, -3)
+
+[node name="Window5" type="Polygon2D" parent="."]
+position = Vector2(-15, 2)
+color = Color(0.197937, 0.197937, 0.197937, 1)
+polygon = PackedVector2Array(-2, -1, 0, -1, 0, -3, -2, -3)
+
+[node name="Window6" type="Polygon2D" parent="."]
+position = Vector2(-11, 2)
+color = Color(0.197937, 0.197937, 0.197937, 1)
+polygon = PackedVector2Array(-2, -1, 0, -1, 0, -3, -2, -3)
+
+[node name="Window7" type="Polygon2D" parent="."]
+position = Vector2(-19, 6)
+color = Color(0.197937, 0.197937, 0.197937, 1)
+polygon = PackedVector2Array(-2, -1, 0, -1, 0, -3, -2, -3)
+
+[node name="Window8" type="Polygon2D" parent="."]
+position = Vector2(-11, 6)
+color = Color(0.197937, 0.197937, 0.197937, 1)
+polygon = PackedVector2Array(-2, -1, 0, -1, 0, -3, -2, -3)
+
+[node name="Door" type="Polygon2D" parent="."]
 position = Vector2(-15, 8)
 color = Color(0.197937, 0.197937, 0.197937, 1)
 polygon = PackedVector2Array(-2, -1, 0, -1, 0, -5, -2, -5)
