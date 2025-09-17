@@ -11,7 +11,9 @@ func _ready() -> void:
 		chunk.visible = false
 
 func add_ore(type: Ore.OreType):
-	for chunk in _chunks:
+	var reversed_chunks = _chunks.duplicate()
+	reversed_chunks.reverse()
+	for chunk in reversed_chunks:
 		if not chunk.visible:
 			chunk.ore_type = type
 			chunk.color = Ore.ORE_COLOR[type]

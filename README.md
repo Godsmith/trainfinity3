@@ -70,8 +70,6 @@
        problem, try it out.
 
 ### Bugs
-- wagons sometimes unloaded in the wrong direction
-  - probably because i don't distinguish between wagon rotated w/e and n/s
 
 ### In-game upgrades
 - range of stations (start with 1) - though it looks ugly when they are too far from ore
