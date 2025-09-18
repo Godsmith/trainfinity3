@@ -14,7 +14,7 @@ script = ExtResource("1_rod8h")
 z_index = -600
 z_as_relative = false
 position = Vector2(-8, 8)
-color = Color(0.674815, 0.674815, 0.674815, 1)
+color = Color(0.541176, 0.541176, 0.541176, 1)
 polygon = PackedVector2Array(0, 0, 0, -16, 16, -16, 16, 0)
 
 [node name="Polygon2D" type="Polygon2D" parent="."]

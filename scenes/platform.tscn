@@ -15,7 +15,7 @@ polygon = PackedVector2Array(-8, -6, 0, -6, 8, -6, 8, 6, -8, 6)
 
 [node name="Polygon2D" type="Polygon2D" parent="."]
 position = Vector2(-8, 8)
-color = Color(0.674815, 0.674815, 0.674815, 1)
+color = Color(0.54099, 0.540991, 0.54099, 1)
 polygon = PackedVector2Array(0, -2, 0, -14, 16, -14, 16, -2)
 
 [connection signal="input_event" from="Area2D" to="." method="_on_input_event"]

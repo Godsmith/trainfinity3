@@ -51,26 +51,26 @@ z_as_relative = false
 position = Vector2(-8, 2)
 points = PackedVector2Array(0, -4, 16, -4)
 width = 1.0
-default_color = Color(0.60933, 0.60933, 0.60933, 1)
+default_color = Color(0.753984, 0.753984, 0.753984, 1)
 
 [node name="Rail2" type="Line2D" parent="Rail1"]
 points = PackedVector2Array(0, 0, 16, 0)
 width = 1.0
-default_color = Color(0.60933, 0.60933, 0.60933, 1)
+default_color = Color(0.753984, 0.753984, 0.753984, 1)
 
 [node name="LongRail1" type="Line2D" parent="Rail1"]
 visible = false
 position = Vector2(-3, 0)
 points = PackedVector2Array(-1, -4, 23, -4)
 width = 1.0
-default_color = Color(0.60933, 0.60933, 0.60933, 1)
+default_color = Color(0.753984, 0.753984, 0.753984, 1)
 
 [node name="LongRail2" type="Line2D" parent="Rail1"]
 visible = false
 position = Vector2(-3, 4)
 points = PackedVector2Array(-1, -4, 23, -4)
 width = 1.0
-default_color = Color(0.60933, 0.60933, 0.60933, 1)
+default_color = Color(0.753984, 0.753984, 0.753984, 1)
 
 [node name="Area2D" type="Area2D" parent="."]
 position = Vector2(-16, 16)

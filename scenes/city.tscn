@@ -14,7 +14,7 @@ polygon = PackedVector2Array(-2, 0, 3.16998, 0, 12, 0, 12, -14, -2, -14)
 
 [node name="Wall" type="Polygon2D" parent="."]
 position = Vector2(-2, -4)
-color = Color(0.505344, 0.505344, 0.505344, 1)
+color = Color(0.716296, 0.716296, 0.716296, 1)
 polygon = PackedVector2Array(-4, -2, -4, 11, 8, 11, 8, -2)
 
 [node name="Window1" type="Polygon2D" parent="."]
