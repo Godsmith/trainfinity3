@@ -56,6 +56,9 @@
     - a bit boring and ugly
     - takes a lot of rail
     - not very compact
+
+### Discarded ideas
+
 - build platforms instead of stations
   - done on create-platform-like-track branchs, had some issues; 
     turned out to be a bit fiddly for the user
