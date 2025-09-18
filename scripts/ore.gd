@@ -3,14 +3,15 @@ extends Node2D
 class_name Ore
 
 # TODO: move this out of class and rename to Resource
-enum OreType {COAL, IRON, MAIL}
+enum OreType {COAL, IRON, MAIL, WOOD}
 
 const ORE := preload("res://scenes/ore.tscn")
 
 const ORE_COLOR = {
 	OreType.COAL: Color(0, 0, 0, 1),
 	OreType.IRON: Color(0.8, 0.8, 0.8, 1.0),
-	OreType.MAIL: Color(0.95, 0.95, 0.7, 1.0)
+	OreType.MAIL: Color(0.95, 0.95, 0.7, 1.0),
+	OreType.WOOD: Color(0.49, 0.245, 0.223, 1.0)
 }
 
 var ore_type

@@ -13,11 +13,6 @@ script = ExtResource("1_u5idq")
 
 [node name="Terrain" type="Node2D" parent="."]
 script = ExtResource("2_xra4t")
-water_level = null
-sand_level = null
-mountain_level = null
-ore_chance = null
-iron_chance = null
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(38, 20)

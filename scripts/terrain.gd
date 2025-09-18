@@ -2,11 +2,13 @@ extends Node2D
 
 const HALF_GRID_SIZE := 32
 const CITY_COUNT := 5
+const FOREST_COUNT := 5
 
 const FACTORY = preload("res://scenes/factory.tscn")
 const WATER = preload("res://scenes/water.tscn")
 const SAND = preload("res://scenes/sand.tscn")
 const WALL = preload("res://scenes/wall.tscn")
+const FOREST = preload("res://scenes/forest.tscn")
 const CITY = preload("res://scenes/city.tscn")
 
 @export_range(-1.0, 1.0) var water_level: float = -0.2
@@ -36,6 +38,9 @@ func _ready() -> void:
 	factory.position = Vector2(0, 0)
 	add_child(factory)
 
+	# Forests spawn on grass
+	var grass_positions: Array[Vector2i] = []
+
 	var grid_positions: Array[Vector2i] = []
 	var noise_from_position: Dictionary[Vector2i, float] = {}
 	
@@ -44,10 +49,12 @@ func _ready() -> void:
 	var water_node = Node.new()
 	var sand_node = Node.new()
 	var wall_node = Node.new()
+	var forest_node = Node.new()
 	var city_node = Node.new()
 	add_child(water_node)
 	add_child(sand_node)
 	add_child(wall_node)
+	add_child(forest_node)
 	add_child(city_node)
 
 	for x in range(-HALF_GRID_SIZE, HALF_GRID_SIZE):
@@ -87,6 +94,8 @@ func _ready() -> void:
 				var ore = Ore.create(ore_type)
 				ore.position = Vector2.ZERO # relative to wall
 				wall.add_child(ore)
+		else:
+			grass_positions.append(pos)
 
 	# Make walls look nicer
 	for pos in obstacle_position_set.keys():
@@ -108,7 +117,17 @@ func _ready() -> void:
 			wall.get_node("South").visible = false
 		if not north_of in obstacle_position_set or obstacle_position_set[north_of] is not Wall:
 			wall.get_node("North").visible = false
-	
+
+	# Add forests
+	var forest_positions: Dictionary[Vector2i, int] = {}
+	while (len(forest_positions) < FOREST_COUNT):
+		forest_positions[grass_positions.pick_random()] = 0
+	for pos in forest_positions:
+		var forest = FOREST.instantiate()
+		forest.position = pos
+		forest_node.add_child(forest)
+		
+
 	# Add cities
 	var possible_city_positions: Array[Vector2i] = []
 	for pos in grid_positions:
