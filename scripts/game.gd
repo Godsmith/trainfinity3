@@ -387,7 +387,6 @@ func _on_train_reaches_end(train: Train, platform_position: Vector2i):
 func _load_and_unload(train: Train, platform_position: Vector2i):
 	for station in platform_set.stations_connected_to_platform(platform_position, _get_stations()):
 		for consumer in get_tree().get_nodes_in_group("resource_consumers"):
-			print(consumer.get_global_position(), station.position)
 			if Global.is_orthogonally_adjacent(consumer.get_global_position(), station.position):
 				for ore_type in consumer.consumes:
 					var ore_count = train.get_ore_count(ore_type)

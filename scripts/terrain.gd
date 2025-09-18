@@ -7,13 +7,14 @@ const FACTORY = preload("res://scenes/factory.tscn")
 const WATER = preload("res://scenes/water.tscn")
 const SAND = preload("res://scenes/sand.tscn")
 const WALL = preload("res://scenes/wall.tscn")
-const ORE = preload("res://scenes/ore.tscn")
 const CITY = preload("res://scenes/city.tscn")
 
 @export_range(-1.0, 1.0) var water_level: float = -0.2
 @export_range(-1.0, 1.0) var sand_level: float = -0.1
 @export_range(-1.0, 1.0) var mountain_level: float = 0.3
 @export_range(0.0, 1.0) var ore_chance: float = 0.1
+@export_range(0.0, 1.0) var iron_chance: float = 0.25
+@export_range(0.0, 1.0) var coal_chance: float = 1.0 - iron_chance
 
 # When creating terrain, walls and water positions are recorded here,
 # so that when building things later we can check this set to see
@@ -78,7 +79,12 @@ func _ready() -> void:
 
 			# maybe add ore inside this wall
 			if randf() < ore_chance:
-				var ore = ORE.instantiate()
+				var ore_type: Ore.OreType
+				if randf() < iron_chance:
+					ore_type = Ore.OreType.IRON
+				else:
+					ore_type = Ore.OreType.COAL
+				var ore = Ore.create(ore_type)
 				ore.position = Vector2.ZERO # relative to wall
 				wall.add_child(ore)
 
@@ -132,6 +138,5 @@ func _ready() -> void:
 				possible_new_city_positions.append_array(Global.orthogonally_adjacent(new_city_position))
 				var city = CITY.instantiate()
 				city.position = new_city_position
-				print(new_city_position)
 				add_child(city)
 	print("City extension done")

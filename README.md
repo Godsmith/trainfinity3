@@ -17,6 +17,7 @@
 
 
 ## TODO
+- forests
 - different prices and production rate for different goods
 - train should mark the tile it wants to go to when it cannot find path
   - either when you select the train, or it can create a red line to the taget
@@ -35,7 +36,6 @@
 - show ghost platforms when building station
 - show ghost platforms when building track
 - disallow building out of bounds
-- iron
 - heavier trains should have slower acceleration
 - change train paths when changing length of starting or ending station
 - do something - stop train? delete train? - when removing starting or ending station
