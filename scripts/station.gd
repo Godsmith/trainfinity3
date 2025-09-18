@@ -2,6 +2,8 @@ extends Node2D
 
 class_name Station
 
+const MAX_CAPACITY := 24
+
 signal station_clicked(station: Station)
 
 @export var is_ghost := false
@@ -25,6 +27,8 @@ func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> voi
 		station_clicked.emit(self)
 
 func extract_ore():
+	if get_total_ore_count() == MAX_CAPACITY:
+		return
 	for ore_type: Ore.OreType in adjacent_ore_type_set:
 		var new_chunk := $Chunk.duplicate()
 		# Some magic position numbers to not place ores too much outside. Will probably be changed anyway.

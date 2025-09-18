@@ -17,7 +17,6 @@
 
 
 ## TODO
-- forests
 - different prices and production rate for different goods
 - train should mark the tile it wants to go to when it cannot find path
   - either when you select the train, or it can create a red line to the taget
