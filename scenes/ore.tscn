@@ -1,35 +1,36 @@
-[gd_scene load_steps=2 format=3 uid="uid://c2ywi6j0mxjc5"]
+[gd_scene load_steps=3 format=3 uid="uid://c2ywi6j0mxjc5"]
 
 [ext_resource type="Script" uid="uid://bk3wlpgvcqbqe" path="res://scripts/ore.gd" id="1_84iim"]
+[ext_resource type="PackedScene" uid="uid://dfqsthsrw4g1g" path="res://scenes/chunk.tscn" id="2_f6cf6"]
 
 [node name="Ore" type="Node2D" groups=["resource_producers"]]
 z_index = -700
 z_as_relative = false
 script = ExtResource("1_84iim")
 
-[node name="Chunk1" type="Polygon2D" parent="."]
+[node name="Chunk1" parent="." instance=ExtResource("2_f6cf6")]
+visible = true
+
+[node name="Chunk2" parent="." instance=ExtResource("2_f6cf6")]
+visible = true
 position = Vector2(5, 0)
-polygon = PackedVector2Array(-4, -2, -2, -2, -2, -4, -4, -4)
 
-[node name="Chunk2" type="Polygon2D" parent="."]
-polygon = PackedVector2Array(-4, -2, -2, -2, -2, -4, -4, -4)
-
-[node name="Chunk3" type="Polygon2D" parent="."]
-position = Vector2(7, 5)
-polygon = PackedVector2Array(-4, -2, -2, -2, -2, -4, -4, -4)
-
-[node name="Chunk4" type="Polygon2D" parent="."]
-position = Vector2(3, 8)
-polygon = PackedVector2Array(-4, -2, -2, -2, -2, -4, -4, -4)
-
-[node name="Chunk5" type="Polygon2D" parent="."]
-position = Vector2(2, 4)
-polygon = PackedVector2Array(-4, -2, -3.06416, -2, -2, -2, -2, -4, -4, -4)
-
-[node name="Chunk6" type="Polygon2D" parent="."]
-position = Vector2(-2, 3)
-polygon = PackedVector2Array(-4, -2, -2, -2, -2, -4, -4, -4)
-
-[node name="Chunk7" type="Polygon2D" parent="."]
+[node name="Chunk3" parent="." instance=ExtResource("2_f6cf6")]
+visible = true
 position = Vector2(8, 2)
-polygon = PackedVector2Array(-4, -2, -2, -2, -2, -4, -4, -4)
+
+[node name="Chunk4" parent="." instance=ExtResource("2_f6cf6")]
+visible = true
+position = Vector2(-2, 3)
+
+[node name="Chunk5" parent="." instance=ExtResource("2_f6cf6")]
+visible = true
+position = Vector2(2, 4)
+
+[node name="Chunk6" parent="." instance=ExtResource("2_f6cf6")]
+visible = true
+position = Vector2(7, 5)
+
+[node name="Chunk7" parent="." instance=ExtResource("2_f6cf6")]
+visible = true
+position = Vector2(3, 8)

@@ -17,8 +17,6 @@
 
 
 ## TODO
-- chunks in ore are not proper Chunk objects
-- 
 - forests
 - different prices and production rate for different goods
 - train should mark the tile it wants to go to when it cannot find path
