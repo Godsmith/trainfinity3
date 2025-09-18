@@ -91,7 +91,6 @@ func _unhandled_input(event: InputEvent) -> void:
 						_change_gui_state(Gui.State.TRACK1)
 				Gui.State.DESTROY1:
 					mouse_down_position = snapped_mouse_position
-					_show_destroy_markers(snapped_mouse_position)
 					_change_gui_state(Gui.State.DESTROY2)
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			is_right_mouse_button_held_down = event.is_pressed()
@@ -128,8 +127,10 @@ func _unhandled_input(event: InputEvent) -> void:
 				_show_ghost_track(new_ghost_track_tile_positions)
 		if gui_state == Gui.State.STATION:
 			ghost_station.set_color(true, _is_legal_station_position(snapped_mouse_position))
+		if gui_state == Gui.State.DESTROY1:
+			_show_destroy_markers(snapped_mouse_position, snapped_mouse_position)
 		if gui_state == Gui.State.DESTROY2:
-			_show_destroy_markers(snapped_mouse_position)
+			_show_destroy_markers(mouse_down_position, snapped_mouse_position)
 		if is_right_mouse_button_held_down:
 			follow_train = null
 			camera.position -= event.get_relative() / camera.zoom.x
@@ -288,6 +289,8 @@ func _change_gui_state(new_state: Gui.State):
 		_reset_ghost_tracks()
 	if new_state != Gui.State.TRACK2:
 		track_creation_arrow.visible = false
+	if new_state != Gui.State.DESTROY1:
+		_hide_destroy_markers()
 	
 	gui.set_pressed_no_signal(new_state)
 
@@ -423,10 +426,10 @@ func _create_platform(platform: Platform):
 
 ######################################################################
 
-func _show_destroy_markers(pos):
+func _show_destroy_markers(start_pos: Vector2i, end_pos: Vector2i):
 	_hide_destroy_markers()
-	var xs = [mouse_down_position.x, pos.x]
-	var ys = [mouse_down_position.y, pos.y]
+	var xs = [start_pos.x, end_pos.x]
+	var ys = [start_pos.y, end_pos.y]
 	xs.sort()
 	ys.sort()
 	for x in range(xs[0], xs[1] + 1, Global.TILE_SIZE):
