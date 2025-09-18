@@ -4,6 +4,7 @@ extends PathFollow2D
 @onready var max_capacity := len(_chunks)
 @onready var rigid_body: RigidBody2D = $RigidBody2D
 @onready var collision_shape: CollisionShape2D = $RigidBody2D/CollisionShape2D
+@onready var red_marker := $RigidBody2D/RedMarker
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -41,3 +42,6 @@ func remove_ore(ore_type):
 			chunk.visible = false
 			return
 	assert(false, "Trying to remove ore type that did not exist")
+
+func mark_for_destruction(is_marked: bool):
+	red_marker.visible = is_marked

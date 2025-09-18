@@ -30,7 +30,6 @@
 - change graphics for end of station, so it can't look like two stations are one
   large station
 - producers/consumers of the same resource not less apart than the longest station length (5 tiles?)
-- destroy trains if they are on the tile where destroying stuff (mark train in red first)
 - expand map, adding new resources
 - show ghost platforms when building station
 - show ghost platforms when building track

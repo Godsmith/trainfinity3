@@ -94,6 +94,14 @@ color = Color(0.644942, 0.652615, 0.646786, 1)
 polygon = PackedVector2Array(4, 0, 5, 0, 5, -1, 4, -1)
 uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
 
+[node name="RedMarker" type="Polygon2D" parent="RigidBody2D"]
+visible = false
+position = Vector2(-1.13048, 1.27854)
+scale = Vector2(1.17846, 1.42592)
+color = Color(1, 0, 0, 0.498039)
+polygon = PackedVector2Array(-4.1321, 1.20726, 6.05067, 1.20726, 6.05067, -3.00054, -4.1321, -3.00054)
+uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
+
 [node name="OreTimer" type="Timer" parent="."]
 wait_time = 0.1
 

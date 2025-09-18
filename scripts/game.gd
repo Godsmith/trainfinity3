@@ -25,6 +25,7 @@ var ghost_tracks: Array[Track] = []
 var ghost_track_tile_positions: Array[Vector2i] = []
 
 var destroy_markers: Array[Polygon2D] = []
+var trains_marked_for_destruction_set: Dictionary[Train, int] = {}
 
 var astar = AStar2D.new()
 var astar_id_from_position: Dictionary[Vector2i, int] = {}
@@ -404,6 +405,18 @@ func _load_and_unload(train: Train, platform_position: Vector2i):
 func _on_train_reaches_tile(train: Train, pos: Vector2i):
 	if not track_set.has_track(pos):
 		train.derail()
+	var train_marked_for_destruction = false
+	if gui_state == Gui.State.DESTROY2:
+		var positions: Array[Vector2i] = []
+		for marker in destroy_markers:
+			positions.append(Vector2i(marker.position))
+		train_marked_for_destruction = (pos in positions)
+	train.mark_for_destruction(train_marked_for_destruction)
+	if train_marked_for_destruction:
+		trains_marked_for_destruction_set[train] = 0
+	else:
+		trains_marked_for_destruction_set.erase(train)
+
 
 func _on_train_clicked(train: Train):
 	if gui_state == Gui.State.FOLLOW_TRAIN:
@@ -450,6 +463,9 @@ func _destroy_under_destroy_markers():
 		positions.append(Vector2i(marker.position))
 	_destroy_track(positions)
 	_destroy_stations(positions)
+	for train in trains_marked_for_destruction_set:
+		train.queue_free()
+	trains_marked_for_destruction_set.clear()
 
 ###################################################################
 

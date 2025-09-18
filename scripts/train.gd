@@ -33,6 +33,7 @@ var progress_point_past_sharp_corner = 0.0
 @onready var rigid_body := $RigidBody2D
 @onready var ore_timer := $OreTimer
 @onready var no_route_timer := $NoRouteTimer
+@onready var red_marker := $RigidBody2D/RedMarker
 
 var target_positions: Array[Vector2i] = []
 
@@ -209,3 +210,8 @@ func remove_all_ore(ore_type):
 			ore_timer.start()
 			await ore_timer.timeout
 			wagon.remove_ore(ore_type)
+
+func mark_for_destruction(is_marked: bool):
+	red_marker.visible = is_marked
+	for wagon in wagons:
+		wagon.mark_for_destruction(is_marked)
