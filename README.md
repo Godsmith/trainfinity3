@@ -32,7 +32,6 @@
 - producers/consumers of the same resource not less apart than the longest station length (5 tiles?)
 - destroy trains if they are on the tile where destroying stuff (mark train in red first)
 - expand map, adding new resources
-- follow train
 - show ghost platforms when building station
 - show ghost platforms when building track
 - disallow building out of bounds

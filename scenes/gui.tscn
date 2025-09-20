@@ -47,6 +47,13 @@ toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "Destroy"
 
+[node name="FollowTrainButton" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+button_group = SubResource("ButtonGroup_lbhrr")
+text = "Follow Train"
+
 [node name="Money" type="Label" parent="HBoxContainer"]
 layout_mode = 2
 text = "$0"

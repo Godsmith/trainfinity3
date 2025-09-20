@@ -6,6 +6,7 @@ const WAGON = preload("res://scenes/wagon.tscn")
 
 signal end_reached(train: Train)
 signal tile_reached(train: Train, position: Vector2i)
+signal train_clicked(train: Train)
 
 @export var max_speed := 20.0
 @export var target_speed := 0.0
@@ -41,6 +42,10 @@ func _ready() -> void:
 		wagons.append(wagon)
 		add_child(wagon)
 	path_follow.progress = wagon_count * Global.TILE_SIZE
+
+func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		train_clicked.emit(self)
 
 func _get_linear_velocity(path_follow_: PathFollow2D):
 	var current_pos = path_follow_.global_position

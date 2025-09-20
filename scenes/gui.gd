@@ -2,7 +2,7 @@ extends CanvasLayer
 
 class_name Gui
 
-enum State {NONE, TRACK1, TRACK2, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY1, DESTROY2}
+enum State {NONE, TRACK1, TRACK2, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY1, DESTROY2, FOLLOW_TRAIN}
 
 func show_money(money: int):
 	$HBoxContainer/Money.text = "$%s" % money

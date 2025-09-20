@@ -37,6 +37,13 @@ var astar_id_from_position: Dictionary[Vector2i, int] = {}
 
 var selected_platform: Platform = null
 
+var follow_train: Train = null
+
+func _process(delta: float) -> void:
+	if follow_train:
+		camera.position = follow_train.get_train_position()
+
+
 func _real_stations(exception: Station = null) -> Array[Station]:
 	var stations: Array[Station] = []
 	for station in get_tree().get_nodes_in_group("stations"):
@@ -69,6 +76,7 @@ func _ready():
 	$Gui/HBoxContainer/TrainButton.connect("toggled", _on_trainbutton_toggled)
 	$Gui/HBoxContainer/LightButton.connect("toggled", _on_lightbutton_toggled)
 	$Gui/HBoxContainer/DestroyButton.connect("toggled", _on_destroybutton_toggled)
+	$Gui/HBoxContainer/FollowTrainButton.connect("toggled", _on_followtrainbutton_toggled)
 	$Timer.connect("timeout", _on_timer_timeout)
 	track_creation_arrow.visible = false
 
@@ -128,6 +136,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if gui_state == Gui.State.DESTROY2:
 			_show_destroy_markers(snapped_mouse_position)
 		if is_right_mouse_button_held_down:
+			follow_train = null
 			camera.position -= event.get_relative() / camera.zoom.x
 		
 
@@ -253,6 +262,10 @@ func _on_destroybutton_toggled(toggled_on: bool) -> void:
 	if toggled_on:
 		_change_gui_state(Gui.State.DESTROY1)
 
+func _on_followtrainbutton_toggled(toggled_on: bool) -> void:
+	if toggled_on:
+		_change_gui_state(Gui.State.FOLLOW_TRAIN)
+
 
 func _change_gui_state(new_state: Gui.State):
 	ghost_track.visible = false
@@ -350,6 +363,7 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	train.wagon_count = min(platform_set.platform_size(platform1.position), platform_set.platform_size(platform2.position)) - 1
 	train.end_reached.connect(_on_train_reaches_end)
 	train.tile_reached.connect(_on_train_reaches_tile)
+	train.train_clicked.connect(_on_train_clicked)
 	train.curve = train.get_new_curve(platform1.position, platform2.position, platform_set, astar_id_from_position, astar)
 	add_child(train)
 	bank.buy(Global.Asset.TRAIN)
@@ -387,8 +401,11 @@ func _on_train_reaches_tile(train: Train, pos: Vector2i):
 	if not track_set.has_track(pos):
 		train.derail()
 
-###################################################################################
+func _on_train_clicked(train: Train):
+	if gui_state == Gui.State.FOLLOW_TRAIN:
+		follow_train = train
 
+###################################################################################
 func _show_popup(text: String, pos: Vector2):
 	var popup = POPUP.instantiate()
 	popup.position = pos
