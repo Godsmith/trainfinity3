@@ -89,6 +89,8 @@
 
 ### Bugs
 
+- Cannot destroy trains anymore
+
 ### In-game upgrades
 - range of stations (start with 1) - though it looks ugly when they are too far from ore
 - number of trains (start with 1)

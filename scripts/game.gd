@@ -22,6 +22,7 @@ var is_right_mouse_button_held_down := false
 
 var mouse_down_position := Vector2i()
 var ghost_tracks: Array[Track] = []
+# TODO: remove ghost_track_tile_positions and just use ghost_tracks
 var ghost_track_tile_positions: Array[Vector2i] = []
 
 var destroy_markers: Array[Polygon2D] = []
@@ -77,8 +78,8 @@ func _ready():
 	track_creation_arrow.visible = false
 
 func _unhandled_input(event: InputEvent) -> void:
-	var snapped_mouse_position = Vector2i(get_local_mouse_position().snapped(Global.TILE))
 	if event is InputEventMouseButton:
+		var snapped_mouse_position = _get_snapped_mouse_position(event)
 		if event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 			match gui_state:
 				Gui.State.TRACK1:
@@ -101,6 +102,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			camera.zoom_camera(1 / 1.1)
 	
 	if event is InputEventMouseButton and event.is_released() and event.button_index == MOUSE_BUTTON_LEFT:
+		var snapped_mouse_position = _get_snapped_mouse_position(event)
 		match gui_state:
 			Gui.State.TRACK2:
 				if snapped_mouse_position != mouse_down_position:
@@ -117,6 +119,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				_change_gui_state(Gui.State.DESTROY1)
 	
 	elif event is InputEventMouseMotion:
+		var snapped_mouse_position = _get_snapped_mouse_position(event)
 		ghost_track.position = snapped_mouse_position
 		ghost_station.position = snapped_mouse_position
 		ghost_light.position = snapped_mouse_position
@@ -151,6 +154,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if OS.is_debug_build() and event is InputEventKey and event.is_pressed() and event.keycode == KEY_X:
 		bank.earn(10000)
+
+func _get_snapped_mouse_position(event: InputEventMouse):
+	# This is equivalent to doing get_local_mouse_position(), but I wanted to use the
+	# mouse position from the InputEventMouse object
+	return Vector2i((camera.get_canvas_transform().affine_inverse() * event.position).snapped(Global.TILE))
 
 #######################################################################
 
