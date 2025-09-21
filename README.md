@@ -1,22 +1,27 @@
 # Trainfinity
 
 ## Features
-- Stations built next to mines will get filled with coal
-- Stations built next to the factory accepts coal
-- Build a stretch of rail adjacent to a station to create a platform
+- Stations built next to producers like mines, cities and forests will get filled
+  with resources
+- Stations built next to the factory accepts coal, stations built next to cities accept mail
 - Prices increase with the number of objects built
 
 ## Controls
 - To build track, select Track and either click start and then end positions, or drag from start
   position to end position
-- Select Station and click an empty location (preferrably next to a station or factory) to build a station
+- Select Station and click an empty location (preferrably next to a resource) to build a station
+- Platforms are automatically built on track next to stations
 - Select Train and click two platforms in succession to create a train and a route.
   - Train length is equal to the shortest platform length
-- Select Destroy and click on track and stations to destroy them
+- Select Destroy and either click on a location or drag to select an area to destroy
 - Modes can also be selected with the number keys (1 to build track etc)
 
-
 ## TODO
+- trains repath at intersections
+  - train do not repath towards oncoming trains
+  - trains do not repath back towards where they came (should be solved by the above)
+  - if there is no path, stop the train and give error
+- help menu showing the controls
 - different prices and production rate for different goods
 - train should mark the tile it wants to go to when it cannot find path
   - either when you select the train, or it can create a red line to the taget
