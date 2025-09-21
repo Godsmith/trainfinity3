@@ -1,8 +1,8 @@
 extends Node2D
 
+class_name Terrain
+
 const HALF_GRID_SIZE := 32
-const CITY_COUNT := 5
-const FOREST_COUNT := 5
 
 const FACTORY = preload("res://scenes/factory.tscn")
 const WATER = preload("res://scenes/water.tscn")
@@ -17,6 +17,8 @@ const CITY = preload("res://scenes/city.tscn")
 @export_range(0.0, 1.0) var ore_chance: float = 0.1
 @export_range(0.0, 1.0) var iron_chance: float = 0.25
 @export_range(0.0, 1.0) var coal_chance: float = 1.0 - iron_chance
+@export_range(0, 100) var city_count: int = 5
+@export_range(0, 100) var forest_count: int = 5
 
 # When creating terrain, walls and water positions are recorded here,
 # so that when building things later we can check this set to see
@@ -120,7 +122,7 @@ func _ready() -> void:
 
 	# Add forests
 	var forest_positions: Dictionary[Vector2i, int] = {}
-	while (len(forest_positions) < FOREST_COUNT):
+	while (len(forest_positions) < forest_count):
 		forest_positions[grass_positions.pick_random()] = 0
 	for pos in forest_positions:
 		var forest = FOREST.instantiate()
@@ -134,7 +136,7 @@ func _ready() -> void:
 		if pos not in obstacle_position_set:
 			possible_city_positions.append(pos)
 	var city_positions = []
-	for i in CITY_COUNT:
+	for i in city_count:
 		var city_position = possible_city_positions.pick_random()
 		possible_city_positions.erase(city_position)
 		var city = CITY.instantiate()
