@@ -378,7 +378,7 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	train.end_reached.connect(_on_train_reaches_end)
 	train.tile_reached.connect(_on_train_reaches_tile)
 	train.train_clicked.connect(_on_train_clicked)
-	train.curve = train.get_new_curve(platform1.position, platform2.position, platform_set, astar_id_from_position, astar)
+	train.try_set_new_curve(platform1.position, platform2.position, platform_set, astar_id_from_position, astar)
 	add_child(train)
 	bank.buy(Global.Asset.TRAIN)
 	_on_train_reaches_end(train, train.target_positions[0])
@@ -386,14 +386,10 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	
 func _on_train_reaches_end(train: Train, platform_position: Vector2i):
 	await _load_and_unload(train, platform_position)
-	# turn_around needed if the train has arrived at a terminus station
-	var new_curve = train.get_new_curve(platform_position, train.next_target(platform_position), platform_set, astar_id_from_position, astar)
-	while new_curve.point_count == 0:
+	while not train.try_set_new_curve(platform_position, train.next_target(platform_position), platform_set, astar_id_from_position, astar):
 		_show_popup("Cannot find route!", train.get_train_position())
 		train.no_route_timer.start()
 		await train.no_route_timer.timeout
-		new_curve = train.get_new_curve(platform_position, train.next_target(platform_position), platform_set, astar_id_from_position, astar)
-	train.curve = new_curve
 	train.start_from_station()
 
 func _load_and_unload(train: Train, platform_position: Vector2i):
@@ -413,6 +409,7 @@ func _load_and_unload(train: Train, platform_position: Vector2i):
 func _on_train_reaches_tile(train: Train, pos: Vector2i):
 	if not track_set.has_track(pos):
 		train.derail()
+
 	var train_marked_for_destruction = false
 	if gui_state == Gui.State.DESTROY2:
 		var positions: Array[Vector2i] = []

@@ -140,8 +140,19 @@ func start_from_station():
 	_fix_wagon_location()
 	target_speed = max_speed
 	is_stopped_at_station = false
+
+func try_set_new_curve(position1: Vector2i,
+						position2: Vector2i,
+						platform_set: PlatformSet,
+						astar_id_from_position: Dictionary[Vector2i, int],
+						astar: AStar2D) -> bool:
+	var new_curve = _get_new_curve(position1, position2, platform_set, astar_id_from_position, astar)
+	if new_curve.point_count == 0:
+		return false
+	curve = new_curve
+	return true
 	
-func get_new_curve(position1: Vector2i,
+func _get_new_curve(position1: Vector2i,
 				   position2: Vector2i,
 				   platform_set: PlatformSet,
 				   astar_id_from_position: Dictionary[Vector2i, int],
