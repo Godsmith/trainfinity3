@@ -141,41 +141,41 @@ func start_from_station():
 	target_speed = max_speed
 	is_stopped_at_station = false
 
-func try_set_new_curve(position1: Vector2i,
-						position2: Vector2i,
+func try_set_new_curve(platform_pos1: Vector2i,
+						platform_pos2: Vector2i,
 						platform_set: PlatformSet,
 						astar_id_from_position: Dictionary[Vector2i, int],
 						astar: AStar2D) -> bool:
-	var new_curve = _get_new_curve(position1, position2, platform_set, astar_id_from_position, astar)
+	var point_path = _get_path_to_destination(platform_pos1, platform_pos2, platform_set, astar_id_from_position, astar)
+
+	var target1 = Vector2i(point_path[0])
+	var target2 = Vector2i(point_path[-1])
+	destinations = [target1, target2] as Array[Vector2i]
+
+	var new_curve = Curve2D.new()
+	for p in point_path:
+		new_curve.add_point(p)
 	if new_curve.point_count == 0:
 		return false
 	curve = new_curve
 	return true
 	
-func _get_new_curve(position1: Vector2i,
-				   position2: Vector2i,
+func _get_path_to_destination(platform_pos1: Vector2i,
+				   platform_pos2: Vector2i,
 				   platform_set: PlatformSet,
 				   astar_id_from_position: Dictionary[Vector2i, int],
-				   astar: AStar2D) -> Curve2D:
+				   astar: AStar2D) -> PackedVector2Array:
 	var point_paths: Array[PackedVector2Array] = []
-	for p1 in platform_set.platform_endpoints(position1):
-		for p2 in platform_set.platform_endpoints(position2):
+	for p1 in platform_set.platform_endpoints(platform_pos1):
+		for p2 in platform_set.platform_endpoints(platform_pos2):
 			var id1 = astar_id_from_position[Vector2i(p1)]
 			var id2 = astar_id_from_position[Vector2i(p2)]
 			var point_path = astar.get_point_path(id1, id2)
 			if not point_path:
-				return Curve2D.new()
+				return []
 			point_paths.append(point_path)
 	point_paths.sort_custom(func(a, b): return len(a) < len(b))
-	# TODO: handle when all point_paths are empty (no path)
-	var target1 = Vector2i(point_paths[-1][0])
-	var target2 = Vector2i(point_paths[-1][-1])
-	destinations = [target1, target2] as Array[Vector2i]
-
-	var new_curve = Curve2D.new()
-	for p in point_paths[-1]:
-		new_curve.add_point(p)
-	return new_curve
+	return point_paths[-1]
 
 
 func next_target(pos: Vector2i) -> Vector2i:
