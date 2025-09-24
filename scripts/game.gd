@@ -381,7 +381,7 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	train.try_set_new_curve(platform1.position, platform2.position, platform_set, astar_id_from_position, astar)
 	add_child(train)
 	bank.buy(Global.Asset.TRAIN)
-	_on_train_reaches_end(train, train.target_positions[0])
+	_on_train_reaches_end(train, train.destinations[0])
 
 	
 func _on_train_reaches_end(train: Train, platform_position: Vector2i):

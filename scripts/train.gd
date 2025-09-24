@@ -35,7 +35,7 @@ var progress_point_past_sharp_corner = 0.0
 @onready var no_route_timer := $NoRouteTimer
 @onready var red_marker := $RigidBody2D/RedMarker
 
-var target_positions: Array[Vector2i] = []
+var destinations: Array[Vector2i] = []
 
 func _ready() -> void:
 	for i in wagon_count:
@@ -170,7 +170,7 @@ func _get_new_curve(position1: Vector2i,
 	# TODO: handle when all point_paths are empty (no path)
 	var target1 = Vector2i(point_paths[-1][0])
 	var target2 = Vector2i(point_paths[-1][-1])
-	target_positions = [target1, target2] as Array[Vector2i]
+	destinations = [target1, target2] as Array[Vector2i]
 
 	var new_curve = Curve2D.new()
 	for p in point_paths[-1]:
@@ -179,9 +179,9 @@ func _get_new_curve(position1: Vector2i,
 
 
 func next_target(pos: Vector2i) -> Vector2i:
-	for i in len(target_positions):
-		if target_positions[i] == pos:
-			return target_positions[(i + 1) % len(target_positions)]
+	for i in len(destinations):
+		if destinations[i] == pos:
+			return destinations[(i + 1) % len(destinations)]
 	assert(false, "pos sent to next_target is not in list")
 	return Vector2i()
 
