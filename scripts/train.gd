@@ -141,10 +141,6 @@ func start_from_station():
 	is_stopped_at_station = false
 
 func try_set_new_curve(point_path: PackedVector2Array) -> bool:
-	var target1 = Vector2i(point_path[0])
-	var target2 = Vector2i(point_path[-1])
-	destinations = [target1, target2] as Array[Vector2i]
-
 	var new_curve = Curve2D.new()
 	for p in point_path:
 		new_curve.add_point(p)

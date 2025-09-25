@@ -379,7 +379,9 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	train.end_reached.connect(_on_train_reaches_end)
 	train.tile_reached.connect(_on_train_reaches_tile)
 	train.train_clicked.connect(_on_train_clicked)
-	train.try_set_new_curve(_get_point_path(platform1.position, platform2.position))
+	var point_path = _get_point_path(platform1.position, platform2.position)
+	train.destinations = [point_path[0], point_path[-1]] as Array[Vector2i]
+	train.try_set_new_curve(point_path)
 	add_child(train)
 	bank.buy(Global.Asset.TRAIN)
 	_on_train_reaches_end(train, train.destinations[0])
