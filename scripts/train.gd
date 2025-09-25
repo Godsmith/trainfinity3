@@ -140,13 +140,7 @@ func start_from_station():
 	target_speed = max_speed
 	is_stopped_at_station = false
 
-func try_set_new_curve(platform_pos1: Vector2i,
-						platform_pos2: Vector2i,
-						platform_set: PlatformSet,
-						astar_id_from_position: Dictionary[Vector2i, int],
-						astar: AStar2D) -> bool:
-	var point_path = _get_path_to_destination(platform_pos1, platform_pos2, platform_set, astar_id_from_position, astar)
-
+func try_set_new_curve(point_path: PackedVector2Array) -> bool:
 	var target1 = Vector2i(point_path[0])
 	var target2 = Vector2i(point_path[-1])
 	destinations = [target1, target2] as Array[Vector2i]
@@ -159,23 +153,6 @@ func try_set_new_curve(platform_pos1: Vector2i,
 	curve = new_curve
 	return true
 	
-func _get_path_to_destination(platform_pos1: Vector2i,
-				   platform_pos2: Vector2i,
-				   platform_set: PlatformSet,
-				   astar_id_from_position: Dictionary[Vector2i, int],
-				   astar: AStar2D) -> PackedVector2Array:
-	var point_paths: Array[PackedVector2Array] = []
-	for p1 in platform_set.platform_endpoints(platform_pos1):
-		for p2 in platform_set.platform_endpoints(platform_pos2):
-			var id1 = astar_id_from_position[Vector2i(p1)]
-			var id2 = astar_id_from_position[Vector2i(p2)]
-			var point_path = astar.get_point_path(id1, id2)
-			if not point_path:
-				return []
-			point_paths.append(point_path)
-	point_paths.sort_custom(func(a, b): return len(a) < len(b))
-	return point_paths[-1]
-
 
 func next_target(pos: Vector2i) -> Vector2i:
 	for i in len(destinations):

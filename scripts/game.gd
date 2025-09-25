@@ -379,7 +379,7 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	train.end_reached.connect(_on_train_reaches_end)
 	train.tile_reached.connect(_on_train_reaches_tile)
 	train.train_clicked.connect(_on_train_clicked)
-	train.try_set_new_curve(platform1.position, platform2.position, platform_set, astar_id_from_position, astar)
+	train.try_set_new_curve(_get_point_path(platform1.position, platform2.position))
 	add_child(train)
 	bank.buy(Global.Asset.TRAIN)
 	_on_train_reaches_end(train, train.destinations[0])
@@ -387,7 +387,7 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 
 func _on_train_reaches_end(train: Train, platform_position: Vector2i):
 	await _load_and_unload(train, platform_position)
-	while not train.try_set_new_curve(platform_position, train.next_target(platform_position), platform_set, astar_id_from_position, astar):
+	while not train.try_set_new_curve(_get_point_path(platform_position, train.next_target(platform_position))):
 		_show_popup("Cannot find route!", train.get_train_position())
 		train.no_route_timer.start()
 		await train.no_route_timer.timeout
@@ -429,6 +429,26 @@ func _on_train_reaches_tile(train: Train, pos: Vector2i):
 func _on_train_clicked(train: Train):
 	if gui_state == Gui.State.FOLLOW_TRAIN:
 		follow_train = train
+
+###################################################################################
+
+## Returns the point path between two platforms.
+## The path returned will be the longest possible, i.e. between the opposite ends
+## of the stations.
+## Returns an empty path if there is no path.
+func _get_point_path(platform_pos1: Vector2i,
+					 platform_pos2: Vector2i) -> PackedVector2Array:
+	var point_paths: Array[PackedVector2Array] = []
+	for p1 in platform_set.platform_endpoints(platform_pos1):
+		for p2 in platform_set.platform_endpoints(platform_pos2):
+			var id1 = astar_id_from_position[Vector2i(p1)]
+			var id2 = astar_id_from_position[Vector2i(p2)]
+			var point_path = astar.get_point_path(id1, id2)
+			if not point_path:
+				return []
+			point_paths.append(point_path)
+	point_paths.sort_custom(func(a, b): return len(a) < len(b))
+	return point_paths[-1]
 
 ###################################################################################
 
