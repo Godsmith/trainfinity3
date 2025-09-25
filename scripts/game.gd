@@ -364,6 +364,7 @@ func _platform_clicked(platform: Platform):
 		_try_create_train(selected_platform, platform)
 		_change_gui_state(Gui.State.TRAIN1)
 
+############################################################################
 
 func _try_create_train(platform1: Platform, platform2: Platform):
 	if not bank.can_afford(Global.Asset.TRAIN):
@@ -382,8 +383,8 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	add_child(train)
 	bank.buy(Global.Asset.TRAIN)
 	_on_train_reaches_end(train, train.destinations[0])
-
 	
+
 func _on_train_reaches_end(train: Train, platform_position: Vector2i):
 	await _load_and_unload(train, platform_position)
 	while not train.try_set_new_curve(platform_position, train.next_target(platform_position), platform_set, astar_id_from_position, astar):
@@ -391,6 +392,7 @@ func _on_train_reaches_end(train: Train, platform_position: Vector2i):
 		train.no_route_timer.start()
 		await train.no_route_timer.timeout
 	train.start_from_station()
+
 
 func _load_and_unload(train: Train, platform_position: Vector2i):
 	for station in platform_set.stations_connected_to_platform(platform_position, _get_stations()):
@@ -405,6 +407,7 @@ func _load_and_unload(train: Train, platform_position: Vector2i):
 		while station.get_total_ore_count() > 0 and train.get_total_ore_count() < train.max_capacity():
 			var ore_type = station.remove_ore()
 			await train.add_ore(ore_type)
+
 
 func _on_train_reaches_tile(train: Train, pos: Vector2i):
 	if not track_set.has_track(pos):
@@ -428,12 +431,12 @@ func _on_train_clicked(train: Train):
 		follow_train = train
 
 ###################################################################################
+
 func _show_popup(text: String, pos: Vector2):
 	var popup = POPUP.instantiate()
 	popup.position = pos
 	add_child(popup)
 	popup.show_popup(text)
-
 
 ######################################################################
 
