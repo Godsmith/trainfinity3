@@ -103,7 +103,7 @@ func _process(delta):
 		target_speed = 0.0
 		absolute_speed = 0.0
 		is_stopped_at_station = true
-		end_reached.emit(self, get_train_position().snapped(Global.TILE))
+		end_reached.emit(self)
 	
 	# Need to do this at the end of the method, so that we don't adjust wagons etc 
 	# after on_rails is set to false
@@ -140,14 +140,11 @@ func start_from_station():
 	target_speed = max_speed
 	is_stopped_at_station = false
 
-func try_set_new_curve(point_path: PackedVector2Array) -> bool:
+func set_new_curve(point_path: PackedVector2Array):
 	var new_curve = Curve2D.new()
 	for p in point_path:
 		new_curve.add_point(p)
-	if new_curve.point_count == 0:
-		return false
 	curve = new_curve
-	return true
 	
 
 func next_target(pos: Vector2i) -> Vector2i:
