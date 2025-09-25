@@ -14,7 +14,6 @@ signal train_clicked(train: Train)
 @export var acceleration := 6.0
 @export var wagons: Array = []
 
-var last_progress := 0.0
 var last_corner_checked = Vector2(0.0, 0.0)
 var on_rails := true
 # TODO: consider changing to "starting wagon count"
