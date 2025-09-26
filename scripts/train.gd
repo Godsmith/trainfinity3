@@ -124,13 +124,19 @@ static func _angle_between_points(a: Vector2, b: Vector2, c: Vector2) -> float:
 	var bc = c - b
 	return abs(ba.angle_to(bc)) # signed angle in radians (-π..π)
 
-func start_from_station(point_path: PackedVector2Array):
+func set_new_curve_and_start_from_station(point_path: PackedVector2Array):
+	# Jump forwards a number of tiles equalling the number of wagons
+	# TODO: consider if we should start at the furthest end of the station instead, that
+	# is not the same if the station is longer than the train.
+	var train_point_path = point_path.slice(len(wagons))
+	set_new_curve(train_point_path)
+
 	# Set wagon starting locations
 	for i in len(wagons):
 		var wagon = wagons[i]
 		var wagon_curve = Curve2D.new()
-		wagon_curve.add_point(point_path[wagons.size() - i - 1])
-		wagon_curve.add_point(point_path[wagons.size() - i])
+		wagon_curve.add_point(point_path[len(wagons) - i - 1])
+		wagon_curve.add_point(point_path[len(wagons) - i])
 		wagon.curve = wagon_curve
 		wagon.path_follow.progress = 0.0
 
