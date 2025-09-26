@@ -383,10 +383,10 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	train.destinations = [point_path[-1], point_path[0]] as Array[Vector2i]
 	add_child(train)
 	# TODO: duplicated below. Also, might have to be changed when the train shall start with loading?
-	point_path = point_path.slice(len(train.wagons))
-	train.set_new_curve(point_path)
+	var train_point_path = point_path.slice(len(train.wagons))
+	train.set_new_curve(train_point_path)
 	bank.buy(Global.Asset.TRAIN)
-	train.start_from_station()
+	train.start_from_station(point_path)
 	#_on_train_reaches_end_of_curve(train, train.destinations[0])
 	
 
@@ -406,19 +406,20 @@ func _on_train_reaches_end_of_curve(train: Train):
 		# If we are at a station, jump forwards a number of tiles equalling the number of wagons
 		# TODO: consider if we should start at the furthest end of the station instead, that
 		# is not the same if the station is longer than the train.
-		if tile_position in train.destinations:
-			point_path = point_path.slice(len(train.wagons))
-		print("set_point_path_to %s" % target_position)
-		print("new point_path: %s" % point_path)
+		#print("set_point_path_to %s" % target_position)
+		#print("new point_path: %s" % point_path)
 		if point_path:
-			train.set_new_curve(point_path)
+			if tile_position in train.destinations:
+				var train_point_path = point_path.slice(len(train.wagons))
+				train.set_new_curve(train_point_path)
+				train.start_from_station(point_path)
+			else:
+				train.set_new_curve(point_path)
 			break
 		else:
 			_show_popup("Cannot find route!", train.get_train_position())
 			train.no_route_timer.start()
 			await train.no_route_timer.timeout
-	if tile_position in train.destinations:
-		train.start_from_station()
 
 
 func _load_and_unload(train: Train):

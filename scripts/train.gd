@@ -124,13 +124,17 @@ static func _angle_between_points(a: Vector2, b: Vector2, c: Vector2) -> float:
 	var bc = c - b
 	return abs(ba.angle_to(bc)) # signed angle in radians (-π..π)
 
-func start_from_station():
+func start_from_station(point_path: PackedVector2Array):
 	#path_follow.progress = wagon_count * Global.TILE_SIZE
 	# Need to fix wagon location here; if we are waiting for when it is done in the
 	# main loop the wagons will visibly jump because the path was changed before
 	# it is corrected.
-	# TODO: set wagon location here
-	#_fix_wagon_location()
+	# TODO: probably need to set initial position in some way
+	# for i in len(wagons):
+	# 	var wagon = wagons[i]
+	# 	var wagon_position = point_path[len(point_path) - len(wagons) + i]
+	# 	print("set wagon position to %s" % wagon_position)
+	# 	wagon.position = wagon_position
 	target_speed = max_speed
 	is_stopped_at_station = false
 
@@ -139,19 +143,22 @@ func set_new_curve(point_path: PackedVector2Array):
 	new_curve.add_point(point_path[0])
 	new_curve.add_point(point_path[1])
 	curve = new_curve
-	print("new curve set: %s" % curve.get_baked_points())
+	#print("new curve set: %s" % curve.get_baked_points())
 	path_follow.progress = 0.0
 
 	# set wagon curves
 	var wagon_ahead_position = point_path[0]
 	for wagon in wagons:
 		var wagon_curve = Curve2D.new()
-		wagon_curve.add_point(wagon.position)
+		var last_point_of_previous_curve = last(wagon.curve.get_baked_points())
+		wagon_curve.add_point(last_point_of_previous_curve)
 		wagon_curve.add_point(wagon_ahead_position)
 		wagon.curve = wagon_curve
 		wagon.path_follow.progress = 0.0
-		wagon_ahead_position = wagon.position
+		wagon_ahead_position = last_point_of_previous_curve
 
+static func last(array: PackedVector2Array):
+	return array.get(len(array) - 1)
 	
 func get_train_position() -> Vector2:
 	return rigid_body.global_position

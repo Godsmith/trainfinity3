@@ -25,6 +25,7 @@
   - train do not repath towards oncoming trains
   - trains do not repath back towards where they came (should be solved by the above)
   - if there is no path, stop the train and give error
+- refactoring: fix so that we don't use so many internal methods and properties on train and wagon
 - help menu showing the controls
 - different prices and production rate for different goods
 - train should mark the tile it wants to go to when it cannot find path
