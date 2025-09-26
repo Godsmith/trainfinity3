@@ -405,6 +405,7 @@ func _on_train_reaches_end_of_curve(train: Train):
 		var target_position = train.destinations[train.destination_index]
 		var point_path = _get_point_path(tile_position, target_position)
 		print("set_point_path_to %s" % target_position)
+		print("new point_path: %s" % point_path)
 		if point_path:
 			train.set_new_curve(point_path)
 			break
@@ -468,6 +469,7 @@ func _get_point_path_between_platforms(platform_pos1: Vector2i,
 	return point_paths[-1]
 
 func _get_point_path(pos1: Vector2i, pos2: Vector2i) -> PackedVector2Array:
+	print("_get_point_path(%s, %s)" % [pos1, pos2])
 	var id1 = astar_id_from_position[Vector2i(pos1)]
 	var id2 = astar_id_from_position[Vector2i(pos2)]
 	return astar.get_point_path(id1, id2)

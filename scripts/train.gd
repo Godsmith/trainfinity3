@@ -130,7 +130,7 @@ func _fix_wagon_location():
 		wagon.progress = clamp(wagon_progress, 0.0, curve.get_baked_length())
 
 func start_from_station():
-	path_follow.progress = wagon_count * Global.TILE_SIZE
+	#path_follow.progress = wagon_count * Global.TILE_SIZE
 	# Need to fix wagon location here; if we are waiting for when it is done in the
 	# main loop the wagons will visibly jump because the path was changed before
 	# it is corrected.
