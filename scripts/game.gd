@@ -376,7 +376,7 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	# of the target platform
 	var train = TRAIN.instantiate()
 	train.wagon_count = min(platform_set.platform_size(platform1.position), platform_set.platform_size(platform2.position)) - 1
-	train.end_reached.connect(_on_train_reaches_end)
+	train.end_reached.connect(_on_train_reaches_end_of_curve)
 	train.tile_reached.connect(_on_train_reaches_tile)
 	train.train_clicked.connect(_on_train_clicked)
 	var point_path = _get_point_path(platform1.position, platform2.position)
@@ -385,22 +385,29 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	add_child(train)
 	bank.buy(Global.Asset.TRAIN)
 	train.start_from_station()
-	#_on_train_reaches_end(train, train.destinations[0])
+	#_on_train_reaches_end_of_curve(train, train.destinations[0])
 	
 
-func _on_train_reaches_end(train: Train):
-	await _load_and_unload(train)
-	while true:
-		var tile_position = train.get_train_position().snapped(Global.TILE)
-		var point_path = _get_point_path(tile_position, train.next_target(tile_position))
-		if point_path:
-			train.set_new_curve(point_path)
-			break
-		else:
-			_show_popup("Cannot find route!", train.get_train_position())
-			train.no_route_timer.start()
-			await train.no_route_timer.timeout
-	train.start_from_station()
+func _on_train_reaches_end_of_curve(train: Train):
+	var tile_position = Vector2i(train.get_train_position().snapped(Global.TILE))
+	# TODO: this check isn't needed now, since the train will always be at a destination
+	# when this is called, but will be needed soon when the path will be split up into
+	# multiple curves.
+	if tile_position in train.destinations:
+		train.target_speed = 0.0
+		train.absolute_speed = 0.0
+		train.is_stopped_at_station = true
+		await _load_and_unload(train)
+		while true:
+			var point_path = _get_point_path(tile_position, train.next_target(tile_position))
+			if point_path:
+				train.set_new_curve(point_path)
+				break
+			else:
+				_show_popup("Cannot find route!", train.get_train_position())
+				train.no_route_timer.start()
+				await train.no_route_timer.timeout
+		train.start_from_station()
 
 
 func _load_and_unload(train: Train):

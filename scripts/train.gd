@@ -100,9 +100,6 @@ func _process(delta):
 	path_follow.progress += delta * absolute_speed
 	_fix_wagon_location()
 	if path_follow.progress >= curve.get_baked_length() and target_speed > 0.0 and not is_stopped_at_station:
-		target_speed = 0.0
-		absolute_speed = 0.0
-		is_stopped_at_station = true
 		end_reached.emit(self)
 	
 	# Need to do this at the end of the method, so that we don't adjust wagons etc 
@@ -142,8 +139,8 @@ func start_from_station():
 
 func set_new_curve(point_path: PackedVector2Array):
 	var new_curve = Curve2D.new()
-	for p in point_path:
-		new_curve.add_point(p)
+	new_curve.add_point(point_path[0])
+	new_curve.add_point(point_path[1])
 	curve = new_curve
 	
 
