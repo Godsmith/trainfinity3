@@ -19,7 +19,7 @@
 ## TODO
 
 - trains repath at intersections  
-  - make wagons work again
+  - check that wagons are loaded properly
   - test train cannot find route again to ensure train doesn't jump to a strange position when that happens
   - start with loading at the station the train starts at
   - train do not repath towards oncoming trains

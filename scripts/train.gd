@@ -125,16 +125,15 @@ static func _angle_between_points(a: Vector2, b: Vector2, c: Vector2) -> float:
 	return abs(ba.angle_to(bc)) # signed angle in radians (-π..π)
 
 func start_from_station(point_path: PackedVector2Array):
-	#path_follow.progress = wagon_count * Global.TILE_SIZE
-	# Need to fix wagon location here; if we are waiting for when it is done in the
-	# main loop the wagons will visibly jump because the path was changed before
-	# it is corrected.
-	# TODO: probably need to set initial position in some way
-	# for i in len(wagons):
-	# 	var wagon = wagons[i]
-	# 	var wagon_position = point_path[len(point_path) - len(wagons) + i]
-	# 	print("set wagon position to %s" % wagon_position)
-	# 	wagon.position = wagon_position
+	# Set wagon starting locations
+	for i in len(wagons):
+		var wagon = wagons[i]
+		var wagon_curve = Curve2D.new()
+		wagon_curve.add_point(point_path[wagons.size() - i - 1])
+		wagon_curve.add_point(point_path[wagons.size() - i])
+		wagon.curve = wagon_curve
+		wagon.path_follow.progress = 0.0
+
 	target_speed = max_speed
 	is_stopped_at_station = false
 
