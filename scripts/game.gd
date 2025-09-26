@@ -380,8 +380,10 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	train.tile_reached.connect(_on_train_reaches_tile)
 	train.train_clicked.connect(_on_train_clicked)
 	var point_path = _get_point_path_between_platforms(platform1.position, platform2.position)
-	train.destinations = [point_path[0], point_path[-1]] as Array[Vector2i]
+	train.destinations = [point_path[-1], point_path[0]] as Array[Vector2i]
 	add_child(train)
+	# TODO: duplicated below. Also, might have to be changed when the train shall start with loading?
+	point_path = point_path.slice(len(train.wagons))
 	train.set_new_curve(point_path)
 	bank.buy(Global.Asset.TRAIN)
 	train.start_from_station()
@@ -390,9 +392,6 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 
 func _on_train_reaches_end_of_curve(train: Train):
 	var tile_position = Vector2i(train.get_train_position().snapped(Global.TILE))
-	# TODO: this check isn't needed now, since the train will always be at a destination
-	# when this is called, but will be needed soon when the path will be split up into
-	# multiple curves.
 	print("_on_train_reaches_end_of_curve, position = %s" % tile_position)
 	if tile_position in train.destinations:
 		train.target_speed = 0.0
@@ -404,6 +403,11 @@ func _on_train_reaches_end_of_curve(train: Train):
 	while true:
 		var target_position = train.destinations[train.destination_index]
 		var point_path = _get_point_path(tile_position, target_position)
+		# If we are at a station, jump forwards a number of tiles equalling the number of wagons
+		# TODO: consider if we should start at the furthest end of the station instead, that
+		# is not the same if the station is longer than the train.
+		if tile_position in train.destinations:
+			point_path = point_path.slice(len(train.wagons))
 		print("set_point_path_to %s" % target_position)
 		print("new point_path: %s" % point_path)
 		if point_path:
