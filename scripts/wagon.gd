@@ -1,10 +1,11 @@
-extends PathFollow2D
+extends Path2D
 
 @onready var _chunks := find_children("Chunk*")
 @onready var max_capacity := len(_chunks)
-@onready var rigid_body: RigidBody2D = $RigidBody2D
-@onready var collision_shape: CollisionShape2D = $RigidBody2D/CollisionShape2D
-@onready var red_marker := $RigidBody2D/RedMarker
+@onready var path_follow := $PathFollow2D
+@onready var rigid_body := $PathFollow2D/RigidBody2D
+@onready var collision_shape := $PathFollow2D/RigidBody2D/CollisionShape2D
+@onready var red_marker := $PathFollow2D/RigidBody2D/RedMarker
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
