@@ -376,23 +376,35 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	# of the target platform
 	var train = TRAIN.instantiate()
 	train.wagon_count = min(platform_set.platform_size(platform1.position), platform_set.platform_size(platform2.position)) - 1
-	train.end_reached.connect(_on_train_reaches_end)
+	train.end_reached.connect(_on_train_reaches_end_of_curve)
 	train.tile_reached.connect(_on_train_reaches_tile)
 	train.train_clicked.connect(_on_train_clicked)
-	var point_path = _get_point_path(platform1.position, platform2.position)
+	var point_path = _get_point_path_between_platforms(platform1.position, platform2.position)
 	train.destinations = [point_path[0], point_path[-1]] as Array[Vector2i]
-	train.set_new_curve(point_path)
 	add_child(train)
+	train.set_new_curve(point_path)
 	bank.buy(Global.Asset.TRAIN)
 	train.start_from_station()
-	#_on_train_reaches_end(train, train.destinations[0])
+	#_on_train_reaches_end_of_curve(train, train.destinations[0])
 	
 
-func _on_train_reaches_end(train: Train):
-	await _load_and_unload(train)
+func _on_train_reaches_end_of_curve(train: Train):
+	var tile_position = Vector2i(train.get_train_position().snapped(Global.TILE))
+	# TODO: this check isn't needed now, since the train will always be at a destination
+	# when this is called, but will be needed soon when the path will be split up into
+	# multiple curves.
+	print("_on_train_reaches_end_of_curve, position = %s" % tile_position)
+	if tile_position in train.destinations:
+		train.target_speed = 0.0
+		train.absolute_speed = 0.0
+		train.is_stopped_at_station = true
+		await _load_and_unload(train)
+		train.destination_index += 1
+		train.destination_index %= len(train.destinations)
 	while true:
-		var tile_position = train.get_train_position().snapped(Global.TILE)
-		var point_path = _get_point_path(tile_position, train.next_target(tile_position))
+		var target_position = train.destinations[train.destination_index]
+		var point_path = _get_point_path(tile_position, target_position)
+		print("set_point_path_to %s" % target_position)
 		if point_path:
 			train.set_new_curve(point_path)
 			break
@@ -400,7 +412,8 @@ func _on_train_reaches_end(train: Train):
 			_show_popup("Cannot find route!", train.get_train_position())
 			train.no_route_timer.start()
 			await train.no_route_timer.timeout
-	train.start_from_station()
+	if tile_position in train.destinations:
+		train.start_from_station()
 
 
 func _load_and_unload(train: Train):
@@ -445,19 +458,20 @@ func _on_train_clicked(train: Train):
 ## The path returned will be the longest possible, i.e. between the opposite ends
 ## of the stations.
 ## Returns an empty path if there is no path.
-func _get_point_path(platform_pos1: Vector2i,
-					 platform_pos2: Vector2i) -> PackedVector2Array:
+func _get_point_path_between_platforms(platform_pos1: Vector2i,
+									   platform_pos2: Vector2i) -> PackedVector2Array:
 	var point_paths: Array[PackedVector2Array] = []
 	for p1 in platform_set.platform_endpoints(platform_pos1):
 		for p2 in platform_set.platform_endpoints(platform_pos2):
-			var id1 = astar_id_from_position[Vector2i(p1)]
-			var id2 = astar_id_from_position[Vector2i(p2)]
-			var point_path = astar.get_point_path(id1, id2)
-			if not point_path:
-				return []
-			point_paths.append(point_path)
+			point_paths.append(_get_point_path(p1, p2))
 	point_paths.sort_custom(func(a, b): return len(a) < len(b))
 	return point_paths[-1]
+
+func _get_point_path(pos1: Vector2i, pos2: Vector2i) -> PackedVector2Array:
+	var id1 = astar_id_from_position[Vector2i(pos1)]
+	var id2 = astar_id_from_position[Vector2i(pos2)]
+	return astar.get_point_path(id1, id2)
+
 
 ###################################################################################
 
