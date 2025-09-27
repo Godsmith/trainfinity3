@@ -406,7 +406,7 @@ func _on_train_reaches_end_of_curve(train: Train):
 			if tile_position in train.destinations:
 				train.set_new_curve_and_start_from_station(point_path)
 			else:
-				train.set_new_curve(point_path)
+				train.set_new_curve_and_limit_speed_if_sharp_corner(point_path)
 			break
 		else:
 			_show_popup("Cannot find route!", train.get_train_position())

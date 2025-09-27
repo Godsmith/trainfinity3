@@ -19,8 +19,8 @@
 ## TODO
 
 - trains repath at intersections  
+  - ensure trains can be destroyed again (currently in tile_reached)
   - remove tile_reached
-  - make train slow down in curves again
   - test train cannot find route again to ensure train doesn't jump to a strange position when that happens
   - start with loading at the station the train starts at
   - train do not repath towards oncoming trains

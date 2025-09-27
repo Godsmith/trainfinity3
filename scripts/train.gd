@@ -81,55 +81,21 @@ func _process(delta):
 	if absolute_speed < target_speed:
 		absolute_speed += acceleration * delta
 
-	var curve_point_index = _approaching_curve_point()
-
-	if curve_point_index > 0 and curve_point_index < curve.point_count - 1:
-		var angle = _angle_between_points(curve.get_point_position(curve_point_index - 1),
-										  curve.get_point_position(curve_point_index),
-										  curve.get_point_position(curve_point_index + 1))
-		if angle < PI / 2 + 0.05: # 90 degrees or lower
-			target_speed = 5.0
-			absolute_speed = target_speed
-			progress_point_past_sharp_corner = path_follow.progress + Global.TILE_SIZE * wagon_count
-			is_in_sharp_corner = true
-
-	if is_in_sharp_corner:
-		if path_follow.progress > progress_point_past_sharp_corner:
-			target_speed = max_speed
-			is_in_sharp_corner = false
-
 	path_follow.progress += delta * absolute_speed
 	for wagon in wagons:
 		wagon.path_follow.progress = path_follow.progress
 
 	if path_follow.progress >= curve.get_baked_length() and target_speed > 0.0 and not is_stopped_at_station:
+		# TODO: rename to end_of_curve
 		end_reached.emit(self)
-	
-	# Need to do this at the end of the method, so that we don't adjust wagons etc 
-	# after on_rails is set to false
-	if curve_point_index != -1:
-		tile_reached.emit(self, Vector2i(curve.get_point_position(curve_point_index)))
 
-func _approaching_curve_point() -> int:
-	for i in curve.point_count:
-		var point = curve.get_point_position(i)
-		if point.distance_squared_to(path_follow.position) < 4.0:
-			if not point == last_corner_checked:
-				last_corner_checked = point
-				return i
-	return -1
-
-static func _angle_between_points(a: Vector2, b: Vector2, c: Vector2) -> float:
-	var ba = a - b
-	var bc = c - b
-	return abs(ba.angle_to(bc)) # signed angle in radians (-π..π)
 
 func set_new_curve_and_start_from_station(point_path: PackedVector2Array):
 	# Jump forwards a number of tiles equalling the number of wagons
 	# TODO: consider if we should start at the furthest end of the station instead, that
 	# is not the same if the station is longer than the train.
 	var train_point_path = point_path.slice(len(wagons))
-	set_new_curve(train_point_path)
+	set_new_curve_and_limit_speed_if_sharp_corner(train_point_path)
 
 	# Set wagon starting locations
 	for i in len(wagons):
@@ -143,10 +109,13 @@ func set_new_curve_and_start_from_station(point_path: PackedVector2Array):
 	target_speed = max_speed
 	is_stopped_at_station = false
 
-func set_new_curve(point_path: PackedVector2Array):
+
+func set_new_curve_and_limit_speed_if_sharp_corner(point_path: PackedVector2Array):
+	var sharp_corners = []
 	var new_curve = Curve2D.new()
 	new_curve.add_point(point_path[0])
 	new_curve.add_point(point_path[1])
+	sharp_corners.append(_is_sharp_corner(curve, new_curve))
 	curve = new_curve
 	#print("new curve set: %s" % curve.get_baked_points())
 	path_follow.progress = 0.0
@@ -158,9 +127,37 @@ func set_new_curve(point_path: PackedVector2Array):
 		var last_point_of_previous_curve = last(wagon.curve.get_baked_points())
 		wagon_curve.add_point(last_point_of_previous_curve)
 		wagon_curve.add_point(wagon_ahead_position)
+		sharp_corners.append(_is_sharp_corner(wagon.curve, wagon_curve))
 		wagon.curve = wagon_curve
 		wagon.path_follow.progress = 0.0
 		wagon_ahead_position = last_point_of_previous_curve
+
+	# Skip last wagon when checking if speed shall be reduced
+	sharp_corners.pop_back()
+	for is_sharp_corner in sharp_corners:
+		if is_sharp_corner:
+			target_speed = 5.0
+			absolute_speed = target_speed
+			return
+	target_speed = max_speed
+
+
+func _is_sharp_corner(last_curve: Curve2D, new_curve: Curve2D):
+	var angle = _angle_between_points(last_curve.get_point_position(0),
+									  _get_last_point_position(last_curve),
+									  _get_last_point_position(new_curve))
+	return angle < PI / 2 + 0.05 # 90 degrees or lower
+
+
+static func _angle_between_points(a: Vector2, b: Vector2, c: Vector2) -> float:
+	var ba = a - b
+	var bc = c - b
+	return abs(ba.angle_to(bc)) # signed angle in radians (-π..π)
+
+
+static func _get_last_point_position(curve_: Curve2D) -> Vector2:
+	return curve_.get_point_position(curve_.point_count - 1)
+
 
 static func last(array: PackedVector2Array):
 	return array.get(len(array) - 1)
