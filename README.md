@@ -19,6 +19,8 @@
 ## TODO
 
 - trains repath at intersections  
+  - diagonal tracks do not work
+  - no delay in cannot find rout
   - ensure trains can be destroyed again (currently in tile_reached)
   - remove tile_reached
   - test train cannot find route again to ensure train doesn't jump to a strange position when that happens
