@@ -12,6 +12,9 @@ func _ready() -> void:
 	for chunk in _chunks:
 		chunk.visible = false
 
+func get_wagon_position() -> Vector2:
+	return rigid_body.global_position
+
 func add_ore(type: Ore.OreType):
 	var reversed_chunks = _chunks.duplicate()
 	reversed_chunks.reverse()

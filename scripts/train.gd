@@ -91,6 +91,7 @@ func _process(delta):
 
 
 func set_new_curve_and_start_from_station(point_path: PackedVector2Array):
+	print("_set_new_curve_and_start_from_station(%s)" % [point_path])
 	# Jump forwards a number of tiles equalling the number of wagons
 	# TODO: consider if we should start at the furthest end of the station instead, that
 	# is not the same if the station is longer than the train.
@@ -98,19 +99,14 @@ func set_new_curve_and_start_from_station(point_path: PackedVector2Array):
 	set_new_curve_and_limit_speed_if_sharp_corner(train_point_path)
 
 	# Set wagon starting locations
-	for i in len(wagons):
-		var wagon = wagons[i]
-		var wagon_curve = Curve2D.new()
-		wagon_curve.add_point(point_path[len(wagons) - i - 1])
-		wagon_curve.add_point(point_path[len(wagons) - i])
-		wagon.curve = wagon_curve
-		wagon.path_follow.progress = 0.0
+	_set_wagon_curves_and_positions(train_point_path[0], [point_path[0]])
 
 	target_speed = max_speed
 	is_stopped_at_station = false
 
 
 func set_new_curve_and_limit_speed_if_sharp_corner(point_path: PackedVector2Array):
+	print("_set_new_curve_and_limit_speed_if_sharp_corner(%s)" % [point_path])
 	var sharp_corners = []
 	var new_curve = Curve2D.new()
 	new_curve.add_point(point_path[0])
@@ -121,25 +117,40 @@ func set_new_curve_and_limit_speed_if_sharp_corner(point_path: PackedVector2Arra
 	path_follow.progress = 0.0
 
 	# set wagon curves
-	var wagon_ahead_position = point_path[0]
+	var wagon_point_path: Array[Vector2] = []
 	for wagon in wagons:
-		var wagon_curve = Curve2D.new()
-		var last_point_of_previous_curve = last(wagon.curve.get_baked_points())
-		wagon_curve.add_point(last_point_of_previous_curve)
-		wagon_curve.add_point(wagon_ahead_position)
-		sharp_corners.append(_is_sharp_corner(wagon.curve, wagon_curve))
-		wagon.curve = wagon_curve
-		wagon.path_follow.progress = 0.0
-		wagon_ahead_position = last_point_of_previous_curve
+		wagon_point_path.append(wagon.get_wagon_position())
+	_set_wagon_curves_and_positions(point_path[0], wagon_point_path)
 
+	# TODO: reactivate
+	# TODO: consider doing it another way; set slowdown location
+	#       until last wagon has passed that location
 	# Skip last wagon when checking if speed shall be reduced
-	sharp_corners.pop_back()
-	for is_sharp_corner in sharp_corners:
-		if is_sharp_corner:
-			target_speed = 5.0
-			absolute_speed = target_speed
-			return
-	target_speed = max_speed
+	# sharp_corners.pop_back()
+	# for is_sharp_corner in sharp_corners:
+	# 	if is_sharp_corner:
+	# 		target_speed = 5.0
+	# 		absolute_speed = target_speed
+	# 		return
+	# target_speed = max_speed
+
+
+## current_wagon_positions from closest to train and back
+func _set_wagon_curves_and_positions(train_position: Vector2, current_wagon_positions: Array[Vector2]):
+	print("_set_wagon_curves_and_positions(%s, %s)" % [train_position, current_wagon_positions])
+	var wagon_point_path = [train_position] + current_wagon_positions
+	wagon_point_path.reverse()
+	var wagon_curve = Curve2D.new()
+	print(wagon_point_path)
+	for point in wagon_point_path:
+		wagon_curve.add_point(point)
+	print("%s, length %s" % [wagon_curve.get_baked_points(), wagon_curve.get_baked_length()])
+	for i in len(wagons):
+		var wagon = wagons[i]
+		wagon.curve = wagon_curve
+		wagon.path_follow.progress = wagon_curve.get_baked_length() - (1 + i) * Global.TILE_SIZE
+		print("wagon %s has progress %s" % [i, wagon.path_follow.progress])
+		#sharp_corners.append(_is_sharp_corner(wagon.curve, wagon_curve))
 
 
 func _is_sharp_corner(last_curve: Curve2D, new_curve: Curve2D):
