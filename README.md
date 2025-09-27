@@ -19,7 +19,6 @@
 ## TODO
 
 - trains repath at intersections  
-  - check that wagons are loaded properly
   - remove tile_reached
   - make train slow down in curves again
   - test train cannot find route again to ensure train doesn't jump to a strange position when that happens

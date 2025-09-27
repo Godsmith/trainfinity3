@@ -10,6 +10,7 @@
 
 [node name="TrackDebug" type="Node2D"]
 script = ExtResource("1_s27n8")
+create_ore_and_factory = true
 
 [node name="Terrain" type="Node2D" parent="."]
 script = ExtResource("2_jcyc3")
