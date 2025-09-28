@@ -84,7 +84,8 @@ func _process(delta):
 
 	path_follow.progress += delta * absolute_speed
 	for wagon in wagons:
-		wagon.path_follow.progress = path_follow.progress
+		wagon.path_follow.progress -= delta * absolute_speed
+		#wagon.path_follow.progress = path_follow.progress
 
 	if path_follow.progress >= curve.get_baked_length() and target_speed > 0.0 and not is_stopped_at_station:
 		# TODO: rename to end_of_curve
@@ -129,22 +130,21 @@ func set_new_curve_and_limit_speed_if_sharp_corner(point_path: PackedVector2Arra
 	path_follow.progress = 0.0
 
 	# set wagon curves
-	var all_positions = PackedVector2Array(previous_positions) + point_path
-	print("all_positions: %s" % all_positions)
+	#var all_positions = PackedVector2Array(previous_positions) + point_path
+	#print("all_positions: %s" % all_positions)
 	#print("wagon positions:")
+	var reversed_previous_positions = previous_positions.duplicate()
+	reversed_previous_positions.reverse()
+	var wagon_curve_positions = [point_path[1], point_path[0]] + reversed_previous_positions
+	print("wagon_curve_positions: %s" % str(wagon_curve_positions))
+	var wagon_curve = Curve2D.new()
+	var extra_slack = sqrt(2) - 1.0 if point_path[0].x != point_path[1].x and point_path[0].y != point_path[1].y else 0.0
+	for pos in wagon_curve_positions:
+		wagon_curve.add_point(pos)
 	for i in len(wagons):
 		var wagon = wagons[i]
-		var wagon_curve = Curve2D.new()
-		# This is wrong, now that curves are one longer.
-		# It does seem that we need some memory of previous positions for the train.
-		wagon_curve.add_point(all_positions[len(wagons) - i - 1])
-		wagon_curve.add_point(all_positions[len(wagons) - i])
-		wagon_curve.add_point(all_positions[len(wagons) - i + 1])
-		# TODO; reenable
-		#sharp_corners.append(_is_sharp_corner(wagon.curve, wagon_curve))
 		wagon.curve = wagon_curve
-		# TODO: might need adjustment
-		wagon.path_follow.progress = 0.0
+		wagon.path_follow.progress = (extra_slack + i + 2) * Global.TILE_SIZE
 
 	# Skip last wagon when checking if speed shall be reduced
 	sharp_corners.pop_back()
