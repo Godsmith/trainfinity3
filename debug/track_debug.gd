@@ -4,6 +4,7 @@ const T = Global.TILE_SIZE
 const FACTORY = preload("res://scenes/factory.tscn")
 
 @export var create_ore_and_factory: bool
+@export var diagonal_track: bool
 
 func _ready():
 	super._ready()
@@ -19,8 +20,24 @@ func _ready():
 		add_child(factory)
 
 	var track_positions: Array[Vector2i] = []
-	for x in range(-6 * T, 7 * T, T):
-		track_positions.append(Vector2i(x, T))
+	if diagonal_track:
+		track_positions.append(Vector2i(-6 * T, T))
+		track_positions.append(Vector2i(-5 * T, T))
+		track_positions.append(Vector2i(-4 * T, T))
+		track_positions.append(Vector2i(-3 * T, T))
+		track_positions.append(Vector2i(-2 * T, T))
+		track_positions.append(Vector2i(-1 * T, 2 * T))
+		track_positions.append(Vector2i(0 * T, 2 * T))
+		track_positions.append(Vector2i(1 * T, 2 * T))
+		track_positions.append(Vector2i(2 * T, T))
+		track_positions.append(Vector2i(3 * T, T))
+		track_positions.append(Vector2i(4 * T, T))
+		track_positions.append(Vector2i(5 * T, T))
+		track_positions.append(Vector2i(6 * T, T))
+
+	else:
+		for x in range(-6 * T, 7 * T, T):
+			track_positions.append(Vector2i(x, T))
 
 	_show_ghost_track(track_positions)
 	_try_create_tracks()
