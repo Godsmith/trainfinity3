@@ -99,7 +99,7 @@ func set_new_curve_and_start_from_station(point_path: PackedVector2Array):
 	set_new_curve_and_limit_speed_if_sharp_corner(train_point_path)
 
 	# Set wagon starting locations
-	_set_wagon_curves_and_positions(train_point_path[0], [point_path[0]])
+	_set_wagon_curves_and_positions([train_point_path[1], point_path[0]])
 
 	target_speed = max_speed
 	is_stopped_at_station = false
@@ -117,10 +117,10 @@ func set_new_curve_and_limit_speed_if_sharp_corner(point_path: PackedVector2Arra
 	path_follow.progress = 0.0
 
 	# set wagon curves
-	var wagon_point_path: Array[Vector2] = []
+	var wagon_positions: Array[Vector2] = []
 	for wagon in wagons:
-		wagon_point_path.append(wagon.get_wagon_position())
-	_set_wagon_curves_and_positions(point_path[0], wagon_point_path)
+		wagon_positions.append(wagon.get_wagon_position())
+	_set_wagon_curves_and_positions([point_path[1], point_path[0]] as Array[Vector2] + wagon_positions)
 
 	# TODO: reactivate
 	# TODO: consider doing it another way; set slowdown location
@@ -135,20 +135,20 @@ func set_new_curve_and_limit_speed_if_sharp_corner(point_path: PackedVector2Arra
 	# target_speed = max_speed
 
 
-## current_wagon_positions from closest to train and back
-func _set_wagon_curves_and_positions(train_position: Vector2, current_wagon_positions: Array[Vector2]):
-	print("_set_wagon_curves_and_positions(%s, %s)" % [train_position, current_wagon_positions])
-	var wagon_point_path = [train_position] + current_wagon_positions
-	wagon_point_path.reverse()
+## point_path shall be from train target to last wagon
+func _set_wagon_curves_and_positions(point_path: Array[Vector2]):
+	print("_set_wagon_curves_and_positions(%s)" % point_path)
+	point_path.reverse()
 	var wagon_curve = Curve2D.new()
-	print(wagon_point_path)
-	for point in wagon_point_path:
+	print(point_path)
+	for point in point_path:
 		wagon_curve.add_point(point)
 	print("%s, length %s" % [wagon_curve.get_baked_points(), wagon_curve.get_baked_length()])
 	for i in len(wagons):
 		var wagon = wagons[i]
 		wagon.curve = wagon_curve
-		wagon.path_follow.progress = wagon_curve.get_baked_length() - (1 + i) * Global.TILE_SIZE
+		# TODO: this is likely not correct, does not take diagonal train paths into account
+		wagon.path_follow.progress = (wagon_count - i - 1) * Global.TILE_SIZE
 		print("wagon %s has progress %s" % [i, wagon.path_follow.progress])
 		#sharp_corners.append(_is_sharp_corner(wagon.curve, wagon_curve))
 
