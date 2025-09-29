@@ -98,35 +98,39 @@ func set_new_curve_and_start_from_station(point_path: PackedVector2Array):
 	# TODO: consider if we should start at the furthest end of the station instead, that
 	# is not the same if the station is longer than the train.
 	var train_point_path = point_path.slice(len(wagons))
+
+	# Set initial starting value form previous positions
+	# TODO: investigate if this is correct when station is longer than the train
 	previous_positions = []
 	for point in point_path.slice(0, len(wagons)):
 		previous_positions.append(point)
-	set_new_curve_and_limit_speed_if_sharp_corner(train_point_path)
 
-	# TODO: combine with setting curves at other point
-	# Set wagon starting locations
-	# for i in len(wagons):
-	# 	var wagon = wagons[i]
-	# 	var wagon_curve = Curve2D.new()
-	# 	wagon_curve.add_point(point_path[len(wagons) - i - 1])
-	# 	wagon_curve.add_point(point_path[len(wagons) - i])
-	# 	wagon.curve = wagon_curve
-	# 	wagon.path_follow.progress = 0.0
+	set_new_curve_and_limit_speed_if_sharp_corner(train_point_path)
 
 	target_speed = max_speed
 	is_stopped_at_station = false
 
 
 func set_new_curve_and_limit_speed_if_sharp_corner(point_path: PackedVector2Array):
-	var sharp_corners = []
 	var new_curve = Curve2D.new()
 	new_curve.add_point(point_path[0])
 	new_curve.add_point(point_path[1])
-	# TODO: reactivate
-	#sharp_corners.append(_is_sharp_corner(curve, new_curve))
 	curve = new_curve
 	path_follow.progress = 0.0
 
+	_set_wagon_curves_and_progress(point_path)
+
+	if _is_in_sharp_corner():
+		target_speed = 5.0
+		absolute_speed = target_speed
+	else:
+		target_speed = max_speed
+
+	# Maintain a LIFO queue of previous train positions to use for creating 
+	previous_positions.pop_front()
+	previous_positions.append(point_path[0])
+
+func _set_wagon_curves_and_progress(point_path: PackedVector2Array):
 	# TODO: keep these reversed so that we don't have to reverse them all the time
 	var reversed_previous_positions = previous_positions.duplicate()
 	reversed_previous_positions.reverse()
@@ -149,24 +153,17 @@ func set_new_curve_and_limit_speed_if_sharp_corner(point_path: PackedVector2Arra
 		# Also add the extra slack as mentioned above
 		wagon.path_follow.progress = (extra_slack + i + 2) * Global.TILE_SIZE
 
-	# Skip last wagon when checking if speed shall be reduced
-	sharp_corners.pop_back()
-	for is_sharp_corner in sharp_corners:
-		if is_sharp_corner:
-			target_speed = 5.0
-			absolute_speed = target_speed
-			return
-	target_speed = max_speed
-
-	previous_positions.pop_front()
-	previous_positions.append(point_path[0])
-
-
-func _is_sharp_corner(last_curve: Curve2D, new_curve: Curve2D):
-	var angle = _angle_between_points(last_curve.get_point_position(0),
-									  _get_last_point_position(last_curve),
-									  _get_last_point_position(new_curve))
-	return angle < PI / 2 + 0.05 # 90 degrees or lower
+func _is_in_sharp_corner():
+	var vehicle_rotations = [path_follow.rotation]
+	for wagon in wagons:
+		var wagon_rotation = wagon.path_follow.rotation + PI
+		vehicle_rotations.append(wagon_rotation)
+	var vehicle_rotation_differences = []
+	for i in len(vehicle_rotations) - 1:
+		var rotation_difference = abs(vehicle_rotations[i] - vehicle_rotations[i + 1])
+		rotation_difference = abs(rotation_difference - 2 * PI) if rotation_difference > PI else rotation_difference
+		vehicle_rotation_differences.append(rotation_difference)
+	return vehicle_rotation_differences.max() > PI / 8 * 3
 
 
 static func _angle_between_points(a: Vector2, b: Vector2, c: Vector2) -> float:
