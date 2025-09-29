@@ -19,7 +19,6 @@
 ## TODO
 
 - trains repath at intersections  
-  - ensure trains can be destroyed again (currently in tile_reached)
   - start with loading at the station the train starts at
   - train do not repath towards oncoming trains
   - trains do not repath back towards where they came (should be solved by the above)

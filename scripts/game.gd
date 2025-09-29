@@ -388,6 +388,9 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 
 func _on_train_reaches_end_of_curve(train: Train):
 	var tile_position = Vector2i(train.get_train_position().snapped(Global.TILE))
+
+	_try_mark_for_destruction(train, tile_position)
+
 	print("_on_train_reaches_end_of_curve, position = %s" % tile_position)
 	if tile_position in train.destinations:
 		train.target_speed = 0.0
@@ -432,10 +435,7 @@ func _load_and_unload(train: Train):
 			await train.add_ore(ore_type)
 
 
-func _on_train_reaches_tile(train: Train, pos: Vector2i):
-	if not track_set.has_track(pos):
-		train.derail()
-
+func _try_mark_for_destruction(train: Train, pos: Vector2i):
 	var train_marked_for_destruction = false
 	if gui_state == Gui.State.DESTROY2:
 		var positions: Array[Vector2i] = []
