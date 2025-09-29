@@ -386,14 +386,13 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 
 	train.destinations = [point_path[-1], point_path[0]] as Array[Vector2i]
 	train.set_new_curve_and_start_from_station(point_path)
-	
+	#await _load_and_unload(train)
 
 func _on_train_reaches_end_of_curve(train: Train):
 	var tile_position = Vector2i(train.get_train_position().snapped(Global.TILE))
 
 	_try_mark_for_destruction(train, tile_position)
 
-	print("_on_train_reaches_end_of_curve, position = %s" % tile_position)
 	if tile_position in train.destinations:
 		train.target_speed = 0.0
 		train.absolute_speed = 0.0
@@ -408,7 +407,7 @@ func _on_train_reaches_end_of_curve(train: Train):
 			if tile_position in train.destinations:
 				train.set_new_curve_and_start_from_station(point_path)
 			else:
-				train.set_new_curve_and_limit_speed_if_sharp_corner(point_path)
+				train.set_new_curve(point_path)
 			break
 		else:
 			_show_popup("Cannot find route!", train.get_train_position())

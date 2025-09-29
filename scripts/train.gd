@@ -79,6 +79,12 @@ func _process(delta):
 	if not on_rails:
 		return
 
+	if _is_in_sharp_corner():
+		target_speed = 5.0
+		absolute_speed = target_speed
+	else:
+		target_speed = max_speed
+
 	if absolute_speed < target_speed:
 		absolute_speed += acceleration * delta
 
@@ -90,6 +96,18 @@ func _process(delta):
 	if path_follow.progress >= curve.get_baked_length() and target_speed > 0.0 and not is_stopped:
 		# TODO: rename to end_of_curve
 		end_reached.emit(self)
+
+func _is_in_sharp_corner():
+	var vehicle_rotations = [path_follow.rotation]
+	for wagon in wagons:
+		var wagon_rotation = wagon.path_follow.rotation + PI
+		vehicle_rotations.append(wagon_rotation)
+	var vehicle_rotation_differences = []
+	for i in len(vehicle_rotations) - 1:
+		var rotation_difference = abs(vehicle_rotations[i] - vehicle_rotations[i + 1])
+		rotation_difference = abs(rotation_difference - 2 * PI) if rotation_difference > PI else rotation_difference
+		vehicle_rotation_differences.append(rotation_difference)
+	return vehicle_rotation_differences.max() > PI / 8 * 3
 
 
 func set_new_curve_and_start_from_station(point_path: PackedVector2Array):
@@ -105,9 +123,9 @@ func set_new_curve_and_start_from_station(point_path: PackedVector2Array):
 	for point in point_path.slice(0, len(wagons)):
 		previous_positions.append(point)
 
-	set_new_curve_and_limit_speed_if_sharp_corner(train_point_path)
+	set_new_curve(train_point_path)
 
-func set_new_curve_and_limit_speed_if_sharp_corner(point_path: PackedVector2Array):
+func set_new_curve(point_path: PackedVector2Array):
 	var new_curve = Curve2D.new()
 	new_curve.add_point(point_path[0])
 	new_curve.add_point(point_path[1])
@@ -115,12 +133,6 @@ func set_new_curve_and_limit_speed_if_sharp_corner(point_path: PackedVector2Arra
 	path_follow.progress = 0.0
 
 	_set_wagon_curves_and_progress(point_path)
-
-	if _is_in_sharp_corner():
-		target_speed = 5.0
-		absolute_speed = target_speed
-	else:
-		target_speed = max_speed
 
 	# Maintain a LIFO queue of previous train positions to use for creating 
 	previous_positions.pop_front()
@@ -148,18 +160,6 @@ func _set_wagon_curves_and_progress(point_path: PackedVector2Array):
 		# starts one ahead of the train
 		# Also add the extra slack as mentioned above
 		wagon.path_follow.progress = (extra_slack + i + 2) * Global.TILE_SIZE
-
-func _is_in_sharp_corner():
-	var vehicle_rotations = [path_follow.rotation]
-	for wagon in wagons:
-		var wagon_rotation = wagon.path_follow.rotation + PI
-		vehicle_rotations.append(wagon_rotation)
-	var vehicle_rotation_differences = []
-	for i in len(vehicle_rotations) - 1:
-		var rotation_difference = abs(vehicle_rotations[i] - vehicle_rotations[i + 1])
-		rotation_difference = abs(rotation_difference - 2 * PI) if rotation_difference > PI else rotation_difference
-		vehicle_rotation_differences.append(rotation_difference)
-	return vehicle_rotation_differences.max() > PI / 8 * 3
 
 
 func get_train_position() -> Vector2:
