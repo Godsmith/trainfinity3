@@ -107,9 +107,6 @@ func set_new_curve_and_start_from_station(point_path: PackedVector2Array):
 
 	set_new_curve_and_limit_speed_if_sharp_corner(train_point_path)
 
-	target_speed = max_speed
-	is_stopped = false
-
 func set_new_curve_and_limit_speed_if_sharp_corner(point_path: PackedVector2Array):
 	var new_curve = Curve2D.new()
 	new_curve.add_point(point_path[0])
