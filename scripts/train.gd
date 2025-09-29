@@ -118,7 +118,6 @@ func set_new_curve_and_start_from_station(point_path: PackedVector2Array):
 
 
 func set_new_curve_and_limit_speed_if_sharp_corner(point_path: PackedVector2Array):
-	#print("set new curve, point path %s" % point_path)
 	var sharp_corners = []
 	var new_curve = Curve2D.new()
 	new_curve.add_point(point_path[0])
@@ -126,24 +125,28 @@ func set_new_curve_and_limit_speed_if_sharp_corner(point_path: PackedVector2Arra
 	# TODO: reactivate
 	#sharp_corners.append(_is_sharp_corner(curve, new_curve))
 	curve = new_curve
-	#print("new curve set: %s" % curve.get_baked_points())
 	path_follow.progress = 0.0
 
-	# set wagon curves
-	#var all_positions = PackedVector2Array(previous_positions) + point_path
-	#print("all_positions: %s" % all_positions)
-	#print("wagon positions:")
+	# TODO: keep these reversed so that we don't have to reverse them all the time
 	var reversed_previous_positions = previous_positions.duplicate()
 	reversed_previous_positions.reverse()
+	# The curve starts one tile ahead of the train, so that on diagonal tracks, the
+	# first wagon can continue past where the train started
 	var wagon_curve_positions = [point_path[1], point_path[0]] + reversed_previous_positions
-	print("wagon_curve_positions: %s" % str(wagon_curve_positions))
 	var wagon_curve = Curve2D.new()
+	# If the train is traveling diagonally, the distance from the train to the
+	# first wagon is extra long
 	var extra_slack = sqrt(2) - 1.0 if point_path[0].x != point_path[1].x and point_path[0].y != point_path[1].y else 0.0
 	for pos in wagon_curve_positions:
 		wagon_curve.add_point(pos)
 	for i in len(wagons):
 		var wagon = wagons[i]
 		wagon.curve = wagon_curve
+		# Set the progress for each wagon so that it is a number of tiles after 
+		# the train equal to the number of wagons
+		# Example: wagon 0 starts at distance 2 on the curve, since the curve
+		# starts one ahead of the train
+		# Also add the extra slack as mentioned above
 		wagon.path_follow.progress = (extra_slack + i + 2) * Global.TILE_SIZE
 
 	# Skip last wagon when checking if speed shall be reduced
