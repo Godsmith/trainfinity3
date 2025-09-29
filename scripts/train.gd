@@ -165,19 +165,6 @@ func _is_in_sharp_corner():
 	return vehicle_rotation_differences.max() > PI / 8 * 3
 
 
-static func _angle_between_points(a: Vector2, b: Vector2, c: Vector2) -> float:
-	var ba = a - b
-	var bc = c - b
-	return abs(ba.angle_to(bc)) # signed angle in radians (-π..π)
-
-
-static func _get_last_point_position(curve_: Curve2D) -> Vector2:
-	return curve_.get_point_position(curve_.point_count - 1)
-
-
-static func last(array: PackedVector2Array):
-	return array.get(len(array) - 1)
-	
 func get_train_position() -> Vector2:
 	return rigid_body.global_position
 
