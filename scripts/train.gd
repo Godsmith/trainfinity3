@@ -18,7 +18,7 @@ var on_rails := true
 # TODO: consider changing to "starting wagon count"
 # and retrieving the number of wagons dynamically instead
 var wagon_count = 3
-var is_stopped_at_station = false
+var is_stopped = false
 var is_in_sharp_corner = false
 var last_delta = 0.0
 
@@ -87,7 +87,7 @@ func _process(delta):
 		wagon.path_follow.progress -= delta * absolute_speed
 		#wagon.path_follow.progress = path_follow.progress
 
-	if path_follow.progress >= curve.get_baked_length() and target_speed > 0.0 and not is_stopped_at_station:
+	if path_follow.progress >= curve.get_baked_length() and target_speed > 0.0 and not is_stopped:
 		# TODO: rename to end_of_curve
 		end_reached.emit(self)
 
@@ -108,8 +108,7 @@ func set_new_curve_and_start_from_station(point_path: PackedVector2Array):
 	set_new_curve_and_limit_speed_if_sharp_corner(train_point_path)
 
 	target_speed = max_speed
-	is_stopped_at_station = false
-
+	is_stopped = false
 
 func set_new_curve_and_limit_speed_if_sharp_corner(point_path: PackedVector2Array):
 	var new_curve = Curve2D.new()

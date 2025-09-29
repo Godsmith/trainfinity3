@@ -19,13 +19,10 @@
 ## TODO
 
 - trains repath at intersections  
-  - no delay in cannot find rout
   - ensure trains can be destroyed again (currently in tile_reached)
-  - test train cannot find route again to ensure train doesn't jump to a strange position when that happens
   - start with loading at the station the train starts at
   - train do not repath towards oncoming trains
   - trains do not repath back towards where they came (should be solved by the above)
-  - if there is no path, stop the train and give error
 - refactoring: fix so that we don't use so many internal methods and properties on train and wagon
 - help menu showing the controls
 - different prices and production rate for different goods

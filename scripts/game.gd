@@ -392,15 +392,13 @@ func _on_train_reaches_end_of_curve(train: Train):
 	if tile_position in train.destinations:
 		train.target_speed = 0.0
 		train.absolute_speed = 0.0
-		train.is_stopped_at_station = true
+		train.is_stopped = true
 		await _load_and_unload(train)
 		train.destination_index += 1
 		train.destination_index %= len(train.destinations)
 	while true:
 		var target_position = train.destinations[train.destination_index]
 		var point_path = _get_point_path(tile_position, target_position)
-		#print("set_point_path_to %s" % target_position)
-		#print("new point_path: %s" % point_path)
 		if point_path:
 			if tile_position in train.destinations:
 				train.set_new_curve_and_start_from_station(point_path)
@@ -410,7 +408,13 @@ func _on_train_reaches_end_of_curve(train: Train):
 		else:
 			_show_popup("Cannot find route!", train.get_train_position())
 			train.no_route_timer.start()
+			train.target_speed = 0.0
+			train.absolute_speed = 0.0
+			train.is_stopped = true
 			await train.no_route_timer.timeout
+	if train.is_stopped:
+		train.is_stopped = false
+		train.target_speed = train.max_speed
 
 
 func _load_and_unload(train: Train):
