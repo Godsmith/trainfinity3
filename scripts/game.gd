@@ -371,19 +371,21 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 		return
 	if platform_set.are_connected(platform1, platform2):
 		return
+	bank.buy(Global.Asset.TRAIN)
+
+	var train = TRAIN.instantiate()
+	train.wagon_count = min(platform_set.platform_size(platform1.position), platform_set.platform_size(platform2.position)) - 1
 
 	# Get path from the beginning of the first platform to the end
 	# of the target platform
-	var train = TRAIN.instantiate()
-	train.wagon_count = min(platform_set.platform_size(platform1.position), platform_set.platform_size(platform2.position)) - 1
+	var point_path = _get_point_path_between_platforms(platform1.position, platform2.position)
+
 	train.end_reached.connect(_on_train_reaches_end_of_curve)
 	train.train_clicked.connect(_on_train_clicked)
-	var point_path = _get_point_path_between_platforms(platform1.position, platform2.position)
-	train.destinations = [point_path[-1], point_path[0]] as Array[Vector2i]
 	add_child(train)
+
+	train.destinations = [point_path[-1], point_path[0]] as Array[Vector2i]
 	train.set_new_curve_and_start_from_station(point_path)
-	bank.buy(Global.Asset.TRAIN)
-	#_on_train_reaches_end_of_curve(train, train.destinations[0])
 	
 
 func _on_train_reaches_end_of_curve(train: Train):
