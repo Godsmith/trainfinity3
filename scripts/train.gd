@@ -12,19 +12,13 @@ signal train_clicked(train: Train)
 @export var absolute_speed := 0.0
 @export var acceleration := 6.0
 @export var wagons: Array = []
+@export var is_stopped = false
 
-var last_corner_checked = Vector2(0.0, 0.0)
 var on_rails := true
 # TODO: consider changing to "starting wagon count"
 # and retrieving the number of wagons dynamically instead
 var wagon_count = 3
-var is_stopped = false
-var is_in_sharp_corner = false
 var last_delta = 0.0
-
-# A progress position where, when the train passes here, it has passed the last
-# sharp corner and can accelerate up to max speed again
-var progress_point_past_sharp_corner = 0.0
 
 @onready var path_follow := $PathFollow2D
 @onready var polygon := $RigidBody2D/LightOccluder2D
@@ -79,6 +73,9 @@ func _process(delta):
 	if not on_rails:
 		return
 
+	if is_stopped:
+		return
+
 	if _is_in_sharp_corner():
 		target_speed = 5.0
 		absolute_speed = target_speed
@@ -93,7 +90,7 @@ func _process(delta):
 		wagon.path_follow.progress -= delta * absolute_speed
 		#wagon.path_follow.progress = path_follow.progress
 
-	if path_follow.progress >= curve.get_baked_length() and target_speed > 0.0 and not is_stopped:
+	if path_follow.progress >= curve.get_baked_length():
 		# TODO: rename to end_of_curve
 		end_reached.emit(self)
 
@@ -110,7 +107,7 @@ func _is_in_sharp_corner():
 	return vehicle_rotation_differences.max() > PI / 8 * 3
 
 
-func set_new_curve_and_start_from_station(point_path: PackedVector2Array):
+func set_new_curve_from_station(point_path: PackedVector2Array):
 	print("============= START FROM STATION ==================== ")
 	# Jump forwards a number of tiles equalling the number of wagons
 	# TODO: consider if we should start at the furthest end of the station instead, that
@@ -125,6 +122,7 @@ func set_new_curve_and_start_from_station(point_path: PackedVector2Array):
 
 	set_new_curve(train_point_path)
 
+
 func set_new_curve(point_path: PackedVector2Array):
 	var new_curve = Curve2D.new()
 	new_curve.add_point(point_path[0])
@@ -138,17 +136,18 @@ func set_new_curve(point_path: PackedVector2Array):
 	previous_positions.pop_front()
 	previous_positions.append(point_path[0])
 
+
 func _set_wagon_curves_and_progress(point_path: PackedVector2Array):
 	# TODO: keep these reversed so that we don't have to reverse them all the time
 	var reversed_previous_positions = previous_positions.duplicate()
 	reversed_previous_positions.reverse()
+	# If the train is traveling diagonally, the distance from the train to the
+	# first wagon is extra long
+	var extra_slack = sqrt(2) - 1.0 if point_path[0].x != point_path[1].x and point_path[0].y != point_path[1].y else 0.0
 	# The curve starts one tile ahead of the train, so that on diagonal tracks, the
 	# first wagon can continue past where the train started
 	var wagon_curve_positions = [point_path[1], point_path[0]] + reversed_previous_positions
 	var wagon_curve = Curve2D.new()
-	# If the train is traveling diagonally, the distance from the train to the
-	# first wagon is extra long
-	var extra_slack = sqrt(2) - 1.0 if point_path[0].x != point_path[1].x and point_path[0].y != point_path[1].y else 0.0
 	for pos in wagon_curve_positions:
 		wagon_curve.add_point(pos)
 	for i in len(wagons):

@@ -385,7 +385,7 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	add_child(train)
 
 	train.destinations = [point_path[-1], point_path[0]] as Array[Vector2i]
-	train.set_new_curve_and_start_from_station(point_path)
+	train.set_new_curve_from_station(point_path)
 	#await _load_and_unload(train)
 
 func _on_train_reaches_end_of_curve(train: Train):
@@ -405,7 +405,7 @@ func _on_train_reaches_end_of_curve(train: Train):
 		var point_path = _get_point_path(tile_position, target_position)
 		if point_path:
 			if tile_position in train.destinations:
-				train.set_new_curve_and_start_from_station(point_path)
+				train.set_new_curve_from_station(point_path)
 			else:
 				train.set_new_curve(point_path)
 			break
