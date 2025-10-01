@@ -162,7 +162,7 @@ func _set_wagon_curves_and_progress(point_path: PackedVector2Array):
 	reversed_previous_positions.reverse()
 	# If the train is travelling diagonally, the distance from the train to the
 	# first wagon is extra long
-	var extra_slack = sqrt(2) - 1.0 if point_path[0].x != point_path[1].x and point_path[0].y != point_path[1].y else 0.0
+	var extra_slack = sqrt(2) - 1.0 if len(point_path) > 1 and point_path[0].x != point_path[1].x and point_path[0].y != point_path[1].y else 0.0
 	# The curve starts one tile ahead of the train if possible, so that on diagonal
 	# tracks, the first wagon can continue past where the train started.
 	# The only time when this is not possible is at the very end of the track,
