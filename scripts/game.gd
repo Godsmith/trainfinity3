@@ -388,6 +388,8 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	train.set_new_curve_from_station(point_path)
 	_on_train_reaches_end_of_curve(train, false)
 
+## [set_new_path] must be false when starting from station, since a path has
+## already been set, otherwise the train will jump ahead.
 func _on_train_reaches_end_of_curve(train: Train, set_new_path := true):
 	var tile_position = Vector2i(train.get_train_position().snapped(Global.TILE))
 	_try_mark_for_destruction(train, tile_position)
