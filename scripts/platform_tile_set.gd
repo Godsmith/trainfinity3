@@ -1,41 +1,41 @@
 extends Node
 
 
-class_name PlatformSet
+class_name PlatformTileSet
 
-const PLATFORM = preload("res://scenes/platform.tscn")
+const PLATFORM_TILE = preload("res://scenes/platform_tile.tscn")
 
-var _platforms: Dictionary[Vector2i, Node2D] = {}
+var _platform_tiles: Dictionary[Vector2i, Node2D] = {}
 var track_set: TrackSet
 var maximum_platform_size = 3
 
 func _init(track_set_: TrackSet):
 	track_set = track_set_
 
-func create_platforms(stations: Array[Station], create_platform: Callable):
-	var positions_with_track_suitable_for_platforms = _get_positions_with_track_suitable_for_platforms()
-	var evaluated_platform_positions = []
+func create_platform_tiles(stations: Array[Station], create_platform_tile: Callable):
+	var positions_with_track_suitable_for_platform_tiles = _get_positions_with_track_suitable_for_platform_tiles()
+	var evaluated_platform_tile_positions = []
 	for station in stations:
-		var potential_platform_positions = Global.orthogonally_adjacent(Vector2i(station.position))
-		while potential_platform_positions:
-			var pos = potential_platform_positions.pop_back()
-			if pos in evaluated_platform_positions:
+		var potential_platform_tile_positions = Global.orthogonally_adjacent(Vector2i(station.position))
+		while potential_platform_tile_positions:
+			var pos = potential_platform_tile_positions.pop_back()
+			if pos in evaluated_platform_tile_positions:
 				continue
-			if pos not in positions_with_track_suitable_for_platforms:
+			if pos not in positions_with_track_suitable_for_platform_tiles:
 				continue
-			evaluated_platform_positions.append(pos)
+			evaluated_platform_tile_positions.append(pos)
 			if _would_platform_here_exceed_maximum_platform_size(pos):
 				continue
-			potential_platform_positions.append_array(track_set.positions_connected_to(pos))
-			# Need to check if there is already a platform here *after* adding 
+			potential_platform_tile_positions.append_array(track_set.positions_connected_to(pos))
+			# Need to check if there is already a platform tile here *after* adding 
 			# potential_platform_positions in order to search "through" existing platforms
-			if pos in _platforms:
+			if pos in _platform_tiles:
 				continue
-			var platform = PLATFORM.instantiate()
-			platform.position = pos
-			platform.rotation = _get_platform_rotation(pos)
-			create_platform.call(platform)
-			_platforms[pos] = platform
+			var platform_tile = PLATFORM_TILE.instantiate()
+			platform_tile.position = pos
+			platform_tile.rotation = _get_platform_rotation(pos)
+			create_platform_tile.call(platform_tile)
+			_platform_tiles[pos] = platform_tile
 
 func _would_platform_here_exceed_maximum_platform_size(pos: Vector2i):
 	for neighbour in track_set.positions_connected_to(pos):
@@ -44,11 +44,11 @@ func _would_platform_here_exceed_maximum_platform_size(pos: Vector2i):
 	return false
 
 func _get_platform_rotation(track_position: Vector2i) -> float:
-	# Vector2i must be a legal platform position
+	# Vector2i must be a legal platform tile position
 	var other_track_position = track_set.positions_connected_to(track_position)[0]
 	return 0.0 if track_position.y == other_track_position.y else PI / 2
 
-func _get_positions_with_track_suitable_for_platforms() -> Array[Vector2i]:
+func _get_positions_with_track_suitable_for_platform_tiles() -> Array[Vector2i]:
 	var out: Array[Vector2i] = []
 	for track_position in track_set.positions_with_track():
 		match track_set.get_track_count(track_position):
@@ -64,8 +64,8 @@ func _get_positions_with_track_suitable_for_platforms() -> Array[Vector2i]:
 					out.append(track_position)
 	return out
 
-func stations_connected_to_platform(platform_position: Vector2i, all_stations: Array[Station]) -> Array[Station]:
-	var connected_positions = connected_platform_positions(platform_position)
+func stations_connected_to_platform(platform_tile_position: Vector2i, all_stations: Array[Station]) -> Array[Station]:
+	var connected_positions = connected_platform_tile_positions(platform_tile_position)
 	var stations: Array[Station] = []
 	for station in all_stations:
 		for neighbor in Global.orthogonally_adjacent(Vector2i(station.position)):
@@ -73,44 +73,44 @@ func stations_connected_to_platform(platform_position: Vector2i, all_stations: A
 				stations.append(station)
 	return stations
 
-func are_connected(platform1: Platform, platform2: Platform) -> bool:
-	return connected_platform_positions(Vector2i(platform1.position)).has(Vector2i(platform2.position))
+func are_connected(platform_tile1: PlatformTile, platform_tile2: PlatformTile) -> bool:
+	return connected_platform_tile_positions(Vector2i(platform_tile1.position)).has(Vector2i(platform_tile2.position))
 
-func connected_platform_positions(pos: Vector2i) -> Array[Vector2i]:
-	if pos not in _platforms:
+func connected_platform_tile_positions(pos: Vector2i) -> Array[Vector2i]:
+	if pos not in _platform_tiles:
 		return [] as Array[Vector2i]
 	var connected_positions: Array[Vector2i] = [pos]
-	var possible_connected_platforms := track_set.positions_connected_to(pos)
-	while possible_connected_platforms:
-		var new_pos = possible_connected_platforms.pop_back()
-		if new_pos not in connected_positions and new_pos in _platforms:
+	var possible_connected_platform_tile_positions := track_set.positions_connected_to(pos)
+	while possible_connected_platform_tile_positions:
+		var new_pos = possible_connected_platform_tile_positions.pop_back()
+		if new_pos not in connected_positions and new_pos in _platform_tiles:
 			connected_positions.append(new_pos)
-			possible_connected_platforms.append_array(track_set.positions_connected_to(new_pos))
+			possible_connected_platform_tile_positions.append_array(track_set.positions_connected_to(new_pos))
 	return connected_positions
 
 func platform_size(pos: Vector2i) -> int:
-	return len(connected_platform_positions(pos))
+	return len(connected_platform_tile_positions(pos))
 
 func platform_endpoints(pos: Vector2i) -> Array[Vector2i]:
-	var platform_positions = connected_platform_positions(pos)
+	var platform_tile_positions = connected_platform_tile_positions(pos)
 	# Sort by x if x are different else sort by y
-	platform_positions.sort_custom(func(a: Vector2i, b: Vector2i): return a.x < b.x if a.y == b.y else a.y < b.y)
-	return [platform_positions[0], platform_positions[-1]]
+	platform_tile_positions.sort_custom(func(a: Vector2i, b: Vector2i): return a.x < b.x if a.y == b.y else a.y < b.y)
+	return [platform_tile_positions[0], platform_tile_positions[-1]]
 
-func destroy_and_recreate_platforms_orthogonally_linked_to(positions: Array[Vector2i], all_stations: Array[Station], create_platform: Callable):
+func destroy_and_recreate_platform_tiles_orthogonally_linked_to(positions: Array[Vector2i], all_stations: Array[Station], create_platform_tile: Callable):
 	var all_positions = _positions_orthogonally_linked_to(positions)
 	for pos in all_positions:
-		if pos not in _platforms:
+		if pos not in _platform_tiles:
 			continue
-		_platforms[pos].queue_free()
-		_platforms.erase(pos)
+		_platform_tiles[pos].queue_free()
+		_platform_tiles.erase(pos)
 	var stations = _stations_adjacent_to(all_positions, all_stations)
-	create_platforms(stations, create_platform)
+	create_platform_tiles(stations, create_platform_tile)
 
-func create_platforms_orthogonally_linked_to(positions: Array[Vector2i], all_stations: Array[Station], create_platform: Callable):
+func create_platforms_orthogonally_linked_to(positions: Array[Vector2i], all_stations: Array[Station], create_platform_tile: Callable):
 	var all_positions = _positions_orthogonally_linked_to(positions)
 	var stations = _stations_adjacent_to(all_positions, all_stations)
-	create_platforms(stations, create_platform)
+	create_platform_tiles(stations, create_platform_tile)
 
 
 func _positions_orthogonally_linked_to(positions: Array[Vector2i]) -> Dictionary[Vector2i, int]:
@@ -136,12 +136,12 @@ static func _stations_adjacent_to(positions: Dictionary[Vector2i, int], all_stat
 
 func is_new_track_in_legal_position(track: Track):
 	# Checks so that the new track is not at an odd angle into an existing platform
-	var affected_platforms: Array[Platform] = []
+	var affected_platform_tiles: Array[PlatformTile] = []
 	for pos in [track.pos1, track.pos2]:
-		if pos in _platforms:
-			affected_platforms.append(_platforms[pos])
-	for platform in affected_platforms:
-		if platform.rotation == 0.0: # Horizontal
+		if pos in _platform_tiles:
+			affected_platform_tiles.append(_platform_tiles[pos])
+	for platform_tile in affected_platform_tiles:
+		if platform_tile.rotation == 0.0: # Horizontal
 			if track.pos1.y != track.pos2.y:
 				return false
 		else: # Vertical

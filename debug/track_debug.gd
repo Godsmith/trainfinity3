@@ -46,5 +46,5 @@ func _ready():
 	_try_create_station(Vector2i(6 * T, 2 * T))
 
 
-	_try_create_train(platform_set._platforms[Vector2i(-5 * T, T)],
-					  platform_set._platforms[Vector2i(6 * T, T)])
+	_try_create_train(platform_tile_set._platform_tiles[Vector2i(-5 * T, T)],
+					  platform_tile_set._platform_tiles[Vector2i(6 * T, T)])

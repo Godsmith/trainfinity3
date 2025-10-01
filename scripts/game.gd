@@ -35,13 +35,13 @@ var astar_id_from_position: Dictionary[Vector2i, int] = {}
 @onready var gui: Gui = $Gui
 @onready var bank = Bank.new(gui)
 @onready var track_set = TrackSet.new()
-@onready var platform_set = PlatformSet.new(track_set)
+@onready var platform_tile_set = PlatformTileSet.new(track_set)
 
-var selected_platform: Platform = null
+var selected_platform_tile: PlatformTile = null
 
 var follow_train: Train = null
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if follow_train:
 		camera.position = follow_train.get_train_position()
 
@@ -218,7 +218,7 @@ func _try_create_tracks():
 	for i in range(1, len(ids)):
 		astar.connect_points(ids[i - 1], ids[i])
 	bank.buy(Global.Asset.TRACK, len(ghost_tracks))
-	platform_set.destroy_and_recreate_platforms_orthogonally_linked_to(ghost_track_tile_positions, _get_stations(), _create_platform)
+	platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(ghost_track_tile_positions, _get_stations(), _create_platform_tile)
 	ghost_tracks.clear()
 
 func _reset_ghost_tracks():
@@ -242,7 +242,7 @@ func _destroy_track(positions: Array[Vector2i]):
 			track_positions[track.pos2] = 0
 			track_set.erase(track)
 	# Might not work, since we have already removed the tracks?
-	platform_set.destroy_and_recreate_platforms_orthogonally_linked_to(track_positions.keys(), _get_stations(), _create_platform)
+	platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(track_positions.keys(), _get_stations(), _create_platform_tile)
 
 ##################################################################
 
@@ -278,13 +278,13 @@ func _change_gui_state(new_state: Gui.State):
 
 	# Set platform colors
 	if new_state == Gui.State.TRAIN1:
-		for platform: Platform in get_tree().get_nodes_in_group("platforms"):
+		for platform: PlatformTile in get_tree().get_nodes_in_group("platforms"):
 			platform.modulate = Color(0, 1, 0, 1)
 	elif new_state == Gui.State.TRAIN2:
-		# Platform colors handled elsewhere
+		# PlatformTile colors handled elsewhere
 		pass
 	else:
-		for platform: Platform in get_tree().get_nodes_in_group("platforms"):
+		for platform: PlatformTile in get_tree().get_nodes_in_group("platforms"):
 			platform.modulate = Color(1, 1, 1, 1)
 		
 	if new_state == Gui.State.TRACK1:
@@ -326,7 +326,7 @@ func _try_create_station(station_position: Vector2i):
 	station.position = station_position
 	add_child(station)
 	bank.buy(Global.Asset.STATION)
-	platform_set.create_platforms([station], _create_platform)
+	platform_tile_set.create_platform_tiles([station], _create_platform_tile)
 
 func _destroy_stations(positions: Array[Vector2i]):
 	var stations: Array[Station] = _get_stations()
@@ -335,8 +335,8 @@ func _destroy_stations(positions: Array[Vector2i]):
 			for adjacent_position in Global.orthogonally_adjacent(station.position):
 				if not track_set.has_track(adjacent_position):
 					continue
-				platform_set.destroy_and_recreate_platforms_orthogonally_linked_to(
-					[adjacent_position], stations, _create_platform)
+				platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(
+					[adjacent_position], stations, _create_platform_tile)
 			station.queue_free()
 			bank.destroy(Global.Asset.STATION)
 
@@ -349,35 +349,36 @@ func _get_stations() -> Array[Station]:
 
 ############################################################################
 
-func _platform_clicked(platform: Platform):
+func _platform_tile_clicked(platform_tile: PlatformTile):
 	if gui_state == Gui.State.TRAIN1:
-		var id1 = astar_id_from_position[Vector2i(platform.position)]
-		for other_platform: Platform in get_tree().get_nodes_in_group("platforms"):
+		var id1 = astar_id_from_position[Vector2i(platform_tile.position)]
+		for other_platform: PlatformTile in get_tree().get_nodes_in_group("platforms"):
 			other_platform.modulate = Color(1, 1, 1, 1)
-			if not platform_set.are_connected(platform, other_platform):
+			if not platform_tile_set.are_connected(platform_tile, other_platform):
 				var id2 = astar_id_from_position[Vector2i(other_platform.position)]
 				if astar.get_point_path(id1, id2):
 					other_platform.modulate = Color(0, 1, 0, 1)
-		selected_platform = platform
+		selected_platform_tile = platform_tile
 		_change_gui_state(Gui.State.TRAIN2)
 	elif gui_state == Gui.State.TRAIN2:
-		_try_create_train(selected_platform, platform)
+		_try_create_train(selected_platform_tile, platform_tile)
 		_change_gui_state(Gui.State.TRAIN1)
 
 ############################################################################
 
-func _try_create_train(platform1: Platform, platform2: Platform):
+func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 	if not bank.can_afford(Global.Asset.TRAIN):
 		return
-	if platform_set.are_connected(platform1, platform2):
+	if platform_tile_set.are_connected(platform1, platform2):
 		return
 	bank.buy(Global.Asset.TRAIN)
 
 	var train = TRAIN.instantiate()
-	train.wagon_count = min(platform_set.platform_size(platform1.position), platform_set.platform_size(platform2.position)) - 1
+	train.wagon_count = min(platform_tile_set.platform_size(platform1.position), platform_tile_set.platform_size(platform2.position)) - 1
 
 	# Get path from the beginning of the first platform to the end
 	# of the target platform
+	# TODO: change to between platforms instead
 	var point_path = _get_point_path_between_platforms(platform1.position, platform2.position)
 
 	train.end_reached.connect(_on_train_reaches_end_of_curve)
@@ -427,10 +428,10 @@ func _on_train_reaches_end_of_curve(train: Train, set_new_path := true):
 func is_furthest_in_at_target_platform(train: Train) -> bool:
 	var tile_position = Vector2i(train.get_train_position().snapped(Global.TILE))
 	var target_position = train.destinations[train.destination_index]
-	var connected_platform_positions = platform_set.connected_platform_positions(tile_position)
+	var connected_platform_positions = platform_tile_set.connected_platform_tile_positions(tile_position)
 	if not target_position in connected_platform_positions:
 		return false
-	if not tile_position in platform_set.platform_endpoints(tile_position):
+	if not tile_position in platform_tile_set.platform_endpoints(tile_position):
 		return false
 	for previous_position in train.previous_positions:
 		if Vector2i(previous_position) in connected_platform_positions:
@@ -439,7 +440,7 @@ func is_furthest_in_at_target_platform(train: Train) -> bool:
 
 
 func _load_and_unload(train: Train):
-	for station in platform_set.stations_connected_to_platform(train.get_train_position().snapped(Global.TILE), _get_stations()):
+	for station in platform_tile_set.stations_connected_to_platform(train.get_train_position().snapped(Global.TILE), _get_stations()):
 		for consumer in get_tree().get_nodes_in_group("resource_consumers"):
 			if Global.is_orthogonally_adjacent(consumer.get_global_position(), station.position):
 				for ore_type in consumer.consumes:
@@ -480,8 +481,8 @@ func _on_train_clicked(train: Train):
 func _get_point_path_between_platforms(platform_pos1: Vector2i,
 									   platform_pos2: Vector2i) -> PackedVector2Array:
 	var point_paths: Array[PackedVector2Array] = []
-	for p1 in platform_set.platform_endpoints(platform_pos1):
-		for p2 in platform_set.platform_endpoints(platform_pos2):
+	for p1 in platform_tile_set.platform_endpoints(platform_pos1):
+		for p2 in platform_tile_set.platform_endpoints(platform_pos2):
 			point_paths.append(_get_point_path(p1, p2))
 	point_paths.sort_custom(func(a, b): return len(a) < len(b))
 	return point_paths[-1]
@@ -503,10 +504,10 @@ func _show_popup(text: String, pos: Vector2):
 
 ######################################################################
 
-# Called by PlatformSet
-func _create_platform(platform: Platform):
-	platform.platform_clicked.connect(_platform_clicked)
-	add_child(platform)
+# Called by PlatformTileSet
+func _create_platform_tile(platform_tile: PlatformTile):
+	platform_tile.platform_tile_clicked.connect(_platform_tile_clicked)
+	add_child(platform_tile)
 
 ######################################################################
 

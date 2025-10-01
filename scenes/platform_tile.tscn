@@ -1,8 +1,8 @@
 [gd_scene load_steps=2 format=3 uid="uid://ugajk0h8wlcx"]
 
-[ext_resource type="Script" uid="uid://cw8bx3sgw8egc" path="res://scripts/platform.gd" id="1_ba0x2"]
+[ext_resource type="Script" uid="uid://ce27u18phanoi" path="res://scripts/platform_tile.gd" id="1_ba0x2"]
 
-[node name="Platform" type="Node2D" groups=["platforms"]]
+[node name="PlatformTile" type="Node2D" groups=["platforms"]]
 z_index = -600
 script = ExtResource("1_ba0x2")
 
