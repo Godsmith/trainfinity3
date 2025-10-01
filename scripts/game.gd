@@ -410,7 +410,7 @@ func _on_train_reaches_end_of_curve(train: Train, set_new_path := true):
 			if is_at_target_platform:
 				train.set_new_curve_from_station(point_path)
 			else:
-				train.set_new_curve(point_path, false)
+				train.set_new_curve(point_path)
 			break
 		else:
 			_show_popup("Cannot find route!", train.get_train_position())
