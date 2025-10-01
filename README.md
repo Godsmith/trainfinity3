@@ -19,7 +19,6 @@
 ## TODO
 
 - trains repath at intersections  
-  - start with loading at the station the train starts at
   - train do not repath towards oncoming trains
   - trains do not repath back towards where they came (should be solved by the above)
 - refactoring: fix so that we don't use so many internal methods and properties on train and wagon
@@ -71,6 +70,9 @@
 
 ### Issues
 
+- wagons with zero wagons crashes the game
+- creating train on too-long station a bit wonky
+- single click to destroy does not work
 - Cannot destroy trains that cannot find route
 - Wagons fill from the wrong way around again
 - How to prevent the situation when, if a mine and the factory aligns, just create one

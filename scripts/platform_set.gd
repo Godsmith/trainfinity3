@@ -65,7 +65,7 @@ func _get_positions_with_track_suitable_for_platforms() -> Array[Vector2i]:
 	return out
 
 func stations_connected_to_platform(platform_position: Vector2i, all_stations: Array[Station]) -> Array[Station]:
-	var connected_positions = _connected_platform_positions(platform_position)
+	var connected_positions = connected_platform_positions(platform_position)
 	var stations: Array[Station] = []
 	for station in all_stations:
 		for neighbor in Global.orthogonally_adjacent(Vector2i(station.position)):
@@ -74,9 +74,11 @@ func stations_connected_to_platform(platform_position: Vector2i, all_stations: A
 	return stations
 
 func are_connected(platform1: Platform, platform2: Platform) -> bool:
-	return _connected_platform_positions(Vector2i(platform1.position)).has(Vector2i(platform2.position))
+	return connected_platform_positions(Vector2i(platform1.position)).has(Vector2i(platform2.position))
 
-func _connected_platform_positions(pos: Vector2i) -> Array[Vector2i]:
+func connected_platform_positions(pos: Vector2i) -> Array[Vector2i]:
+	if pos not in _platforms:
+		return [] as Array[Vector2i]
 	var connected_positions: Array[Vector2i] = [pos]
 	var possible_connected_platforms := track_set.positions_connected_to(pos)
 	while possible_connected_platforms:
@@ -87,10 +89,10 @@ func _connected_platform_positions(pos: Vector2i) -> Array[Vector2i]:
 	return connected_positions
 
 func platform_size(pos: Vector2i) -> int:
-	return len(_connected_platform_positions(pos))
+	return len(connected_platform_positions(pos))
 
 func platform_endpoints(pos: Vector2i) -> Array[Vector2i]:
-	var platform_positions = _connected_platform_positions(pos)
+	var platform_positions = connected_platform_positions(pos)
 	# Sort by x if x are different else sort by y
 	platform_positions.sort_custom(func(a: Vector2i, b: Vector2i): return a.x < b.x if a.y == b.y else a.y < b.y)
 	return [platform_positions[0], platform_positions[-1]]

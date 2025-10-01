@@ -384,30 +384,31 @@ func _try_create_train(platform1: Platform, platform2: Platform):
 	train.train_clicked.connect(_on_train_clicked)
 	add_child(train)
 
-	train.destinations = [point_path[-1], point_path[0]] as Array[Vector2i]
+	train.destinations = [point_path[0], point_path[-1]] as Array[Vector2i]
 	train.set_new_curve_from_station(point_path)
-	#await _load_and_unload(train)
+	_on_train_reaches_end_of_curve(train, false)
 
-func _on_train_reaches_end_of_curve(train: Train):
+func _on_train_reaches_end_of_curve(train: Train, set_new_path := true):
 	var tile_position = Vector2i(train.get_train_position().snapped(Global.TILE))
-
 	_try_mark_for_destruction(train, tile_position)
 
-	if tile_position in train.destinations:
+	var is_at_target_platform = is_furthest_in_at_target_platform(train)
+
+	if is_at_target_platform:
 		train.target_speed = 0.0
 		train.absolute_speed = 0.0
 		train.is_stopped = true
 		await _load_and_unload(train)
 		train.destination_index += 1
 		train.destination_index %= len(train.destinations)
-	while true:
-		var target_position = train.destinations[train.destination_index]
+	var target_position = train.destinations[train.destination_index]
+	while set_new_path:
 		var point_path = _get_point_path(tile_position, target_position)
 		if point_path:
-			if tile_position in train.destinations:
+			if is_at_target_platform:
 				train.set_new_curve_from_station(point_path)
 			else:
-				train.set_new_curve(point_path)
+				train.set_new_curve(point_path, false)
 			break
 		else:
 			_show_popup("Cannot find route!", train.get_train_position())
@@ -419,6 +420,20 @@ func _on_train_reaches_end_of_curve(train: Train):
 	if train.is_stopped:
 		train.is_stopped = false
 		train.target_speed = train.max_speed
+
+## This method assumes the train has wagons, otherwise it will never stop
+func is_furthest_in_at_target_platform(train: Train) -> bool:
+	var tile_position = Vector2i(train.get_train_position().snapped(Global.TILE))
+	var target_position = train.destinations[train.destination_index]
+	var connected_platform_positions = platform_set.connected_platform_positions(tile_position)
+	if not target_position in connected_platform_positions:
+		return false
+	if not tile_position in platform_set.platform_endpoints(tile_position):
+		return false
+	for previous_position in train.previous_positions:
+		if Vector2i(previous_position) in connected_platform_positions:
+			return true
+	return false
 
 
 func _load_and_unload(train: Train):
