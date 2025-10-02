@@ -391,17 +391,15 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 	if not point_path:
 		return
 
-	train.end_reached.connect(_on_train_reaches_end_of_curve)
+	train.end_of_curve_reached.connect(_on_train_reaches_end_of_curve)
 	train.train_clicked.connect(_on_train_clicked)
 	add_child(train)
 
 	train.destinations = [point_path[0], point_path[-1]] as Array[Vector2i]
 	train.set_new_curve_from_station(point_path, platform_tile_set.connected_ordered_platform_tile_positions(point_path[0], point_path[0]))
-	_on_train_reaches_end_of_curve(train, false)
+	_on_train_reaches_end_of_curve(train)
 
-## [set_new_path] must be false when starting from station, since a path has
-## already been set, otherwise the train will jump ahead.
-func _on_train_reaches_end_of_curve(train: Train, set_new_path := true):
+func _on_train_reaches_end_of_curve(train: Train):
 	var tile_position = Vector2i(train.get_train_position().snapped(Global.TILE))
 
 	var is_at_target_platform = is_furthest_in_at_target_platform(train)
@@ -414,7 +412,7 @@ func _on_train_reaches_end_of_curve(train: Train, set_new_path := true):
 		train.destination_index += 1
 		train.destination_index %= len(train.destinations)
 	var target_position = train.destinations[train.destination_index]
-	while set_new_path:
+	while true:
 		var point_path = _get_point_path(tile_position, target_position)
 		if point_path:
 			if is_at_target_platform:

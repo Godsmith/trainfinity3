@@ -4,7 +4,7 @@ class_name Train
 
 const WAGON = preload("res://scenes/wagon.tscn")
 
-signal end_reached(train: Train)
+signal end_of_curve_reached(train: Train)
 signal train_clicked(train: Train)
 
 @export var max_speed := 20.0
@@ -101,7 +101,7 @@ func _process(delta):
 
 	if path_follow.progress >= curve.get_baked_length():
 		# TODO: rename to end_of_curve
-		end_reached.emit(self)
+		end_of_curve_reached.emit(self)
 	# print("=after==========")
 	# print(wagons[0].path_follow.position)
 	# print(wagons[0].rigid_body.position)
@@ -139,7 +139,9 @@ func set_new_curve_from_station(point_path: PackedVector2Array, platform_tile_po
 	if path_indices[0] == -1:
 		assert(path_indices[1] == 0)
 		train_point_path = point_path
-		wagon_positions = platform_tile_positions.slice(1).map(func(x): return Vector2(x))
+		wagon_positions = []
+		for point in platform_tile_positions.slice(1).map(func(x): return Vector2(x)):
+			wagon_positions.append(point)
 	# Next stop lies backwards
 	else:
 		assert(path_indices[0] == 0)
