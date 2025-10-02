@@ -19,9 +19,7 @@
 ## TODO
 
 
-- train should reverse in place when reversing, not also move to the end of the platform
-  - this solves the problem that it was not defined what should happen if a train
-    platform becomes shorter than the train while the train is running.
+- wagons outside platforms shall not be filled
 - trains repath at intersections  
   - train do not repath towards oncoming trains
   - trains do not repath back towards where they came (should be solved by the above)

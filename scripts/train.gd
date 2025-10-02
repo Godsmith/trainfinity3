@@ -142,10 +142,10 @@ func set_new_curve_from_station(point_path: PackedVector2Array, platform_tile_po
 	# Next stop lies backwards
 	else:
 		assert(path_indices[0] == 0)
-		train_point_path = point_path.slice(len(platform_tile_positions) - 1)
+		train_point_path = point_path.slice(wagon_count)
 		
 		previous_positions = []
-		for point in point_path.slice(0, len(wagons)):
+		for point in point_path.slice(0, wagon_count):
 			previous_positions.append(point)
 
 	set_new_curve(train_point_path)
