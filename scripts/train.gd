@@ -30,7 +30,9 @@ var last_delta = 0.0
 var destinations: Array[Vector2i] = []
 var destination_index := 0
 
-var previous_positions: Array[Vector2] = []
+# Note that these are kind of "wanted" wagon positions: when the train are moving,
+# they are the next tile the wagons are moving towards.
+var wagon_positions: Array[Vector2] = []
 
 func _ready() -> void:
 	for i in wagon_count:
@@ -124,7 +126,7 @@ func _is_in_sharp_corner():
 
 
 ## Sets a new path from the station, possibly turning train around, and sets 
-## [previous_positions] so that wagons move accordingly.
+## [wagon_positions] so that wagons move accordingly.
 ## [br][point_path] is a path that goes from either end of the platform.
 ## [br][platform_tile_positions] is always ordered and starting at the train position
 func set_new_curve_from_station(point_path: PackedVector2Array, platform_tile_positions: Array[Vector2i]):
@@ -138,20 +140,20 @@ func set_new_curve_from_station(point_path: PackedVector2Array, platform_tile_po
 	if path_indices[0] == -1:
 		assert(path_indices[1] == 0)
 		train_point_path = point_path
-		previous_positions = platform_tile_positions.slice(1).map(func(x): return Vector2(x))
+		wagon_positions = platform_tile_positions.slice(1).map(func(x): return Vector2(x))
 	# Next stop lies backwards
 	else:
 		assert(path_indices[0] == 0)
 		train_point_path = point_path.slice(wagon_count)
 		
-		previous_positions = []
+		wagon_positions = []
 		for point in point_path.slice(0, wagon_count):
-			previous_positions.append(point)
+			wagon_positions.append(point)
 
 	set_new_curve(train_point_path)
 
 ## Sets a new curve and wagon curve based on a train point path.
-## <br> assumes that [previous_position] has been previously set.
+## <br> assumes that [wagon_positions] has been previously set.
 ## <br> [train_point_path] is the path from the train engine itself, not the full path
 func set_new_curve(train_point_path: PackedVector2Array):
 	var new_curve = Curve2D.new()
@@ -165,13 +167,13 @@ func set_new_curve(train_point_path: PackedVector2Array):
 
 	# Maintain a LIFO queue of previous train positions to use for creating wagon curves
 	# The latest position is always in the front. So if the train travels east,
-	# previous_positions will be a list of points from east to west.
-	previous_positions.pop_front()
-	previous_positions.append(train_point_path[0])
+	# wagon_positions will be a list of points from east to west.
+	wagon_positions.pop_front()
+	wagon_positions.append(train_point_path[0])
 
 ## [point_path] is a list of points, from the space just behind the train engine,
 ## to some distance back further than the number of wagons.
-## Assumes that [previous_positions] is set and >= the number of wagons.
+## Assumes that [wagon_positions] is set and >= the number of wagons.
 func _set_wagon_curves_and_progress(train_point_path: PackedVector2Array):
 	# If the train is travelling diagonally, the distance from the train to the
 	# first wagon is extra long
@@ -187,17 +189,17 @@ func _set_wagon_curves_and_progress(train_point_path: PackedVector2Array):
 		# Also add the extra slack as mentioned above
 		wagon.path_follow.progress = (extra_slack + i + 2) * Global.TILE_SIZE
 
-## Assumes that [previous_positions] is set and >= the number of wagons.
+## Assumes that [wagon_positions] is set and >= the number of wagons.
 func _create_wagon_curve(train_point_path: PackedVector2Array) -> Curve2D:
 	# TODO: keep these reversed so that we don't have to reverse them all the time
-	var reversed_previous_positions = previous_positions.duplicate()
-	reversed_previous_positions.reverse()
+	var reversed_wagon_positions = wagon_positions.duplicate()
+	reversed_wagon_positions.reverse()
 	# The curve starts one tile ahead of the train if possible, so that on diagonal
 	# tracks, the first wagon can continue past where the train started.
 	# The only time when this is not possible is at the very end of the track,
 	# and there it does not matter since the train cannot go past anyway.
 	var wagon_curve_positions = [train_point_path[1]] if len(train_point_path) > 1 else []
-	wagon_curve_positions += [train_point_path[0]] + reversed_previous_positions
+	wagon_curve_positions += [train_point_path[0]] + reversed_wagon_positions
 	var wagon_curve = Curve2D.new()
 	for pos in wagon_curve_positions:
 		wagon_curve.add_point(pos)

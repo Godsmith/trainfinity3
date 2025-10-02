@@ -418,10 +418,10 @@ func _on_train_reaches_end_of_curve(train: Train, set_new_path := true):
 		var point_path = _get_point_path(tile_position, target_position)
 		if point_path:
 			if is_at_target_platform:
-				# Sets a curve, without train.previous_positions needed to be set
+				# Sets a curve, without train.wagon_positions needed to be set
 				train.set_new_curve_from_station(point_path, platform_tile_set.connected_ordered_platform_tile_positions(tile_position, tile_position))
 			else:
-				# Sets a curve, and expects train.previous_positions to be populated.
+				# Sets a curve, and expects train.wagon_positions to be populated.
 				train.set_new_curve(point_path)
 			break
 		else:
@@ -444,8 +444,8 @@ func is_furthest_in_at_target_platform(train: Train) -> bool:
 		return false
 	if not tile_position in platform_tile_set.platform_endpoints(tile_position):
 		return false
-	for previous_position in train.previous_positions:
-		if Vector2i(previous_position) in connected_platform_positions:
+	for wagon_position in train.wagon_positions:
+		if Vector2i(wagon_position) in connected_platform_positions:
 			return true
 	return false
 

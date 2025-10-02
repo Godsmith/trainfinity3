@@ -18,8 +18,8 @@
 
 ## TODO
 
-
 - wagons outside platforms shall not be filled
+  - low prio, requires not having a single max_capacity for trains anymore
 - trains repath at intersections  
   - train do not repath towards oncoming trains
   - trains do not repath back towards where they came (should be solved by the above)
