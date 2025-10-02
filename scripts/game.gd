@@ -386,6 +386,9 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 	# TODO: change to between platforms instead
 	var point_path = _get_point_path_between_platforms(platform1.position, platform2.position)
 
+	if not point_path:
+		return
+
 	train.end_reached.connect(_on_train_reaches_end_of_curve)
 	train.train_clicked.connect(_on_train_clicked)
 	add_child(train)

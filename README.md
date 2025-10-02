@@ -70,7 +70,6 @@
 
 ### Issues
 
-- crash when trying to create a train on two non-connected stations
 - wagons with zero wagons crashes the game
 - creating train on too-long station a bit wonky
 - single click to destroy does not work
