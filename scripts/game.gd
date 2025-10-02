@@ -376,8 +376,8 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 	var train = TRAIN.instantiate()
 	train.wagon_count = min(platform_tile_set.platform_size(platform1.position), platform_tile_set.platform_size(platform2.position)) - 1
 
-	# Get path from the beginning of the first platform to the end
-	# of the target platform
+	# Get path from the beginning of the first tile of the source platform
+	# to the last tile of the target platform
 	# TODO: change to between platforms instead
 	var point_path = _get_point_path_between_platforms(platform1.position, platform2.position)
 
@@ -386,7 +386,7 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 	add_child(train)
 
 	train.destinations = [point_path[0], point_path[-1]] as Array[Vector2i]
-	train.set_new_curve_from_station(point_path)
+	train.set_new_curve_from_station(point_path, platform_tile_set.connected_ordered_platform_tile_positions(point_path[0], point_path[0]))
 	_on_train_reaches_end_of_curve(train, false)
 
 ## [set_new_path] must be false when starting from station, since a path has
@@ -409,8 +409,10 @@ func _on_train_reaches_end_of_curve(train: Train, set_new_path := true):
 		var point_path = _get_point_path(tile_position, target_position)
 		if point_path:
 			if is_at_target_platform:
-				train.set_new_curve_from_station(point_path)
+				# Sets a curve, without train.previous_positions needed to be set
+				train.set_new_curve_from_station(point_path, platform_tile_set.connected_ordered_platform_tile_positions(tile_position, tile_position))
 			else:
+				# Sets a curve, and expects train.previous_positions to be populated.
 				train.set_new_curve(point_path)
 			break
 		else:

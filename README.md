@@ -18,6 +18,7 @@
 
 ## TODO
 
+- trains marked for deletion each frame
 - trains repath at intersections  
   - train do not repath towards oncoming trains
   - trains do not repath back towards where they came (should be solved by the above)

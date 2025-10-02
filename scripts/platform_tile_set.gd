@@ -88,6 +88,14 @@ func connected_platform_tile_positions(pos: Vector2i) -> Array[Vector2i]:
 			possible_connected_platform_tile_positions.append_array(track_set.positions_connected_to(new_pos))
 	return connected_positions
 
+func connected_ordered_platform_tile_positions(pos: Vector2i, starting_at: Vector2i) -> Array[Vector2i]:
+	var positions = connected_platform_tile_positions(pos)
+	positions.sort_custom(func(a: Vector2i, b: Vector2i): return a.x < b.x if a.y == b.y else a.y < b.y)
+	if not positions[0] == starting_at:
+		positions.reverse()
+	assert(positions[0] == starting_at)
+	return positions
+
 func platform_size(pos: Vector2i) -> int:
 	return len(connected_platform_tile_positions(pos))
 
