@@ -411,24 +411,25 @@ func _on_train_reaches_end_of_curve(train: Train):
 		await _load_and_unload(train)
 		train.destination_index += 1
 		train.destination_index %= len(train.destinations)
+
 	var target_position = train.destinations[train.destination_index]
-	while true:
-		var point_path = _get_point_path(tile_position, target_position)
-		if point_path:
-			if is_at_target_platform:
-				# Sets a curve, without train.wagon_positions needed to be set
-				train.set_new_curve_from_station(point_path, platform_tile_set.connected_ordered_platform_tile_positions(tile_position, tile_position))
-			else:
-				# Sets a curve, and expects train.wagon_positions to be populated.
-				train.set_new_curve(point_path)
-			break
-		else:
-			_show_popup("Cannot find route!", train.get_train_position())
-			train.no_route_timer.start()
-			train.target_speed = 0.0
-			train.absolute_speed = 0.0
-			train.is_stopped = true
-			await train.no_route_timer.timeout
+	var point_path = _get_point_path(tile_position, target_position)
+
+	while not point_path:
+		_show_popup("Cannot find route!", train.get_train_position())
+		train.no_route_timer.start()
+		train.target_speed = 0.0
+		train.absolute_speed = 0.0
+		train.is_stopped = true
+		await train.no_route_timer.timeout
+		point_path = _get_point_path(tile_position, target_position)
+
+	if is_at_target_platform:
+		# Sets a curve, without train.wagon_positions needed to be set
+		train.set_new_curve_from_station(point_path, platform_tile_set.connected_ordered_platform_tile_positions(tile_position, tile_position))
+	else:
+		# Sets a curve, and expects train.wagon_positions to be populated.
+		train.set_new_curve(point_path)
 	if train.is_stopped:
 		train.is_stopped = false
 		train.target_speed = train.max_speed
