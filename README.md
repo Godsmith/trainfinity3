@@ -18,7 +18,8 @@
 
 ## TODO
 
-- trains repath at intersections  
+- upgrades menu
+- trains repath at intersections
   - train do not repath towards oncoming trains
   - trains do not repath back towards where they came (should be solved by the above)
 - refactoring: fix so that we don't use so many internal methods and properties on train and wagon
@@ -70,8 +71,6 @@
 
 ### Issues
 
-- train overlaps wagons if a station becomes smaller when a train arrives then it was
-  when the train was created
 - Wagons fill from the wrong way around again
 - How to prevent the situation when, if a mine and the factory aligns, just create one
   long station that connects them both?
