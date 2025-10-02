@@ -138,7 +138,7 @@ func set_new_curve_from_station(point_path: PackedVector2Array, platform_tile_po
 	if path_indices[0] == -1:
 		assert(path_indices[1] == 0)
 		train_point_path = point_path
-		previous_positions = platform_tile_positions.slice(1)
+		previous_positions = platform_tile_positions.slice(1).map(func(x): return Vector2(x))
 	# Next stop lies backwards
 	else:
 		assert(path_indices[0] == 0)

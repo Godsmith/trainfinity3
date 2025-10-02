@@ -18,6 +18,10 @@
 
 ## TODO
 
+
+- train should reverse in place when reversing, not also move to the end of the platform
+  - this solves the problem that it was not defined what should happen if a train
+    platform becomes shorter than the train while the train is running.
 - trains repath at intersections  
   - train do not repath towards oncoming trains
   - trains do not repath back towards where they came (should be solved by the above)
@@ -70,6 +74,8 @@
 
 ### Issues
 
+- train overlaps wagons if a station becomes smaller when a train arrives then it was
+  when the train was created
 - Wagons fill from the wrong way around again
 - How to prevent the situation when, if a mine and the factory aligns, just create one
   long station that connects them both?
@@ -89,10 +95,6 @@
 - When creating and removing rail, sometimes existing stations will be unexpectedly 
   rejigged.
 - Train rotates very quickly in corners, while wagons do not
-
-### Bugs
-
-- Cannot destroy trains anymore
 
 ### In-game upgrades
 - range of stations (start with 1) - though it looks ugly when they are too far from ore
