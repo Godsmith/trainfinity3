@@ -108,6 +108,8 @@ func _process(delta):
 	# print(wagons[1].rigid_body.position)
 
 func _is_in_sharp_corner():
+	if len(wagons) == 0:
+		return false
 	var vehicle_rotations = [path_follow.rotation]
 	for wagon in wagons:
 		var wagon_rotation = wagon.path_follow.rotation + PI

@@ -70,7 +70,6 @@
 
 ### Issues
 
-- wagons with zero wagons crashes the game
 - creating train on too-long station a bit wonky
 - single click to destroy does not work
 - Wagons fill from the wrong way around again
