@@ -23,7 +23,6 @@ var last_delta = 0.0
 @onready var path_follow := $PathFollow2D
 @onready var polygon := $RigidBody2D/LightOccluder2D
 @onready var rigid_body := $RigidBody2D
-@onready var ore_timer := $OreTimer
 @onready var no_route_timer := $NoRouteTimer
 @onready var red_marker := $RigidBody2D/RedMarker
 
@@ -207,40 +206,6 @@ func _create_wagon_curve(train_point_path: PackedVector2Array) -> Curve2D:
 
 func get_train_position() -> Vector2:
 	return path_follow.global_position
-
-func max_capacity() -> int:
-	var out := 0
-	for wagon in wagons:
-		out += wagon.max_capacity
-	return out
-
-func add_ore(type: Ore.OreType):
-	for wagon in wagons:
-		if not wagon.get_total_ore_count() == wagon.max_capacity:
-			ore_timer.start()
-			await ore_timer.timeout
-			wagon.add_ore(type)
-			break
-
-func get_total_ore_count() -> int:
-	var amount := 0
-	for ore_type in Ore.OreType.values():
-		amount += get_ore_count(ore_type)
-	return amount
-
-func get_ore_count(ore_type: Ore.OreType) -> int:
-	var amount := 0
-	for wagon in wagons:
-		amount += wagon.get_ore_count(ore_type)
-	return amount
-
-func remove_all_ore(ore_type):
-	for i in len(wagons):
-		var wagon = wagons[-i - 1]
-		while wagon.get_ore_count(ore_type) > 0:
-			ore_timer.start()
-			await ore_timer.timeout
-			wagon.remove_ore(ore_type)
 
 func mark_for_destruction(is_marked: bool):
 	red_marker.visible = is_marked

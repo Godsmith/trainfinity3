@@ -1,11 +1,14 @@
 extends Path2D
 
+class_name Wagon
+
 @onready var _chunks := find_children("Chunk*")
 @onready var max_capacity := len(_chunks)
 @onready var path_follow := $PathFollow2D
 @onready var rigid_body := $PathFollow2D/RigidBody2D
 @onready var collision_shape := $PathFollow2D/RigidBody2D/CollisionShape2D
 @onready var red_marker := $PathFollow2D/RigidBody2D/RedMarker
+@onready var ore_timer := $OreTimer
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -13,6 +16,8 @@ func _ready() -> void:
 		chunk.visible = false
 
 func add_ore(type: Ore.OreType):
+	ore_timer.start()
+	await ore_timer.timeout
 	var reversed_chunks = _chunks.duplicate()
 	reversed_chunks.reverse()
 	for chunk in reversed_chunks:
@@ -22,6 +27,9 @@ func add_ore(type: Ore.OreType):
 			chunk.visible = true
 			return
 	assert(false, "Trying to add chunk to full wagon")
+
+func get_wagon_position() -> Vector2:
+	return path_follow.global_position
 
 func get_total_ore_count() -> int:
 	var count := 0
@@ -37,7 +45,13 @@ func get_ore_count(ore_type: Ore.OreType) -> int:
 			count += 1
 	return count
 
+func remove_all_ore(ore_type: Ore.OreType):
+	while get_ore_count(ore_type) > 0:
+		await remove_ore(ore_type)
+
 func remove_ore(ore_type):
+	ore_timer.start()
+	await ore_timer.timeout
 	for chunk in _chunks:
 		if chunk.visible and chunk.ore_type == ore_type:
 			chunk.visible = false
