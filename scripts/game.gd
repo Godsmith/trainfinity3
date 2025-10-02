@@ -45,6 +45,11 @@ func _process(_delta: float) -> void:
 	if follow_train:
 		camera.position = follow_train.get_train_position()
 
+	if gui_state == Gui.State.DESTROY2:
+		_mark_trains_for_destruction()
+	else:
+		trains_marked_for_destruction_set.clear()
+
 func _positions_between(start: Vector2i, stop: Vector2i) -> Array[Vector2i]:
 	# start and stop must be on the grid.
 	var out: Array[Vector2i] = []
@@ -393,7 +398,6 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 ## already been set, otherwise the train will jump ahead.
 func _on_train_reaches_end_of_curve(train: Train, set_new_path := true):
 	var tile_position = Vector2i(train.get_train_position().snapped(Global.TILE))
-	_try_mark_for_destruction(train, tile_position)
 
 	var is_at_target_platform = is_furthest_in_at_target_platform(train)
 
@@ -456,18 +460,19 @@ func _load_and_unload(train: Train):
 			await train.add_ore(ore_type)
 
 
-func _try_mark_for_destruction(train: Train, pos: Vector2i):
-	var train_marked_for_destruction = false
-	if gui_state == Gui.State.DESTROY2:
-		var positions: Array[Vector2i] = []
+func _mark_trains_for_destruction():
+	for train in get_tree().get_nodes_in_group("trains"):
+		var train_marked_for_destruction = false
+		var train_position = Vector2i(train.get_train_position().snapped(Global.TILE))
 		for marker in destroy_markers:
-			positions.append(Vector2i(marker.position))
-		train_marked_for_destruction = (pos in positions)
-	train.mark_for_destruction(train_marked_for_destruction)
-	if train_marked_for_destruction:
-		trains_marked_for_destruction_set[train] = 0
-	else:
-		trains_marked_for_destruction_set.erase(train)
+			if Vector2i(marker.position) == train_position:
+				train_marked_for_destruction = true
+				break
+		train.mark_for_destruction(train_marked_for_destruction)
+		if train_marked_for_destruction:
+			trains_marked_for_destruction_set[train as Train] = 0
+		else:
+			trains_marked_for_destruction_set.erase(train)
 
 
 func _on_train_clicked(train: Train):

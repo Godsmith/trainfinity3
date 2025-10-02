@@ -11,7 +11,7 @@ size = Vector2(12, 6)
 cull_mode = 2
 polygon = PackedVector2Array(-5.47687, -2.52878, 5.51235, -2.51152, 5.52185, 2.49494, -5.47687, 2.49494)
 
-[node name="Train" type="Path2D"]
+[node name="Train" type="Path2D" groups=["trains"]]
 z_index = -350
 curve = SubResource("Curve2D_68jl8")
 script = ExtResource("1_68jl8")
