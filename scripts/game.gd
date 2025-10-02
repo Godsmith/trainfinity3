@@ -99,6 +99,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				Gui.State.DESTROY1:
 					mouse_down_position = snapped_mouse_position
 					_change_gui_state(Gui.State.DESTROY2)
+					_show_destroy_markers(mouse_down_position, snapped_mouse_position)
+
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			is_right_mouse_button_held_down = event.is_pressed()
 		elif event.button_index == MOUSE_BUTTON_WHEEL_UP and not event.is_echo():

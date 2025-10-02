@@ -70,8 +70,6 @@
 
 ### Issues
 
-- creating train on too-long station a bit wonky
-- single click to destroy does not work
 - Wagons fill from the wrong way around again
 - How to prevent the situation when, if a mine and the factory aligns, just create one
   long station that connects them both?
