@@ -431,7 +431,9 @@ func _on_train_reaches_end_of_curve(train: Train):
 	positions_to_reserve.append(Vector2i(point_path[0]))
 	positions_to_reserve.append(Vector2i(point_path[1]))
 	print("positions_to_reserve: ", positions_to_reserve)
-	var is_reservation_successful = track_reservations.reserve_train_positions(positions_to_reserve, train)
+	var segments_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
+	var is_reservation_successful = track_reservations.reserve_train_positions(segments_to_reserve, train)
+	print("segments_to_reserve: ", segments_to_reserve)
 	while not is_reservation_successful:
 		_show_popup("Blocked!", train.get_train_position())
 		train.no_route_timer.start()

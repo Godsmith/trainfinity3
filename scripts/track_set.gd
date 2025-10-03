@@ -47,3 +47,15 @@ func erase(track: Track):
 	_tracks_from_position[track.pos1].erase(track)
 	_tracks_from_position[track.pos2].erase(track)
 	track.queue_free()
+
+func get_segments_connected_to_positions(positions: Array[Vector2i]) -> Array[Vector2i]:
+	var segment: Array[Vector2i] = positions
+	var positions_to_check = [positions[0], positions[-1]]
+	while positions_to_check:
+		var position_to_check = positions_to_check.pop_back()
+		if len(tracks_at_position(position_to_check)) <= 2:
+			segment.append(position_to_check)
+			for connected_position in positions_connected_to(position_to_check):
+				if connected_position not in segment:
+					positions_to_check.append(connected_position)
+	return segment
