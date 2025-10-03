@@ -36,6 +36,7 @@ var astar_id_from_position: Dictionary[Vector2i, int] = {}
 @onready var bank = Bank.new(gui)
 @onready var track_set = TrackSet.new()
 @onready var platform_tile_set = PlatformTileSet.new(track_set)
+@onready var track_reservations = TrackReservations.new()
 
 var selected_platform_tile: PlatformTile = null
 
@@ -424,6 +425,22 @@ func _on_train_reaches_end_of_curve(train: Train):
 		await train.no_route_timer.timeout
 		point_path = _get_point_path(tile_position, target_position)
 
+	var positions_to_reserve: Array[Vector2i] = []
+	for pos in train.wagon_positions:
+		positions_to_reserve.append(Vector2i(pos))
+	positions_to_reserve.append(Vector2i(point_path[0]))
+	positions_to_reserve.append(Vector2i(point_path[1]))
+	print("positions_to_reserve: ", positions_to_reserve)
+	var is_reservation_successful = track_reservations.reserve_train_positions(positions_to_reserve, train)
+	while not is_reservation_successful:
+		_show_popup("Blocked!", train.get_train_position())
+		train.no_route_timer.start()
+		train.target_speed = 0.0
+		train.absolute_speed = 0.0
+		train.is_stopped = true
+		await train.no_route_timer.timeout
+		is_reservation_successful = track_reservations.reserve_train_positions(positions_to_reserve, train)
+
 	if is_at_target_platform:
 		# Sets a curve, without train.wagon_positions needed to be set
 		train.set_new_curve_from_station(point_path, platform_tile_set.connected_ordered_platform_tile_positions(tile_position, tile_position))
@@ -557,6 +574,7 @@ func _destroy_under_destroy_markers():
 	_destroy_stations(positions)
 	for train in trains_marked_for_destruction_set:
 		train.queue_free()
+		track_reservations.clear_reservations(train)
 	trains_marked_for_destruction_set.clear()
 
 ###################################################################
