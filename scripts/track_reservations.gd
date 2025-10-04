@@ -20,3 +20,6 @@ func clear_reservations(train: Train):
 	for pos in _reservations.keys():
 		if _reservations[pos] == train:
 			_reservations.erase(pos)
+
+func is_reserved_by_another_train(pos: Vector2i, train: Train):
+	return pos in _reservations and _reservations[pos] != train

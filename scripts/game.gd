@@ -387,6 +387,7 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 	# Get path from the beginning of the first tile of the source platform
 	# to the last tile of the target platform
 	# TODO: change to between platforms instead
+	# TODO: this does not take reserved spaces into account, so will likely lead to crash
 	var point_path = _get_point_path_between_platforms(platform1.position, platform2.position)
 
 	if not point_path:
@@ -414,16 +415,28 @@ func _on_train_reaches_end_of_curve(train: Train):
 		train.destination_index %= len(train.destinations)
 
 	var target_position = train.destinations[train.destination_index]
-	var point_path = _get_point_path(tile_position, target_position)
 
-	while not point_path:
+	var point_path: PackedVector2Array
+	while true:
+		point_path = _get_point_path(tile_position, target_position)
+		if point_path:
+			# If the next tile is reserved, choose another path
+			var new_astar = astar
+			while track_reservations.is_reserved_by_another_train(point_path[1], train):
+				var reserved_position := astar_id_from_position[Vector2i(point_path[1])]
+				new_astar = clone_astar(new_astar)
+				new_astar.set_point_disabled(reserved_position, true)
+				point_path = _get_point_path(tile_position, target_position, new_astar)
+				if not point_path:
+					break
+		if point_path:
+			break
 		_show_popup("Cannot find route!", train.get_train_position())
 		train.no_route_timer.start()
 		train.target_speed = 0.0
 		train.absolute_speed = 0.0
 		train.is_stopped = true
 		await train.no_route_timer.timeout
-		point_path = _get_point_path(tile_position, target_position)
 
 	var positions_to_reserve: Array[Vector2i] = []
 	for pos in train.wagon_positions:
@@ -453,6 +466,28 @@ func _on_train_reaches_end_of_curve(train: Train):
 		train.is_stopped = false
 		train.target_speed = train.max_speed
 
+func clone_astar(original: AStar2D) -> AStar2D:
+	var clone = AStar2D.new()
+
+	# Copy all points
+	for id in original.get_point_ids():
+		var pos = original.get_point_position(id)
+		var weight = original.get_point_weight_scale(id)
+		clone.add_point(id, pos, weight)
+
+	# Copy all connections
+	for id in original.get_point_ids():
+		for neighbor in original.get_point_connections(id):
+			if not clone.are_points_connected(id, neighbor):
+				clone.connect_points(id, neighbor)
+
+	# Copy disabled status
+	for id in original.get_point_ids():
+		if original.is_point_disabled(id):
+			clone.set_point_disabled(id, true)
+
+	return clone
+	
 ## This method assumes the train has wagons, otherwise it will never stop
 func is_furthest_in_at_target_platform(train: Train) -> bool:
 	var tile_position = Vector2i(train.get_train_position().snapped(Global.TILE))
@@ -526,11 +561,11 @@ func _get_point_path_between_platforms(platform_pos1: Vector2i,
 	point_paths.sort_custom(func(a, b): return len(a) < len(b))
 	return point_paths[-1]
 
-func _get_point_path(pos1: Vector2i, pos2: Vector2i) -> PackedVector2Array:
+func _get_point_path(pos1: Vector2i, pos2: Vector2i, astar_: AStar2D = astar) -> PackedVector2Array:
 	# print("_get_point_path(%s, %s)" % [pos1, pos2])
 	var id1 = astar_id_from_position[Vector2i(pos1)]
 	var id2 = astar_id_from_position[Vector2i(pos2)]
-	return astar.get_point_path(id1, id2)
+	return astar_.get_point_path(id1, id2)
 
 
 ###################################################################################

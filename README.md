@@ -18,6 +18,7 @@
 
 ## TODO
 
+- prevent train from turning around on existing track
 - upgrades menu
 - trains repath at intersections
   - train do not repath towards oncoming trains
