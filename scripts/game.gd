@@ -419,11 +419,12 @@ func _on_train_reaches_end_of_curve(train: Train):
 	var point_path: PackedVector2Array
 	while true:
 		point_path = _get_point_path(tile_position, target_position)
-		if point_path:
-			# If the next tile is reserved, choose another path
+		# If we are close to the station we will skip this
+		if point_path and len(point_path) > 2:
+			# If the tile after the next is reserved, choose another path
 			var new_astar = astar
-			while track_reservations.is_reserved_by_another_train(point_path[1], train):
-				var reserved_position := astar_id_from_position[Vector2i(point_path[1])]
+			while track_reservations.is_reserved_by_another_train(point_path[2], train):
+				var reserved_position := astar_id_from_position[Vector2i(point_path[2])]
 				new_astar = clone_astar(new_astar)
 				new_astar.set_point_disabled(reserved_position, true)
 				point_path = _get_point_path(tile_position, target_position, new_astar)
@@ -442,7 +443,8 @@ func _on_train_reaches_end_of_curve(train: Train):
 	for pos in train.wagon_positions:
 		positions_to_reserve.append(Vector2i(pos))
 	positions_to_reserve.append(Vector2i(point_path[0]))
-	positions_to_reserve.append(Vector2i(point_path[1]))
+	if len(point_path) > 1:
+		positions_to_reserve.append(Vector2i(point_path[1]))
 	print("positions_to_reserve: ", positions_to_reserve)
 	var segments_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
 	var is_reservation_successful = track_reservations.reserve_train_positions(segments_to_reserve, train)
