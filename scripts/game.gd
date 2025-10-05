@@ -97,6 +97,11 @@ func _unhandled_input(event: InputEvent) -> void:
 				Gui.State.TRACK2:
 					if snapped_mouse_position == mouse_down_position:
 						_change_gui_state(Gui.State.TRACK1)
+					else:
+						print("new one")
+						_try_create_tracks()
+						ghost_track.visible = true
+						_change_gui_state(Gui.State.TRACK1)
 				Gui.State.DESTROY1:
 					mouse_down_position = snapped_mouse_position
 					_change_gui_state(Gui.State.DESTROY2)
@@ -114,6 +119,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		match gui_state:
 			Gui.State.TRACK2:
 				if snapped_mouse_position != mouse_down_position:
+					print("old one")
 					_try_create_tracks()
 					ghost_track.visible = true
 					_change_gui_state(Gui.State.TRACK1)
@@ -451,10 +457,8 @@ func _on_train_reaches_end_of_curve(train: Train):
 	positions_to_reserve.append(Vector2i(point_path[0]))
 	if len(point_path) > 1:
 		positions_to_reserve.append(Vector2i(point_path[1]))
-	print("positions_to_reserve: ", positions_to_reserve)
 	var segments_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
 	var is_reservation_successful = track_reservations.reserve_train_positions(segments_to_reserve, train)
-	print("segments_to_reserve: ", segments_to_reserve)
 	while not is_reservation_successful:
 		_show_popup("Blocked!", train.get_train_position())
 		train.no_route_timer.start()
