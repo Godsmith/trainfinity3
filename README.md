@@ -5,6 +5,8 @@
   with resources
 - Stations built next to the factory accepts coal, stations built next to cities accept mail
 - Prices increase with the number of objects built
+- Trains can turn around when stopped at platforms but not elsewhere
+- Trains avoid oncoming trains by choosing sidetracks when available
 
 ## Controls
 - To build track, select Track and either click start and then end positions, or drag from start
@@ -18,11 +20,7 @@
 
 ## TODO
 
-- prevent train from turning around on existing track
 - upgrades menu
-- trains repath at intersections
-  - train do not repath towards oncoming trains
-  - trains do not repath back towards where they came (should be solved by the above)
 - refactoring: fix so that we don't use so many internal methods and properties on train and wagon
 - help menu showing the controls
 - different prices and production rate for different goods

@@ -418,11 +418,17 @@ func _on_train_reaches_end_of_curve(train: Train):
 
 	var point_path: PackedVector2Array
 	while true:
-		point_path = _get_point_path(tile_position, target_position)
+		var new_astar = clone_astar(astar)
+		# Set wagon positions to disabled to prevent turnaround.
+		var is_turnaround_allowed = is_at_target_platform
+		if not is_turnaround_allowed:
+			for wagon_position in train.wagon_positions:
+				new_astar.set_point_disabled(astar_id_from_position[Vector2i(wagon_position)])
+
+		point_path = _get_point_path(tile_position, target_position, new_astar)
 		# If we are close to the station we will skip this
 		if point_path and len(point_path) > 2:
 			# If the tile after the next is reserved, choose another path
-			var new_astar = astar
 			while track_reservations.is_reserved_by_another_train(point_path[2], train):
 				var reserved_position := astar_id_from_position[Vector2i(point_path[2])]
 				new_astar = clone_astar(new_astar)
