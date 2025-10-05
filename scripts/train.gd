@@ -99,8 +99,10 @@ func _process(delta):
 		wagon.path_follow.progress -= delta * absolute_speed
 		#wagon.path_follow.progress = path_follow.progress
 
-	if path_follow.progress >= curve.get_baked_length():
-		# TODO: rename to end_of_curve
+	# Check if we are reaching the end of curve the NEXT frame, in order to not get
+	# stop-start behavior. This makes the train jump forward slightly though, so it is
+	# still not ideal.
+	if path_follow.progress + delta * absolute_speed >= curve.get_baked_length():
 		end_of_curve_reached.emit(self)
 	# print("=after==========")
 	# print(wagons[0].path_follow.position)
