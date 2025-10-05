@@ -20,6 +20,8 @@
 
 ## TODO
 
+- when a train waits for another train, it should not say "Cannot find route", and also
+  it should subscribe to the rail being cleared
 - one-way rail
 - upgrades menu
 - refactoring: fix so that we don't use so many internal methods and properties on train and wagon
