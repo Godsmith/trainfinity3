@@ -130,7 +130,7 @@ func _is_in_sharp_corner():
 ## [wagon_positions] so that wagons move accordingly.
 ## [br][point_path] is a path that goes from either end of the platform.
 ## [br][platform_tile_positions] is always ordered and starting at the train position
-func set_new_curve_from_station(point_path: PackedVector2Array, platform_tile_positions: Array[Vector2i]):
+func set_new_curve_from_platform(point_path: PackedVector2Array, platform_tile_positions: Array[Vector2i]):
 	# Two cases: either the next stop lies forward, or the next stop lies backwards.
 	var vector2i_point_path = Array(point_path).map(func(x): return Vector2i(x))
 	var path_indices = [vector2i_point_path.find(platform_tile_positions[0]),
@@ -153,29 +153,27 @@ func set_new_curve_from_station(point_path: PackedVector2Array, platform_tile_po
 		for point in point_path.slice(0, wagon_count):
 			wagon_positions.append(point)
 
-	set_new_curve(train_point_path)
-
-## Sets a new curve and wagon curve based on a train point path.
-## <br> assumes that [wagon_positions] has been previously set.
-## <br> [train_point_path] is the path from the train engine itself, not the full path
-func set_new_curve(train_point_path: PackedVector2Array):
-	var new_curve = Curve2D.new()
-	new_curve.add_point(train_point_path[0])
-	if len(train_point_path) > 1:
-		new_curve.add_point(train_point_path[1])
-	curve = new_curve
+	curve = Curve2D.new()
+	curve.add_point(train_point_path[0])
 	path_follow.progress = 0.0
+	add_next_point_to_curve(train_point_path)
+
+## Adds the next point in a path to the current curve.
+## [br] the first point of [train_point_path] shall be at the train engine.
+## [br] assumes that [wagon_positions] has been previously populated.
+func add_next_point_to_curve(train_point_path: PackedVector2Array):
+	if len(train_point_path) > 1:
+		curve.add_point(train_point_path[1])
 
 	_set_wagon_curves_and_progress(train_point_path)
 
 	# Maintain a LIFO queue of previous train positions to use for creating wagon curves
-	# The latest position is always in the front. So if the train travels east,
-	# wagon_positions will be a list of points from east to west.
+	# The latest position is always in the back. So if the train travels east,
+	# wagon_positions will be a list of points from west to east.
 	wagon_positions.pop_front()
 	wagon_positions.append(train_point_path[0])
 
-## [point_path] is a list of points, from the space just behind the train engine,
-## to some distance back further than the number of wagons.
+## [train_point_path] starts at the train engine and goes forward.
 ## Assumes that [wagon_positions] is set and >= the number of wagons.
 func _set_wagon_curves_and_progress(train_point_path: PackedVector2Array):
 	# If the train is travelling diagonally, the distance from the train to the

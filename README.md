@@ -20,7 +20,6 @@
 
 ## TODO
 
-- trains stutter slightly when getting assigned a new curve
 - when a train waits for another train, it should not say "Cannot find route", and also
   it should subscribe to the rail being cleared
 - one-way rail

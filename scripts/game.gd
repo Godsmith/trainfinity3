@@ -404,7 +404,7 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 	add_child(train)
 
 	train.destinations = [point_path[0], point_path[-1]] as Array[Vector2i]
-	train.set_new_curve_from_station(point_path, platform_tile_set.connected_ordered_platform_tile_positions(point_path[0], point_path[0]))
+	train.set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(point_path[0], point_path[0]))
 	_on_train_reaches_end_of_curve(train)
 
 func _on_train_reaches_end_of_curve(train: Train):
@@ -470,10 +470,10 @@ func _on_train_reaches_end_of_curve(train: Train):
 
 	if is_at_target_platform:
 		# Sets a curve, without train.wagon_positions needed to be set
-		train.set_new_curve_from_station(point_path, platform_tile_set.connected_ordered_platform_tile_positions(tile_position, tile_position))
+		train.set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(tile_position, tile_position))
 	else:
 		# Sets a curve, and expects train.wagon_positions to be populated.
-		train.set_new_curve(point_path)
+		train.add_next_point_to_curve(point_path)
 	if train.is_stopped:
 		train.is_stopped = false
 		train.target_speed = train.max_speed
