@@ -20,44 +20,37 @@
 
 ## TODO
 
-- when a train waits for another train, it should not say "Cannot find route", and also
-  it should subscribe to the rail being cleared
-- one-way rail
 - upgrades menu
-- refactoring: fix so that we don't use so many internal methods and properties on train and wagon
-- help menu showing the controls
+- disallow building out of bounds
 - different prices and production rate for different goods
+- cities consume only OTHER cities' mail
+- optimization: when a train waits for another train, it should not say "Cannot find 
+  route", and it should subscribe to the rail being cleared
+- refactoring: fix so that Game does not use so many internal methods and properties on 
+  train and wagon
+- help menu showing the controls
 - train should mark the tile it wants to go to when it cannot find path
   - either when you select the train, or it can create a red line to the taget
-- cities consume only OTHER cities' mail
-- change graphics for end of station, so it can't look like two stations are one
-  large station
+- change graphics for end of platform, so it can't look like two stations are one
+  large platform
 - producers/consumers of the same resource not less apart than the longest station length (5 tiles?)
 - expand map, adding new resources
 - show ghost platforms when building station
 - show ghost platforms when building track
-- disallow building out of bounds
 - heavier trains should have slower acceleration
 - change train paths when changing length of starting or ending station
-- do something - stop train? delete train? - when removing starting or ending station
 - prevent scrolling past edges of the map
   - note that duplicating the map size and zooming out max makes the game stutter, so adjustments needed. 
     At least in debug mode, need to test performance after exporting as well.
 - saving the game
   - will be useful for debugging as well, since can load into a certain state
+- run in the browser
+
+### Thinking about it
+
+- one-way rail
 - train collisions
-  - cannot be done until we have pathfinding that takes other trains into account/signals/manual paths
-  - pathfinding that takes other trains into account:
-    - tricky
-    - not realistic
-    - might make it too easy?
-  - signals
-    - time-consuming to get right
-    - fun
-  - one-way rail
-    - a bit boring and ugly
-    - takes a lot of rail
-    - not very compact
+- signals
 
 ### Discarded ideas
 
@@ -69,7 +62,7 @@
 
 - Circular tracks with multiple train do not work since they will block each other,
   and if you artificially split it up into segments trains will probably get deadlocked.
-  Need one-way signs to avoid this.
+  - Need one-way signs to avoid this.
 - Wagons fill from the wrong way around again
 - How to prevent the situation when, if a mine and the factory aligns, just create one
   long station that connects them both?
@@ -88,7 +81,6 @@
        problem, try it out.
 - When creating and removing rail, sometimes existing stations will be unexpectedly 
   rejigged.
-- Train rotates very quickly in corners, while wagons do not
 
 ### In-game upgrades
 - range of stations (start with 1) - though it looks ugly when they are too far from ore
