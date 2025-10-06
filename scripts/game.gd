@@ -617,12 +617,19 @@ func _destroy_under_destroy_markers():
 	var positions: Array[Vector2i] = []
 	for marker in destroy_markers:
 		positions.append(Vector2i(marker.position))
-	_destroy_track(positions)
-	_destroy_stations(positions)
+
+	var have_trains_been_destroyed = false
 	for train in trains_marked_for_destruction_set:
 		train.queue_free()
 		track_reservations.clear_reservations(train)
+		have_trains_been_destroyed = true
 	trains_marked_for_destruction_set.clear()
+	if have_trains_been_destroyed:
+		# Just destroy trains first
+		return
+
+	_destroy_track(positions)
+	_destroy_stations(positions)
 
 ###################################################################
 
