@@ -409,7 +409,6 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 
 func _on_train_reaches_end_of_curve(train: Train):
 	var tile_position = Vector2i(train.get_train_position().snapped(Global.TILE))
-
 	var is_at_target_platform = is_furthest_in_at_target_platform(train)
 
 	if is_at_target_platform:
@@ -428,7 +427,7 @@ func _on_train_reaches_end_of_curve(train: Train):
 		# Set wagon positions to disabled to prevent turnaround.
 		var is_turnaround_allowed = is_at_target_platform
 		if not is_turnaround_allowed:
-			for wagon_position in train.wagon_positions:
+			for wagon_position in train.get_wagon_positions():
 				new_astar.set_point_disabled(astar_id_from_position[Vector2i(wagon_position)])
 
 		point_path = _get_point_path(tile_position, target_position, new_astar)
@@ -452,7 +451,7 @@ func _on_train_reaches_end_of_curve(train: Train):
 		await train.no_route_timer.timeout
 
 	var positions_to_reserve: Array[Vector2i] = []
-	for pos in train.wagon_positions:
+	for pos in train.get_wagon_positions():
 		positions_to_reserve.append(Vector2i(pos))
 	positions_to_reserve.append(Vector2i(point_path[0]))
 	if len(point_path) > 1:
@@ -469,10 +468,9 @@ func _on_train_reaches_end_of_curve(train: Train):
 		is_reservation_successful = track_reservations.reserve_train_positions(positions_to_reserve, train)
 
 	if is_at_target_platform:
-		# Sets a curve, without train.wagon_positions needed to be set
+		# TODO: break out add_next_point_to_curve from this
 		train.set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(tile_position, tile_position))
 	else:
-		# Sets a curve, and expects train.wagon_positions to be populated.
 		train.add_next_point_to_curve(point_path)
 	if train.is_stopped:
 		train.is_stopped = false
@@ -509,7 +507,7 @@ func is_furthest_in_at_target_platform(train: Train) -> bool:
 		return false
 	if not tile_position in platform_tile_set.platform_endpoints(tile_position):
 		return false
-	for wagon_position in train.wagon_positions:
+	for wagon_position in train.get_wagon_positions():
 		if Vector2i(wagon_position) in connected_platform_positions:
 			return true
 	return false
@@ -520,7 +518,7 @@ func _load_and_unload(train: Train):
 	var reversed_wagons_at_platform: Array[Wagon] = []
 	for i in train.wagon_count:
 		var wagon = train.wagons[-i - 1]
-		if Vector2i(wagon.get_wagon_position()) in platform_tile_set.connected_platform_tile_positions(train_position):
+		if Vector2i(wagon.get_wagon_position().snapped(Global.TILE)) in platform_tile_set.connected_platform_tile_positions(train_position):
 			reversed_wagons_at_platform.append(wagon)
 	for station in platform_tile_set.stations_connected_to_platform(train_position, _get_stations()):
 		for consumer in get_tree().get_nodes_in_group("resource_consumers"):
