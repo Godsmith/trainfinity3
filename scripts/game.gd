@@ -621,6 +621,7 @@ func _destroy_under_destroy_markers():
 	var have_trains_been_destroyed = false
 	for train in trains_marked_for_destruction_set:
 		train.queue_free()
+		bank.destroy(Global.Asset.TRAIN)
 		track_reservations.clear_reservations(train)
 		have_trains_been_destroyed = true
 	trains_marked_for_destruction_set.clear()
