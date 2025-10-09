@@ -4,6 +4,9 @@ class_name Gui
 
 enum State {NONE, TRACK1, TRACK2, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY1, DESTROY2, FOLLOW_TRAIN}
 
+func _ready() -> void:
+	$UpgradesMenu.close_button_clicked.connect(_upgrades_close_button_clicked)
+
 func show_money(money: int):
 	$HBoxContainer/Money.text = "$%s" % money
 
@@ -27,3 +30,11 @@ func set_pressed_no_signal(gui_state: State):
 			$HBoxContainer/TrainButton.set_pressed_no_signal(true)
 		State.DESTROY2:
 			$HBoxContainer/DestroyButton.set_pressed_no_signal(true)
+
+
+func _on_upgrades_button_toggled(toggled_on: bool) -> void:
+	$UpgradesMenu.visible = toggled_on
+
+func _upgrades_close_button_clicked() -> void:
+	$UpgradesMenu.visible = false
+	$HBoxContainer/UpgradesButton.set_pressed_no_signal(false)

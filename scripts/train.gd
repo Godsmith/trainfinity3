@@ -7,7 +7,7 @@ const WAGON = preload("res://scenes/wagon.tscn")
 signal end_of_curve_reached(train: Train)
 signal train_clicked(train: Train)
 
-@export var max_speed := 20.0
+var max_speed := 20.0
 @export var target_speed := 0.0
 @export var absolute_speed := 0.0
 @export var acceleration := 6.0
@@ -30,6 +30,8 @@ var destinations: Array[Vector2i] = []
 var destination_index := 0
 
 func _ready() -> void:
+	max_speed = Upgrades.get_value(Upgrades.UpgradeType.TRAIN_MAX_SPEED)
+	acceleration = Upgrades.get_value(Upgrades.UpgradeType.TRAIN_ACCELERATION)
 	for i in wagon_count:
 		var wagon = WAGON.instantiate()
 		wagons.append(wagon)

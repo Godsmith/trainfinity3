@@ -1,11 +1,19 @@
-[gd_scene load_steps=3 format=3 uid="uid://vyo6h6rte1xu"]
+[gd_scene load_steps=4 format=3 uid="uid://vyo6h6rte1xu"]
 
 [ext_resource type="Script" uid="uid://dwohiu6xowsay" path="res://scenes/gui.gd" id="1_efmwq"]
+[ext_resource type="PackedScene" uid="uid://cy1ncg05prhjg" path="res://scenes/upgrades_menu.tscn" id="2_mfius"]
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_lbhrr"]
 
 [node name="Gui" type="CanvasLayer"]
 script = ExtResource("1_efmwq")
+
+[node name="UpgradesMenu" parent="." instance=ExtResource("2_mfius")]
+visible = false
+offset_left = 86.0
+offset_top = 61.0
+offset_right = -76.0
+offset_bottom = -165.0
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 offset_right = 89.0
@@ -54,6 +62,20 @@ toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "Follow Train"
 
+[node name="VSeparator" type="VSeparator" parent="HBoxContainer"]
+layout_mode = 2
+
 [node name="Money" type="Label" parent="HBoxContainer"]
 layout_mode = 2
 text = "$0"
+
+[node name="VSeparator2" type="VSeparator" parent="HBoxContainer"]
+layout_mode = 2
+
+[node name="UpgradesButton" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+text = "Upgrades"
+
+[connection signal="toggled" from="HBoxContainer/UpgradesButton" to="." method="_on_upgrades_button_toggled"]

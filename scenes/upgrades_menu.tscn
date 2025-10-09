@@ -1,0 +1,68 @@
+[gd_scene load_steps=2 format=3 uid="uid://cy1ncg05prhjg"]
+
+[ext_resource type="Script" uid="uid://d1pwk035t8f7t" path="res://scripts/upgrades_menu.gd" id="1_w5joc"]
+
+[node name="UpgradesMenu" type="MarginContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -625.0
+offset_bottom = -461.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_w5joc")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="GridContainer" type="GridContainer" parent="MarginContainer/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+columns = 3
+
+[node name="PlatformLengthNameLabel" type="Label" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer"]
+layout_mode = 2
+text = "Maximum platform length"
+
+[node name="PlatformLengthAmountLabel" type="Label" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer"]
+layout_mode = 2
+text = "3"
+horizontal_alignment = 2
+
+[node name="PlatformLengthButton" type="Button" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer"]
+layout_mode = 2
+focus_mode = 0
+text = "$100"
+
+[node name="MaxSpeedNameLabel" type="Label" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer"]
+layout_mode = 2
+text = "Maximum speed"
+
+[node name="MaxSpeedAmountLabel" type="Label" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer"]
+layout_mode = 2
+text = "20"
+
+[node name="MaxSpeedButton" type="Button" parent="MarginContainer/VBoxContainer/ScrollContainer/GridContainer"]
+layout_mode = 2
+focus_mode = 0
+text = "$100"
+
+[node name="CloseButton" type="Button" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+text = "Close"
+
+[connection signal="pressed" from="MarginContainer/VBoxContainer/CloseButton" to="." method="_on_close_button_pressed"]

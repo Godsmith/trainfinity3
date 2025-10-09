@@ -33,7 +33,6 @@ var astar_id_from_position: Dictionary[Vector2i, int] = {}
 
 @onready var camera = $Camera2D
 @onready var gui: Gui = $Gui
-@onready var bank = Bank.new(gui)
 @onready var track_set = TrackSet.new()
 @onready var platform_tile_set = PlatformTileSet.new(track_set)
 @onready var track_reservations = TrackReservations.new()
@@ -69,6 +68,8 @@ func _positions_between(start: Vector2i, stop: Vector2i) -> Array[Vector2i]:
 
 
 func _ready():
+	GlobalBank.gui = gui
+	GlobalBank.update_gui()
 	# TODO: do not expose Gui innards this way
 	$Gui/HBoxContainer/TrackButton.connect("toggled", _on_trackbutton_toggled)
 	$Gui/HBoxContainer/StationButton.connect("toggled", _on_stationbutton_toggled)
@@ -167,7 +168,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			
 
 	if OS.is_debug_build() and event is InputEventKey and event.is_pressed() and event.keycode == KEY_X:
-		bank.earn(10000)
+		GlobalBank.earn(10000)
 
 func _get_snapped_mouse_position(event: InputEventMouse):
 	# This is equivalent to doing get_local_mouse_position(), but I wanted to use the
@@ -211,7 +212,7 @@ func _try_create_tracks():
 		# astar point will be created at the position, and the position will be
 		# evaluated for platforms, etc.
 		return
-	if not bank.can_afford(Global.Asset.TRACK, len(ghost_tracks)):
+	if not GlobalBank.can_afford(Global.Asset.TRACK, len(ghost_tracks)):
 		_reset_ghost_tracks()
 		return
 
@@ -231,7 +232,7 @@ func _try_create_tracks():
 		ids.append(astar_id_from_position[ghost_track_position])
 	for i in range(1, len(ids)):
 		astar.connect_points(ids[i - 1], ids[i])
-	bank.buy(Global.Asset.TRACK, len(ghost_tracks))
+	GlobalBank.buy(Global.Asset.TRACK, len(ghost_tracks))
 	platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(ghost_track_tile_positions, _get_stations(), _create_platform_tile)
 	ghost_tracks.clear()
 
@@ -251,7 +252,7 @@ func _destroy_track(positions: Array[Vector2i]):
 	for pos in positions:
 		for track in track_set.tracks_at_position(pos).duplicate():
 			astar.disconnect_points(astar_id_from_position[track.pos1], astar_id_from_position[track.pos2])
-			bank.destroy(Global.Asset.TRACK)
+			GlobalBank.destroy(Global.Asset.TRACK)
 			track_positions[track.pos1] = 0
 			track_positions[track.pos2] = 0
 			track_set.erase(track)
@@ -334,12 +335,12 @@ func _is_legal_station_position(station_position: Vector2i):
 func _try_create_station(station_position: Vector2i):
 	if not _is_legal_station_position(station_position):
 		return
-	if not bank.can_afford(Global.Asset.STATION):
+	if not GlobalBank.can_afford(Global.Asset.STATION):
 		return
 	var station = STATION.instantiate()
 	station.position = station_position
 	add_child(station)
-	bank.buy(Global.Asset.STATION)
+	GlobalBank.buy(Global.Asset.STATION)
 	platform_tile_set.create_platform_tiles([station], _create_platform_tile)
 
 func _destroy_stations(positions: Array[Vector2i]):
@@ -352,7 +353,7 @@ func _destroy_stations(positions: Array[Vector2i]):
 				platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(
 					[adjacent_position], stations, _create_platform_tile)
 			station.queue_free()
-			bank.destroy(Global.Asset.STATION)
+			GlobalBank.destroy(Global.Asset.STATION)
 
 func _get_stations() -> Array[Station]:
 	var stations: Array[Station] = []
@@ -381,11 +382,11 @@ func _platform_tile_clicked(platform_tile: PlatformTile):
 ############################################################################
 
 func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
-	if not bank.can_afford(Global.Asset.TRAIN):
+	if not GlobalBank.can_afford(Global.Asset.TRAIN):
 		return
 	if platform_tile_set.are_connected(platform1, platform2):
 		return
-	bank.buy(Global.Asset.TRAIN)
+	GlobalBank.buy(Global.Asset.TRAIN)
 
 	var train = TRAIN.instantiate()
 	train.wagon_count = min(platform_tile_set.platform_size(platform1.position), platform_tile_set.platform_size(platform2.position)) - 1
@@ -529,7 +530,7 @@ func _load_and_unload(train: Train):
 					var ore_count = wagon.get_ore_count(ore_type)
 					if ore_count > 0:
 						_show_popup("$%s" % ore_count, train.get_train_position())
-					bank.earn(ore_count)
+					GlobalBank.earn(ore_count)
 					await wagon.remove_all_ore(ore_type)
 		for wagon in reversed_wagons_at_platform:
 			while station.get_total_ore_count() > 0 and wagon.get_total_ore_count() < wagon.max_capacity:
@@ -621,7 +622,7 @@ func _destroy_under_destroy_markers():
 	var have_trains_been_destroyed = false
 	for train in trains_marked_for_destruction_set:
 		train.queue_free()
-		bank.destroy(Global.Asset.TRAIN)
+		GlobalBank.destroy(Global.Asset.TRAIN)
 		track_reservations.clear_reservations(train)
 		have_trains_been_destroyed = true
 	trains_marked_for_destruction_set.clear()

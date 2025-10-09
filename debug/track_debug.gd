@@ -9,7 +9,7 @@ const FACTORY = preload("res://scenes/factory.tscn")
 func _ready():
 	super._ready()
 
-	bank.earn(10000)
+	GlobalBank.earn(10000)
 
 	if create_ore_and_factory:
 		var ore = Ore.create(Ore.OreType.COAL)

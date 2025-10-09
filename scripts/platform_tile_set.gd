@@ -7,7 +7,6 @@ const PLATFORM_TILE = preload("res://scenes/platform_tile.tscn")
 
 var _platform_tiles: Dictionary[Vector2i, Node2D] = {}
 var track_set: TrackSet
-var maximum_platform_size = 3
 
 func _init(track_set_: TrackSet):
 	track_set = track_set_
@@ -39,7 +38,7 @@ func create_platform_tiles(stations: Array[Station], create_platform_tile: Calla
 
 func _would_platform_here_exceed_maximum_platform_size(pos: Vector2i):
 	for neighbour in track_set.positions_connected_to(pos):
-		if platform_size(neighbour) == maximum_platform_size:
+		if platform_size(neighbour) == Upgrades.get_value(Upgrades.UpgradeType.PLATFORM_LENGTH):
 			return true
 	return false
 

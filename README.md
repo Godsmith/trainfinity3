@@ -20,8 +20,10 @@
 
 ## TODO
 
-- upgrades menu
+- pop up the change in money when buying something
+- sound effects and music
 - disallow building out of bounds
+- expand building area
 - different prices and production rate for different goods
 - cities consume only OTHER cities' mail
 - optimization: when a train waits for another train, it should not say "Cannot find 
