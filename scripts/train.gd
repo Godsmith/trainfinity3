@@ -25,6 +25,7 @@ var last_delta = 0.0
 @onready var rigid_body := $RigidBody2D
 @onready var no_route_timer := $NoRouteTimer
 @onready var red_marker := $RigidBody2D/RedMarker
+@onready var coin_splash := $Coinsplash
 
 var destinations: Array[Vector2i] = []
 var destination_index := 0
@@ -36,7 +37,6 @@ func _ready() -> void:
 		var wagon = WAGON.instantiate()
 		wagons.append(wagon)
 		add_child(wagon)
-	#path_follow.progress = wagon_count * Global.TILE_SIZE
 
 func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():

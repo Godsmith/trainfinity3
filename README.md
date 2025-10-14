@@ -18,10 +18,20 @@
 - Select Destroy and either click on a location or drag to select an area to destroy
 - Modes can also be selected with the number keys (1 to build track etc)
 
+## Credits
+
+### Music
+
+- [Next to you - Joth](https://opengameart.org/content/next-to-you)
+
+### Audio
+
+- [Coin Splash - LordTomorrow](https://opengameart.org/content/coin-splash)
+
 ## TODO
 
 - pop up the change in money when buying something
-- sound effects and music
+- more sound effects and music
 - disallow building out of bounds
 - expand building area
 - different prices and production rate for different goods
@@ -43,7 +53,7 @@
 - change train paths when changing length of starting or ending station
 - prevent scrolling past edges of the map
   - note that duplicating the map size and zooming out max makes the game stutter, so adjustments needed. 
-    At least in debug mode, need to test performance after exporting as well.
+	At least in debug mode, need to test performance after exporting as well.
 - saving the game
   - will be useful for debugging as well, since can load into a certain state
 - run in the browser
@@ -58,7 +68,7 @@
 
 - build platforms instead of stations
   - done on create-platform-like-track branchs, had some issues; 
-    turned out to be a bit fiddly for the user
+	turned out to be a bit fiddly for the user
 
 ### Issues
 
@@ -69,19 +79,19 @@
 - Wagons fill from the wrong way around again
 - How to prevent the situation when, if a mine and the factory aligns, just create one
   long station that connects them both?
-    1. In map generation, make sure that related resources aren't spawning less than X
-       tiles from each other, where X is the maximum platform length
-       - puts restrictions on map generation
-       + this might be wanted anyway; regardless of solution, not much fun if source
-         and target are too close to each other. Also unrealistic to even consider
-         transferring wares via train if that is the case.
+	1. In map generation, make sure that related resources aren't spawning less than X
+	   tiles from each other, where X is the maximum platform length
+	   - puts restrictions on map generation
+	   + this might be wanted anyway; regardless of solution, not much fun if source
+		 and target are too close to each other. Also unrealistic to even consider
+		 transferring wares via train if that is the case.
 - If there is a platform max length, 
   1. what to do if placing a station just outside the station max length?
-    1. Create a new platform there. If so, has to make sure that we visualize the end
-       of platforms.
+	1. Create a new platform there. If so, has to make sure that we visualize the end
+	   of platforms.
   2. what to do if connecting two stations of length X-2 with a new rail?
-    1. Extend one of them. Might lead to platforms changing length. Perhaps not a big
-       problem, try it out.
+	1. Extend one of them. Might lead to platforms changing length. Perhaps not a big
+	   problem, try it out.
 - When creating and removing rail, sometimes existing stations will be unexpectedly 
   rejigged.
 
@@ -105,25 +115,25 @@
 Front to back. Keep all below 0, so if new scenes do not have a z order assigned,
 they will always be in front.
 
-    -100 GUI (probably not needed, always in front)
-    -100 Popup (probably not needed, always in front)
-    -150 TrackCreationArrow
-    -200 GhostStation
-    -200 GhostTrack
-    -200 GhostPlatform
-    -200 GhostLight
-    -200 DestroyMarker
+	-100 GUI (probably not needed, always in front)
+	-100 Popup (probably not needed, always in front)
+	-150 TrackCreationArrow
+	-200 GhostStation
+	-200 GhostTrack
+	-200 GhostPlatform
+	-200 GhostLight
+	-200 DestroyMarker
 
-    -350 Train
-    -375 Station (building)
-    -400 Track (rail)
-    -450 Track (sleepers)
-    -600 Station (platform)
-    -600 Platform
-    -650 Factory
-    -700 Ore
-    -725 City
-    -750 Wall
-    -800 Water
-    -850 Sand
-    -900 Background
+	-350 Train
+	-375 Station (building)
+	-400 Track (rail)
+	-450 Track (sleepers)
+	-600 Station (platform)
+	-600 Platform
+	-650 Factory
+	-700 Ore
+	-725 City
+	-750 Wall
+	-800 Water
+	-850 Sand
+	-900 Background

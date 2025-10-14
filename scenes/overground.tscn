@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://ceoib4xplu3v4"]
+[gd_scene load_steps=9 format=3 uid="uid://ceoib4xplu3v4"]
 
 [ext_resource type="Script" uid="uid://cqw467o78e8bf" path="res://scripts/overground.gd" id="1_u5idq"]
 [ext_resource type="PackedScene" uid="uid://vyo6h6rte1xu" path="res://scenes/gui.tscn" id="2_lgfhw"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://rq8dlyspro46" path="res://scenes/track.tscn" id="4_tl2kb"]
 [ext_resource type="PackedScene" uid="uid://b1064yqqmy7mf" path="res://scenes/station.tscn" id="5_ilnf8"]
 [ext_resource type="PackedScene" uid="uid://cxgimf5dgovcu" path="res://scenes/light.tscn" id="6_6dr8u"]
+[ext_resource type="AudioStream" uid="uid://7grbhnkm6paa" path="res://audio/Next to You.mp3" id="8_8f2bg"]
 
 [node name="Overground" type="Node2D"]
 script = ExtResource("1_u5idq")
@@ -55,3 +56,7 @@ scale = Vector2(2, 2)
 color = Color(0, 0, 0, 1)
 offset = Vector2(0, 8)
 polygon = PackedVector2Array(4.5, -3, 4.5, -5, 4, -4.5, 1.5, -7.5, 4, -7.5, 4, -6.5, 5.5, -8, 4, -9.5, 4, -8.5, 1.5, -8.5, 4, -11, 4.5, -10.5, 4.5, -12.5, 2.5, -12.5, 3, -12, 0.5, -9.5, 0.5, -12, 1.5, -12, 0, -13.5, -1.5, -12, -0.5, -12, -0.5, -9.5, -2.25539, -11.2554, -3, -12, -2.5, -12.5, -4.5, -12.5, -4.5, -10.5, -4, -11, -1.5, -8.5, -4, -8.5, -4, -9.5, -5.5, -8, -4, -6.5, -4, -7.5, -1.5, -7.5, -4, -4.5, -4.5, -5, -4.5, -3, -2.5, -3, -3, -3.5, -0.5, -6.5, -0.5, -3.5, -1.5, -3.5, 0, -2, 1.5, -3.5, 0.5, -3.5, 0.5, -6.5, 3, -3.5, 2.5, -3)
+
+[node name="NextToYou" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("8_8f2bg")
+autoplay = true
