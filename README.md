@@ -30,7 +30,6 @@
 
 ## TODO
 
-- make the train go all the way into the current platform before stopping
 - pop up the change in money when buying something
 - more sound effects and music
 - disallow building out of bounds

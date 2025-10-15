@@ -435,6 +435,13 @@ func _on_train_reaches_end_of_curve(train: Train):
 	else:
 		target_tile = destination_tile
 
+	while not platform_tile_set.has_platform(target_tile):
+		_show_popup("No platform at destination!", train.get_train_position())
+		train.no_route_timer.start()
+		train.target_speed = 0.0
+		train.absolute_speed = 0.0
+		train.is_stopped = true
+		await train.no_route_timer.timeout
 	var point_path = await _wait_for_point_path(train, current_tile, target_tile, false)
 	train.add_next_point_to_curve(point_path)
 	await _wait_for_reservation(train, point_path)

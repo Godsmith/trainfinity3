@@ -162,3 +162,6 @@ func is_new_track_in_legal_position(track: Track):
 			if track.pos1.x != track.pos2.x:
 				return false
 	return true
+
+func has_platform(pos: Vector2i):
+	return pos in _platform_tiles
