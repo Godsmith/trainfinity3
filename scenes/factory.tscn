@@ -9,7 +9,7 @@ polygon = PackedVector2Array(-8, -8, -6, -8, -6, -2, 8, -2, 8, 8, -8, 8)
 [node name="Factory" type="Node2D" groups=["buildings", "factories", "resource_consumers"]]
 z_index = -650
 script = ExtResource("1_r3gb1")
-consumes = Array[int]([0, 1])
+consumes = Array[int]([3, 4])
 
 [node name="Polygon2D" type="Polygon2D" parent="."]
 position = Vector2(-8, 8)

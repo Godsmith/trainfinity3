@@ -1,9 +1,14 @@
 # Trainfinity
 
 ## Features
-- Stations built next to producers like mines, cities and forests will get filled
-  with resources
-- Stations built next to the factory accepts coal, stations built next to cities accept mail
+- Stations built next to producers will be filled over time depending on the resource:
+	- Mines produce coal or iron
+	- Forests produce wood
+	- Cities produce mail
+- Stations built next to consumers will accept resources:
+	- Factories accept wood and steel
+	- Steelworks accept coal and iron and produce steel
+	- Cities accept mail
 - Prices increase with the number of objects built
 - Trains can turn around when stopped at platforms but not elsewhere
 - Trains avoid oncoming trains by choosing sidetracks when available
@@ -30,6 +35,7 @@
 
 ## TODO
 
+- steelworks only produce when they get coal and iron
 - pop up the change in money when buying something
 - more sound effects and music
 - disallow building out of bounds
@@ -72,6 +78,7 @@
 
 ### Issues
 
+- Trains created on a northward station never starts
 - Trains sometimes stop too late.
 - Circular tracks with multiple train do not work since they will block each other,
   and if you artificially split it up into segments trains will probably get deadlocked.

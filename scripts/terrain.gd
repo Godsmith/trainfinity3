@@ -5,6 +5,7 @@ class_name Terrain
 const HALF_GRID_SIZE := 32
 
 const FACTORY = preload("res://scenes/factory.tscn")
+const STEELWORKS = preload("res://scenes/steelworks.tscn")
 const WATER = preload("res://scenes/water.tscn")
 const SAND = preload("res://scenes/sand.tscn")
 const WALL = preload("res://scenes/wall.tscn")
@@ -39,6 +40,10 @@ func _ready() -> void:
 	var factory = FACTORY.instantiate()
 	factory.position = Vector2(0, 0)
 	add_child(factory)
+
+	var steelworks = STEELWORKS.instantiate()
+	steelworks.position = Vector2(10 * Global.TILE_SIZE, 0)
+	add_child(steelworks)
 
 	# Forests spawn on grass
 	var grass_positions: Array[Vector2i] = []
