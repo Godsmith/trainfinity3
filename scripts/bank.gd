@@ -11,8 +11,8 @@ const _start_price := {
 }
 var _current_price: Dictionary[Global.Asset, float] = {
 	Global.Asset.TRACK: _start_price[Global.Asset.TRACK],
-	Global.Asset.STATION: 0.0,
-	Global.Asset.TRAIN: 0.0
+	Global.Asset.STATION: _start_price[Global.Asset.STATION],
+	Global.Asset.TRAIN: _start_price[Global.Asset.TRAIN]
 }
 
 var _asset_count: Dictionary[Global.Asset, int] = {
@@ -23,13 +23,13 @@ var _asset_count: Dictionary[Global.Asset, int] = {
 
 var _free_asset_count: Dictionary[Global.Asset, int] = {
 	Global.Asset.TRACK: 0,
-	Global.Asset.STATION: 2,
-	Global.Asset.TRAIN: 1
+	Global.Asset.STATION: 0,
+	Global.Asset.TRAIN: 0
 }
 
 const _INCREASE_FACTOR := 1.5
 
-var money := 30
+var money := 100
 var gui: Gui
 
 func update_gui():
