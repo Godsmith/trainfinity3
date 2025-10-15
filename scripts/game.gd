@@ -415,37 +415,29 @@ func _on_train_reaches_end_of_curve(train: Train):
 	var destination_tile = train.destinations[train.destination_index]
 	var current_tile = Vector2i(train.get_train_position().snapped(Global.TILE))
 
-	var target_tile = (
-		_furthest_in_at_platform(train, destination_tile)
-		if current_tile in platform_tile_set.connected_platform_tile_positions(current_tile)
-		else destination_tile
-		)
-
-	var is_starting_from_station = false
-	if current_tile == target_tile:
-		train.target_speed = 0.0
-		train.absolute_speed = 0.0
-		train.is_stopped = true
-		await _load_and_unload(train)
-		train.destination_index += 1
-		train.destination_index %= len(train.destinations)
-		target_tile = train.destinations[train.destination_index]
-		is_starting_from_station = true
-
-
-	var point_path = await _wait_for_point_path(train, current_tile, target_tile, is_starting_from_station)
-
-	await _wait_for_reservation(train, point_path)
-
-	if is_starting_from_station:
-		# TODO: break out add_next_point_to_curve from this
-		train.set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(current_tile, current_tile))
+	var target_tile
+	if current_tile in platform_tile_set.connected_platform_tile_positions(destination_tile):
+		target_tile = _furthest_in_at_platform(train, destination_tile)
+		if current_tile == target_tile:
+			train.target_speed = 0.0
+			train.absolute_speed = 0.0
+			train.is_stopped = true
+			await _load_and_unload(train)
+			train.destination_index += 1
+			train.destination_index %= len(train.destinations)
+			target_tile = train.destinations[train.destination_index]
+			var point_path = await _wait_for_point_path(train, current_tile, target_tile, true)
+			train.set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(current_tile, current_tile))
+			await _wait_for_reservation(train, point_path)
+			train.is_stopped = false
+			train.target_speed = train.max_speed
+			return
 	else:
-		print(point_path)
-		train.add_next_point_to_curve(point_path)
-	if train.is_stopped:
-		train.is_stopped = false
-		train.target_speed = train.max_speed
+		target_tile = destination_tile
+
+	var point_path = await _wait_for_point_path(train, current_tile, target_tile, false)
+	await _wait_for_reservation(train, point_path)
+	train.add_next_point_to_curve(point_path)
 
 func _furthest_in_at_platform(train: Train, tile: Vector2i) -> Vector2i:
 	var endpoints = platform_tile_set.platform_endpoints(tile)
