@@ -412,26 +412,34 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 	_on_train_reaches_end_of_curve(train)
 
 func _on_train_reaches_end_of_curve(train: Train):
-	var is_furthest_in_at_target_platform = _is_furthest_in_at_target_platform(train)
+	var destination_tile = train.destinations[train.destination_index]
+	var current_tile = Vector2i(train.get_train_position().snapped(Global.TILE))
 
-	if is_furthest_in_at_target_platform:
+	var target_tile = (
+		_furthest_in_at_platform(train, destination_tile)
+		if current_tile in platform_tile_set.connected_platform_tile_positions(current_tile)
+		else destination_tile
+		)
+
+	var is_starting_from_station = false
+	if current_tile == target_tile:
 		train.target_speed = 0.0
 		train.absolute_speed = 0.0
 		train.is_stopped = true
 		await _load_and_unload(train)
 		train.destination_index += 1
 		train.destination_index %= len(train.destinations)
+		target_tile = train.destinations[train.destination_index]
+		is_starting_from_station = true
 
-	var tile_position = Vector2i(train.get_train_position().snapped(Global.TILE))
 
-	var target_position = train.destinations[train.destination_index]
-	var point_path = await _wait_for_point_path(train, tile_position, target_position, is_furthest_in_at_target_platform)
+	var point_path = await _wait_for_point_path(train, current_tile, target_tile, is_starting_from_station)
 
 	await _wait_for_reservation(train, point_path)
 
-	if is_furthest_in_at_target_platform:
+	if is_starting_from_station:
 		# TODO: break out add_next_point_to_curve from this
-		train.set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(tile_position, tile_position))
+		train.set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(current_tile, current_tile))
 	else:
 		print(point_path)
 		train.add_next_point_to_curve(point_path)
@@ -439,12 +447,27 @@ func _on_train_reaches_end_of_curve(train: Train):
 		train.is_stopped = false
 		train.target_speed = train.max_speed
 
-func _wait_for_point_path(train: Train, tile_position: Vector2i, target_position: Vector2i, is_furthest_in_at_target_platform: bool) -> PackedVector2Array:
+func _furthest_in_at_platform(train: Train, tile: Vector2i) -> Vector2i:
+	var endpoints = platform_tile_set.platform_endpoints(tile)
+	var degrees = posmod(train.rigid_body.rotation_degrees, 360)
+	match degrees:
+		0:
+			return endpoints[0] if endpoints[0].x > endpoints[1].x else endpoints[1]
+		90:
+			return endpoints[0] if endpoints[0].y > endpoints[1].y else endpoints[1]
+		180:
+			return endpoints[0] if endpoints[0].x < endpoints[1].x else endpoints[1]
+		270:
+			return endpoints[0] if endpoints[0].y < endpoints[1].y else endpoints[1]
+		_:
+			assert(false, "strange amount of degrees")
+	return Vector2i() # never hit
+
+func _wait_for_point_path(train: Train, tile_position: Vector2i, target_position: Vector2i, is_turnaround_allowed: bool) -> PackedVector2Array:
 	var point_path: PackedVector2Array
 	while true:
 		var new_astar = clone_astar(astar)
 		# Set wagon positions to disabled to prevent turnaround.
-		var is_turnaround_allowed = is_furthest_in_at_target_platform
 		if not is_turnaround_allowed:
 			for wagon_position in train.get_wagon_positions():
 				new_astar.set_point_disabled(astar_id_from_position[Vector2i(wagon_position)])

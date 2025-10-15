@@ -75,6 +75,8 @@ func stations_connected_to_platform(platform_tile_position: Vector2i, all_statio
 func are_connected(platform_tile1: PlatformTile, platform_tile2: PlatformTile) -> bool:
 	return connected_platform_tile_positions(Vector2i(platform_tile1.position)).has(Vector2i(platform_tile2.position))
 
+## Returns an [b]unordered[/b] list of platform tiles that are on the same platform as [pos].
+## [br]Returns an empty array if the positions does not have a platform.
 func connected_platform_tile_positions(pos: Vector2i) -> Array[Vector2i]:
 	if pos not in _platform_tiles:
 		return [] as Array[Vector2i]
@@ -87,8 +89,13 @@ func connected_platform_tile_positions(pos: Vector2i) -> Array[Vector2i]:
 			possible_connected_platform_tile_positions.append_array(track_set.positions_connected_to(new_pos))
 	return connected_positions
 
+## Returns an [b]ordered[/b] list of platform tiles that are on the same platform as [pos],
+## starting from [starting_at].
+## [br]Returns an empty array if the positions does not have a platform.
 func connected_ordered_platform_tile_positions(pos: Vector2i, starting_at: Vector2i) -> Array[Vector2i]:
 	var positions = connected_platform_tile_positions(pos)
+	if not positions:
+		return []
 	positions.sort_custom(func(a: Vector2i, b: Vector2i): return a.x < b.x if a.y == b.y else a.y < b.y)
 	if not positions[0] == starting_at:
 		positions.reverse()

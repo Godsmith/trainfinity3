@@ -25,7 +25,6 @@ var last_delta = 0.0
 @onready var rigid_body := $RigidBody2D
 @onready var no_route_timer := $NoRouteTimer
 @onready var red_marker := $RigidBody2D/RedMarker
-@onready var coin_splash := $Coinsplash
 
 var destinations: Array[Vector2i] = []
 var destination_index := 0
