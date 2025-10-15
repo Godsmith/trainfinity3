@@ -436,8 +436,11 @@ func _on_train_reaches_end_of_curve(train: Train):
 		target_tile = destination_tile
 
 	var point_path = await _wait_for_point_path(train, current_tile, target_tile, false)
-	await _wait_for_reservation(train, point_path)
 	train.add_next_point_to_curve(point_path)
+	await _wait_for_reservation(train, point_path)
+	train.is_stopped = false
+	train.target_speed = train.max_speed
+
 
 func _furthest_in_at_platform(train: Train, tile: Vector2i) -> Vector2i:
 	var endpoints = platform_tile_set.platform_endpoints(tile)
