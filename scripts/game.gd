@@ -412,7 +412,6 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 	_on_train_reaches_end_of_curve(train)
 
 func _on_train_reaches_end_of_curve(train: Train):
-	var tile_position = Vector2i(train.get_train_position().snapped(Global.TILE))
 	var is_at_target_platform = is_furthest_in_at_target_platform(train)
 
 	if is_at_target_platform:
@@ -423,36 +422,8 @@ func _on_train_reaches_end_of_curve(train: Train):
 		train.destination_index += 1
 		train.destination_index %= len(train.destinations)
 
-	var target_position = train.destinations[train.destination_index]
-
-	var point_path: PackedVector2Array
-	while true:
-		var new_astar = clone_astar(astar)
-		# Set wagon positions to disabled to prevent turnaround.
-		var is_turnaround_allowed = is_at_target_platform
-		if not is_turnaround_allowed:
-			for wagon_position in train.get_wagon_positions():
-				new_astar.set_point_disabled(astar_id_from_position[Vector2i(wagon_position)])
-
-		point_path = _get_point_path(tile_position, target_position, new_astar)
-		# If we are close to the station we will skip this
-		if point_path and len(point_path) > 2:
-			# If the tile after the next is reserved, choose another path
-			while track_reservations.is_reserved_by_another_train(point_path[2], train):
-				var reserved_position := astar_id_from_position[Vector2i(point_path[2])]
-				new_astar = clone_astar(new_astar)
-				new_astar.set_point_disabled(reserved_position, true)
-				point_path = _get_point_path(tile_position, target_position, new_astar)
-				if not point_path:
-					break
-		if point_path:
-			break
-		_show_popup("Cannot find route!", train.get_train_position())
-		train.no_route_timer.start()
-		train.target_speed = 0.0
-		train.absolute_speed = 0.0
-		train.is_stopped = true
-		await train.no_route_timer.timeout
+	var tile_position = Vector2i(train.get_train_position().snapped(Global.TILE))
+	var point_path = await _wait_for_point_path(train, tile_position, is_at_target_platform)
 
 	var positions_to_reserve: Array[Vector2i] = []
 	for pos in train.get_wagon_positions():
@@ -475,10 +446,45 @@ func _on_train_reaches_end_of_curve(train: Train):
 		# TODO: break out add_next_point_to_curve from this
 		train.set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(tile_position, tile_position))
 	else:
+		print(point_path)
 		train.add_next_point_to_curve(point_path)
 	if train.is_stopped:
 		train.is_stopped = false
 		train.target_speed = train.max_speed
+
+func _wait_for_point_path(train: Train, tile_position: Vector2i, is_at_target_platform: bool) -> PackedVector2Array:
+	var target_position = train.destinations[train.destination_index]
+	var point_path: PackedVector2Array
+	while true:
+		var new_astar = clone_astar(astar)
+		# Set wagon positions to disabled to prevent turnaround.
+		var is_turnaround_allowed = is_at_target_platform
+		if not is_turnaround_allowed:
+			for wagon_position in train.get_wagon_positions():
+				new_astar.set_point_disabled(astar_id_from_position[Vector2i(wagon_position)])
+
+		point_path = _get_point_path(tile_position, target_position, new_astar)
+		if len(point_path) == 1:
+			point_path = point_path
+		# If we are close to the station we will skip this
+		if point_path and len(point_path) > 2:
+			# If the tile after the next is reserved, choose another path
+			while track_reservations.is_reserved_by_another_train(point_path[2], train):
+				var reserved_position := astar_id_from_position[Vector2i(point_path[2])]
+				new_astar = clone_astar(new_astar)
+				new_astar.set_point_disabled(reserved_position, true)
+				point_path = _get_point_path(tile_position, target_position, new_astar)
+				if not point_path:
+					break
+		if point_path:
+			break
+		_show_popup("Cannot find route!", train.get_train_position())
+		train.no_route_timer.start()
+		train.target_speed = 0.0
+		train.absolute_speed = 0.0
+		train.is_stopped = true
+		await train.no_route_timer.timeout
+	return point_path
 
 func clone_astar(original: AStar2D) -> AStar2D:
 	var clone = AStar2D.new()
