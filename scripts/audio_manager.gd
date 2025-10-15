@@ -10,11 +10,11 @@ const COIN_SPLASH = preload("res://audio/coinsplash.ogg")
 
 class _PlayTask:
 	var stream: AudioStream
-	var parent: Node
+	var position: Vector2
 
-	func _init(stream_: AudioStream, parent_: Node):
+	func _init(stream_: AudioStream, position_: Vector2):
 		self.stream = stream_
-		self.parent = parent_
+		self.position = position_
 
 
 func _ready():
@@ -32,8 +32,8 @@ func _on_stream_finished(stream):
 	available.append(stream)
 
 
-func play(stream: AudioStream, parent: Node):
-	queue.append(_PlayTask.new(stream, parent))
+func play(stream: AudioStream, position_: Vector2):
+	queue.append(_PlayTask.new(stream, position_))
 
 
 func _process(_delta):
@@ -42,7 +42,6 @@ func _process(_delta):
 		var task = queue.pop_front()
 		var player = available.pop_front()
 		player.stream = task.stream
-		player.get_parent().remove_child(player)
-		task.parent.add_child(player)
+		player.global_position = task.position
 		player.play()
 		available.pop_front()

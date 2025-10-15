@@ -233,7 +233,7 @@ func _try_create_tracks():
 	for i in range(1, len(ids)):
 		astar.connect_points(ids[i - 1], ids[i])
 	GlobalBank.buy(Global.Asset.TRACK, len(ghost_tracks))
-	AudioManager.play(AudioManager.COIN_SPLASH, ghost_tracks[-1])
+	AudioManager.play(AudioManager.COIN_SPLASH, ghost_tracks[-1].global_position)
 	platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(ghost_track_tile_positions, _get_stations(), _create_platform_tile)
 	ghost_tracks.clear()
 
@@ -342,7 +342,7 @@ func _try_create_station(station_position: Vector2i):
 	station.position = station_position
 	add_child(station)
 	GlobalBank.buy(Global.Asset.STATION)
-	AudioManager.play(AudioManager.COIN_SPLASH, station)
+	AudioManager.play(AudioManager.COIN_SPLASH, station.global_position)
 	platform_tile_set.create_platform_tiles([station], _create_platform_tile)
 
 func _destroy_stations(positions: Array[Vector2i]):
@@ -391,7 +391,7 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 	GlobalBank.buy(Global.Asset.TRAIN)
 
 	var train = TRAIN.instantiate()
-	AudioManager.play(AudioManager.COIN_SPLASH, train)
+	AudioManager.play(AudioManager.COIN_SPLASH, train.global_position)
 	train.wagon_count = min(platform_tile_set.platform_size(platform1.position), platform_tile_set.platform_size(platform2.position)) - 1
 
 	# Get path from the beginning of the first tile of the source platform
@@ -533,7 +533,7 @@ func _load_and_unload(train: Train):
 					var ore_count = wagon.get_ore_count(ore_type)
 					if ore_count > 0:
 						_show_popup("$%s" % ore_count, train.get_train_position())
-						AudioManager.play(AudioManager.COIN_SPLASH, train)
+						AudioManager.play(AudioManager.COIN_SPLASH, train.global_position)
 					GlobalBank.earn(ore_count)
 					await wagon.remove_all_ore(ore_type)
 		for wagon in reversed_wagons_at_platform:
