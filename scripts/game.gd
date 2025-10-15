@@ -412,9 +412,9 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 	_on_train_reaches_end_of_curve(train)
 
 func _on_train_reaches_end_of_curve(train: Train):
-	var is_at_target_platform = is_furthest_in_at_target_platform(train)
+	var is_furthest_in_at_target_platform = _is_furthest_in_at_target_platform(train)
 
-	if is_at_target_platform:
+	if is_furthest_in_at_target_platform:
 		train.target_speed = 0.0
 		train.absolute_speed = 0.0
 		train.is_stopped = true
@@ -424,11 +424,12 @@ func _on_train_reaches_end_of_curve(train: Train):
 
 	var tile_position = Vector2i(train.get_train_position().snapped(Global.TILE))
 
-	var point_path = await _wait_for_point_path(train, tile_position, is_at_target_platform)
+	var target_position = train.destinations[train.destination_index]
+	var point_path = await _wait_for_point_path(train, tile_position, target_position, is_furthest_in_at_target_platform)
 
 	await _wait_for_reservation(train, point_path)
 
-	if is_at_target_platform:
+	if is_furthest_in_at_target_platform:
 		# TODO: break out add_next_point_to_curve from this
 		train.set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(tile_position, tile_position))
 	else:
@@ -438,13 +439,12 @@ func _on_train_reaches_end_of_curve(train: Train):
 		train.is_stopped = false
 		train.target_speed = train.max_speed
 
-func _wait_for_point_path(train: Train, tile_position: Vector2i, is_at_target_platform: bool) -> PackedVector2Array:
-	var target_position = train.destinations[train.destination_index]
+func _wait_for_point_path(train: Train, tile_position: Vector2i, target_position: Vector2i, is_furthest_in_at_target_platform: bool) -> PackedVector2Array:
 	var point_path: PackedVector2Array
 	while true:
 		var new_astar = clone_astar(astar)
 		# Set wagon positions to disabled to prevent turnaround.
-		var is_turnaround_allowed = is_at_target_platform
+		var is_turnaround_allowed = is_furthest_in_at_target_platform
 		if not is_turnaround_allowed:
 			for wagon_position in train.get_wagon_positions():
 				new_astar.set_point_disabled(astar_id_from_position[Vector2i(wagon_position)])
@@ -514,7 +514,7 @@ func clone_astar(original: AStar2D) -> AStar2D:
 	return clone
 	
 ## This method assumes the train has wagons, otherwise it will never stop
-func is_furthest_in_at_target_platform(train: Train) -> bool:
+func _is_furthest_in_at_target_platform(train: Train) -> bool:
 	var tile_position = Vector2i(train.get_train_position().snapped(Global.TILE))
 	var target_position = train.destinations[train.destination_index]
 	var connected_platform_positions = platform_tile_set.connected_platform_tile_positions(tile_position)
