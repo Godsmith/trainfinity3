@@ -29,13 +29,27 @@ var last_delta = 0.0
 var destinations: Array[Vector2i] = []
 var destination_index := 0
 
+var reservation_color: Color
+
 func _ready() -> void:
+	reservation_color = _random_color()
 	max_speed = Upgrades.get_value(Upgrades.UpgradeType.TRAIN_MAX_SPEED)
 	acceleration = Upgrades.get_value(Upgrades.UpgradeType.TRAIN_ACCELERATION)
 	for i in wagon_count:
 		var wagon = WAGON.instantiate()
 		wagons.append(wagon)
 		add_child(wagon)
+
+func _random_color() -> Color:
+	var r = 0.0
+	var g = 0.0
+	var b = 0.0
+	while r + g + b < 0.6:
+		r = randf()
+		g = randf()
+		b = randf()
+	return Color(r, g, b, 0.5)
+
 
 func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():

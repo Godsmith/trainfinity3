@@ -41,7 +41,10 @@ var selected_platform_tile: PlatformTile = null
 
 var follow_train: Train = null
 
-func _process(_delta: float) -> void:
+var reservation_markers: Array[Polygon2D] = []
+var time_since_last_reservation_refresh := 0.0
+
+func _process(delta: float) -> void:
 	if follow_train:
 		camera.position = follow_train.get_train_position()
 
@@ -49,6 +52,24 @@ func _process(_delta: float) -> void:
 		_mark_trains_for_destruction()
 	else:
 		trains_marked_for_destruction_set.clear()
+
+	_show_reservations(delta)
+
+
+func _show_reservations(delta):
+	time_since_last_reservation_refresh += delta
+	if time_since_last_reservation_refresh > 1.0:
+		time_since_last_reservation_refresh = 0.0
+		for marker in reservation_markers:
+			marker.queue_free()
+		reservation_markers.clear()
+		for pos in track_reservations.reservations:
+			var marker = DESTROY_MARKER.instantiate()
+			marker.color = track_reservations.reservations[pos].reservation_color
+			marker.position = pos
+			reservation_markers.append(marker)
+			add_child(marker)
+
 
 func _positions_between(start: Vector2i, stop: Vector2i) -> Array[Vector2i]:
 	# start and stop must be on the grid.
