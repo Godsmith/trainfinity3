@@ -423,24 +423,10 @@ func _on_train_reaches_end_of_curve(train: Train):
 		train.destination_index %= len(train.destinations)
 
 	var tile_position = Vector2i(train.get_train_position().snapped(Global.TILE))
+
 	var point_path = await _wait_for_point_path(train, tile_position, is_at_target_platform)
 
-	var positions_to_reserve: Array[Vector2i] = []
-	for pos in train.get_wagon_positions():
-		positions_to_reserve.append(Vector2i(pos))
-	positions_to_reserve.append(Vector2i(point_path[0]))
-	if len(point_path) > 1:
-		positions_to_reserve.append(Vector2i(point_path[1]))
-	var segments_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
-	var is_reservation_successful = track_reservations.reserve_train_positions(segments_to_reserve, train)
-	while not is_reservation_successful:
-		_show_popup("Blocked!", train.get_train_position())
-		train.no_route_timer.start()
-		train.target_speed = 0.0
-		train.absolute_speed = 0.0
-		train.is_stopped = true
-		await train.no_route_timer.timeout
-		is_reservation_successful = track_reservations.reserve_train_positions(positions_to_reserve, train)
+	await _wait_for_reservation(train, point_path)
 
 	if is_at_target_platform:
 		# TODO: break out add_next_point_to_curve from this
@@ -485,6 +471,25 @@ func _wait_for_point_path(train: Train, tile_position: Vector2i, is_at_target_pl
 		train.is_stopped = true
 		await train.no_route_timer.timeout
 	return point_path
+
+func _wait_for_reservation(train: Train, point_path: PackedVector2Array):
+	var positions_to_reserve: Array[Vector2i] = []
+	for pos in train.get_wagon_positions():
+		positions_to_reserve.append(Vector2i(pos))
+	positions_to_reserve.append(Vector2i(point_path[0]))
+	if len(point_path) > 1:
+		positions_to_reserve.append(Vector2i(point_path[1]))
+	var segments_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
+	var is_reservation_successful = track_reservations.reserve_train_positions(segments_to_reserve, train)
+	while not is_reservation_successful:
+		_show_popup("Blocked!", train.get_train_position())
+		train.no_route_timer.start()
+		train.target_speed = 0.0
+		train.absolute_speed = 0.0
+		train.is_stopped = true
+		await train.no_route_timer.timeout
+		is_reservation_successful = track_reservations.reserve_train_positions(positions_to_reserve, train)
+
 
 func clone_astar(original: AStar2D) -> AStar2D:
 	var clone = AStar2D.new()
