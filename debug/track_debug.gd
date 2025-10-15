@@ -1,6 +1,7 @@
 extends Game
 
 const T = Global.TILE_SIZE
+const STEELWORKS = preload("res://scenes/steelworks.tscn")
 const FACTORY = preload("res://scenes/factory.tscn")
 
 @export var create_ore_and_factory: bool
@@ -15,8 +16,11 @@ func _ready():
 		var ore = Ore.create(Ore.OreType.COAL)
 		ore.position = Vector2i(-6 * T, 3 * T)
 		add_child(ore)
+		var steelworks = STEELWORKS.instantiate()
+		steelworks.position = Vector2(6 * T, 3 * T)
+		add_child(steelworks)
 		var factory = FACTORY.instantiate()
-		factory.position = Vector2(6 * T, 3 * T)
+		factory.position = Vector2(-7 * T, 2 * T)
 		add_child(factory)
 
 	var track_positions: Array[Vector2i] = []
