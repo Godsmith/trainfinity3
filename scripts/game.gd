@@ -451,7 +451,7 @@ func _on_train_reaches_end_of_curve(train: Train):
 
 func _furthest_in_at_platform(train: Train, tile: Vector2i) -> Vector2i:
 	var endpoints = platform_tile_set.platform_endpoints(tile)
-	var degrees = posmod(train.rigid_body.rotation_degrees, 360)
+	var degrees = posmod(train.path_follow.rotation_degrees, 360)
 	match degrees:
 		0:
 			return endpoints[0] if endpoints[0].x > endpoints[1].x else endpoints[1]

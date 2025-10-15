@@ -78,7 +78,6 @@
 
 ### Issues
 
-- Trains created on a northward station never starts
 - Trains sometimes stop too late.
 - Circular tracks with multiple train do not work since they will block each other,
   and if you artificially split it up into segments trains will probably get deadlocked.
