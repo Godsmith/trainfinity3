@@ -453,8 +453,8 @@ func _on_train_reaches_end_of_curve(train: Train):
 			train.destination_index %= len(train.destinations)
 			target_tile = train.destinations[train.destination_index]
 			var point_path = await _wait_for_point_path(train, current_tile, target_tile, true)
-			train.set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(current_tile, current_tile))
-			await _wait_for_reservation(train, point_path)
+			var new_point_path = train.set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(current_tile, current_tile))
+			await _wait_for_reservation(train, new_point_path)
 			train.is_stopped = false
 			train.target_speed = train.max_speed
 			return

@@ -138,6 +138,7 @@ func _is_in_sharp_corner():
 ## Sets a new path from the station, possibly turning train around
 ## [br][point_path] is a path that goes from either end of the platform.
 ## [br][platform_tile_positions] is always ordered and starting at the train position
+## [br]Returns the chopped-off point_path, so it can be used for other purposes
 func set_new_curve_from_platform(point_path: PackedVector2Array, platform_tile_positions: Array[Vector2i]):
 	# Two cases: either the next stop lies forward, or the next stop lies backwards.
 	var vector2i_point_path = Array(point_path).map(func(x): return Vector2i(x))
@@ -165,7 +166,9 @@ func set_new_curve_from_platform(point_path: PackedVector2Array, platform_tile_p
 		# Example: wagon 0 starts at distance 2 on the curve, since the curve
 		# starts one ahead of the train
 		wagon.path_follow.progress = path_follow.progress - (i + 1) * Global.TILE_SIZE
-	add_next_point_to_curve(point_path.slice(len(platform_tile_positions) - 1))
+	var new_point_path = point_path.slice(len(platform_tile_positions) - 1)
+	add_next_point_to_curve(new_point_path)
+	return new_point_path
 
 ## Adds the next point in a path to the current curve.
 ## [br] the first point of [train_point_path] shall be at the train engine.
