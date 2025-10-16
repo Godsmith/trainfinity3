@@ -43,6 +43,7 @@ var follow_train: Train = null
 
 var reservation_markers: Array[Polygon2D] = []
 var time_since_last_reservation_refresh := 0.0
+var show_reservation_markers := false
 
 func _process(delta: float) -> void:
 	if follow_train:
@@ -63,12 +64,13 @@ func _show_reservations(delta):
 		for marker in reservation_markers:
 			marker.queue_free()
 		reservation_markers.clear()
-		for pos in track_reservations.reservations:
-			var marker = DESTROY_MARKER.instantiate()
-			marker.color = track_reservations.reservations[pos].reservation_color
-			marker.position = pos
-			reservation_markers.append(marker)
-			add_child(marker)
+		if show_reservation_markers:
+			for pos in track_reservations.reservations:
+				var marker = DESTROY_MARKER.instantiate()
+				marker.color = track_reservations.reservations[pos].reservation_color
+				marker.position = pos
+				reservation_markers.append(marker)
+				add_child(marker)
 
 
 func _positions_between(start: Vector2i, stop: Vector2i) -> Array[Vector2i]:
@@ -190,6 +192,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if OS.is_debug_build() and event is InputEventKey and event.is_pressed() and event.keycode == KEY_X:
 		GlobalBank.earn(10000)
+
+	if OS.is_debug_build() and event is InputEventKey and event.is_pressed() and event.keycode == KEY_C:
+		show_reservation_markers = !show_reservation_markers
 
 func _get_snapped_mouse_position(event: InputEventMouse):
 	# This is equivalent to doing get_local_mouse_position(), but I wanted to use the
