@@ -6,6 +6,7 @@ const FACTORY = preload("res://scenes/factory.tscn")
 
 @export var create_ore_and_factory: bool
 @export var diagonal_track: bool
+@export var extra_track_after_first_station: bool = true
 
 func _ready():
 	super._ready()
@@ -45,6 +46,10 @@ func _ready():
 
 	_show_ghost_track(track_positions)
 	_try_create_tracks()
+
+	if extra_track_after_first_station:
+		_show_ghost_track([Vector2i(-4 * T, T), Vector2i(-4 * T, 0)])
+		_try_create_tracks()
 
 	_try_create_station(Vector2i(-6 * T, 2 * T))
 	_try_create_station(Vector2i(6 * T, 2 * T))

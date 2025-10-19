@@ -78,7 +78,7 @@
 
 ### Issues
 
-- Trains sometimes stop too late.
+- Creating a train on top of another train that is entering a station crashes the game
 - Circular tracks with multiple train do not work since they will block each other,
   and if you artificially split it up into segments trains will probably get deadlocked.
   - Need one-way signs to avoid this.

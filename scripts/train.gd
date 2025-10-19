@@ -181,6 +181,7 @@ func get_train_position() -> Vector2:
 	return path_follow.global_position
 
 func get_wagon_positions() -> Array:
+	# TODO: return Vector2i and adjust all calling positions
 	return wagons.map(func(w): return w.path_follow.global_position.snapped(Global.TILE))
 
 func mark_for_destruction(is_marked: bool):

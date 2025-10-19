@@ -2,6 +2,14 @@ extends Node2D
 
 class_name Game
 
+class Vector2iOrNone:
+	var value: Vector2i
+	var has_value: bool
+
+	func _init(has_value_: bool, value_: Vector2i = Vector2i.ZERO):
+		self.has_value = has_value_
+		self.value = value_
+
 const SCALE_FACTOR := 2 # Don't remember where I set this
 
 const STATION = preload("res://scenes/station.tscn")
@@ -122,7 +130,6 @@ func _unhandled_input(event: InputEvent) -> void:
 					if snapped_mouse_position == mouse_down_position:
 						_change_gui_state(Gui.State.TRACK1)
 					else:
-						print("new one")
 						_try_create_tracks()
 						ghost_track.visible = true
 						_change_gui_state(Gui.State.TRACK1)
@@ -143,7 +150,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		match gui_state:
 			Gui.State.TRACK2:
 				if snapped_mouse_position != mouse_down_position:
-					print("old one")
 					_try_create_tracks()
 					ghost_track.visible = true
 					_change_gui_state(Gui.State.TRACK1)
@@ -438,6 +444,7 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 	_on_train_reaches_end_of_curve(train)
 
 func _on_train_reaches_end_of_curve(train: Train):
+	_adjust_reservations_to_where_train_is(train)
 	var destination_tile = train.destinations[train.destination_index]
 	var current_tile = Vector2i(train.get_train_position().snapped(Global.TILE))
 
@@ -452,9 +459,8 @@ func _on_train_reaches_end_of_curve(train: Train):
 			train.destination_index += 1
 			train.destination_index %= len(train.destinations)
 			target_tile = train.destinations[train.destination_index]
-			var point_path = await _wait_for_point_path(train, current_tile, target_tile, true)
-			var new_point_path = train.set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(current_tile, current_tile))
-			await _wait_for_reservation(train, new_point_path)
+			var point_path = await _wait_for_point_path(train, target_tile, true)
+			train.set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(current_tile, current_tile))
 			train.is_stopped = false
 			train.target_speed = train.max_speed
 			return
@@ -468,9 +474,8 @@ func _on_train_reaches_end_of_curve(train: Train):
 		train.absolute_speed = 0.0
 		train.is_stopped = true
 		await train.no_route_timer.timeout
-	var point_path = await _wait_for_point_path(train, current_tile, target_tile, false)
+	var point_path = await _wait_for_point_path(train, target_tile, false)
 	train.add_next_point_to_curve(point_path)
-	await _wait_for_reservation(train, point_path)
 	train.is_stopped = false
 	train.target_speed = train.max_speed
 
@@ -491,45 +496,94 @@ func _furthest_in_at_platform(train: Train, tile: Vector2i) -> Vector2i:
 			assert(false, "strange amount of degrees")
 	return Vector2i() # never hit
 
-func _wait_for_point_path(train: Train, tile_position: Vector2i, target_position: Vector2i, is_turnaround_allowed: bool) -> PackedVector2Array:
+func _wait_for_point_path(train: Train, target_position: Vector2i, is_at_station: bool) -> PackedVector2Array:
 	var point_path: PackedVector2Array
 	while true:
-		var new_astar = clone_astar(astar)
-		# Set wagon positions to disabled to prevent turnaround.
-		if not is_turnaround_allowed:
-			for wagon_position in train.get_wagon_positions():
-				new_astar.set_point_disabled(astar_id_from_position[Vector2i(wagon_position)])
-
-		point_path = _get_point_path(tile_position, target_position, new_astar)
-		if len(point_path) == 1:
-			point_path = point_path
-		# If we are close to the station we will skip this
-		if point_path and len(point_path) > 2:
-			# If the tile after the next is reserved, choose another path
-			while track_reservations.is_reserved_by_another_train(point_path[2], train):
-				var reserved_position := astar_id_from_position[Vector2i(point_path[2])]
-				new_astar = clone_astar(new_astar)
-				new_astar.set_point_disabled(reserved_position, true)
-				point_path = _get_point_path(tile_position, target_position, new_astar)
-				if not point_path:
-					break
+		point_path = _get_shortest_unblocked_path(train, target_position, is_at_station)
 		if point_path:
-			break
+			return point_path
+
 		_show_popup("Cannot find route!", train.get_train_position())
+		_adjust_reservations_to_where_train_is(train)
 		train.no_route_timer.start()
 		train.target_speed = 0.0
 		train.absolute_speed = 0.0
 		train.is_stopped = true
 		await train.no_route_timer.timeout
+
+	# Never hit
 	return point_path
+
+func _get_shortest_unblocked_path(train: Train, target_position: Vector2i, is_at_station: bool) -> PackedVector2Array:
+	var current_position = Vector2i(train.get_train_position().snapped(Global.TILE))
+	var new_astar = clone_astar(astar)
+	# Set wagon positions to disabled to prevent turnaround.
+	var is_turnaround_allowed = is_at_station
+	if not is_turnaround_allowed:
+		for wagon_position in train.get_wagon_positions():
+			new_astar.set_point_disabled(astar_id_from_position[Vector2i(wagon_position)])
+	while true:
+		var point_path = _get_shortest_path_ignoring_trains(current_position, target_position, new_astar)
+		if not point_path:
+			return PackedVector2Array()
+		var reservation_point_path = point_path.slice(1)
+		# When starting from a platform, the point_path goes from the end of the platform,
+		# so we have to skip all the platform tiles before we can start reserving tiles
+		if is_at_station:
+			while platform_tile_set.has_platform(reservation_point_path[0]):
+				reservation_point_path = reservation_point_path.slice(1)
+
+		var upcoming_positions_until_next_non_intersection := _get_positions_until_next_non_intersection(reservation_point_path)
+		var pos_reserved_by_other_train_or_none = _get_first_position_reserved_by_other_train(train, upcoming_positions_until_next_non_intersection)
+		if pos_reserved_by_other_train_or_none.has_value:
+			# Current shortest route is blocked by another train, go back and try to find another route
+			new_astar.set_point_disabled(astar_id_from_position[pos_reserved_by_other_train_or_none.value])
+		else:
+			# No intersections or reserved track directly ahead, reserve and continue
+			_reserve_forward_positions(train, upcoming_positions_until_next_non_intersection)
+			return point_path
+	# Just to appease syntax checker; this is never hit
+	return PackedVector2Array()
+
+
+func _get_first_position_reserved_by_other_train(train: Train, positions: Array[Vector2i]) -> Vector2iOrNone:
+	for pos in positions:
+		if track_reservations.is_reserved_by_another_train(pos, train):
+			return Vector2iOrNone.new(true, pos)
+	return Vector2iOrNone.new(false)
+
+
+func _get_positions_until_next_non_intersection(positions: PackedVector2Array) -> Array[Vector2i]:
+	var return_value: Array[Vector2i] = []
+	for pos in positions:
+		return_value.append(Vector2i(pos))
+		if not track_set.is_intersection(Vector2i(pos)):
+			return return_value
+	assert(false, "train path ends at intersection, this should not happen")
+	return []
+
+
+func _reserve_forward_positions(train: Train, forward_positions: Array[Vector2i]):
+	var positions_to_reserve = forward_positions.duplicate()
+	positions_to_reserve.append(Vector2i(train.get_train_position().snapped(Global.TILE)))
+	for pos in train.get_wagon_positions():
+		positions_to_reserve.append(Vector2i(pos))
+	var segments_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
+	var is_reservation_successful = track_reservations.reserve_train_positions(segments_to_reserve, train)
+	assert(is_reservation_successful, "reservation notsuccessful, something has gone wrong")
+
 
 func _wait_for_reservation(train: Train, point_path: PackedVector2Array):
 	var positions_to_reserve: Array[Vector2i] = []
+	# 1. Reserve wagon positions
 	for pos in train.get_wagon_positions():
 		positions_to_reserve.append(Vector2i(pos))
+	# 2. Reserve train position
 	positions_to_reserve.append(Vector2i(point_path[0]))
+	# 3. Reserve next position
 	if len(point_path) > 1:
 		positions_to_reserve.append(Vector2i(point_path[1]))
+	# 4. Extend reservation to entire segments
 	var segments_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
 	var is_reservation_successful = track_reservations.reserve_train_positions(segments_to_reserve, train)
 	while not is_reservation_successful:
@@ -541,6 +595,12 @@ func _wait_for_reservation(train: Train, point_path: PackedVector2Array):
 		await train.no_route_timer.timeout
 		is_reservation_successful = track_reservations.reserve_train_positions(positions_to_reserve, train)
 
+func _adjust_reservations_to_where_train_is(train: Train):
+	var positions_to_reserve: Array[Vector2i] = [Vector2i(train.get_train_position().snapped(Global.TILE))]
+	for pos in train.get_wagon_positions():
+		positions_to_reserve.append(Vector2i(pos))
+	positions_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
+	track_reservations.reserve_train_positions(positions_to_reserve, train)
 
 func clone_astar(original: AStar2D) -> AStar2D:
 	var clone = AStar2D.new()
@@ -634,12 +694,11 @@ func _get_point_path_between_platforms(platform_pos1: Vector2i,
 	var point_paths: Array[PackedVector2Array] = []
 	for p1 in platform_tile_set.platform_endpoints(platform_pos1):
 		for p2 in platform_tile_set.platform_endpoints(platform_pos2):
-			point_paths.append(_get_point_path(p1, p2))
+			point_paths.append(_get_shortest_path_ignoring_trains(p1, p2))
 	point_paths.sort_custom(func(a, b): return len(a) < len(b))
 	return point_paths[-1]
 
-func _get_point_path(pos1: Vector2i, pos2: Vector2i, astar_: AStar2D = astar) -> PackedVector2Array:
-	# print("_get_point_path(%s, %s)" % [pos1, pos2])
+func _get_shortest_path_ignoring_trains(pos1: Vector2i, pos2: Vector2i, astar_: AStar2D = astar) -> PackedVector2Array:
 	var id1 = astar_id_from_position[Vector2i(pos1)]
 	var id2 = astar_id_from_position[Vector2i(pos2)]
 	return astar_.get_point_path(id1, id2)

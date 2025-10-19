@@ -25,9 +25,14 @@ func get_all_tracks():
 func get_track_count(position: Vector2i) -> int:
 	return len(tracks_at_position(position))
 
+## Returns true if the position has a branching path, i.e. 3 or more rails
+func is_intersection(position: Vector2i) -> bool:
+	return get_track_count(position) >= 3
+
 func positions_with_track() -> Array[Vector2i]:
 	return _tracks_from_position.keys()
 
+## All positions adjacent and connected to [position]
 func positions_connected_to(position: Vector2i) -> Array[Vector2i]:
 	var positions: Array[Vector2i] = []
 	for track in _tracks_from_position[position]:
@@ -50,7 +55,7 @@ func erase(track: Track):
 
 func get_segments_connected_to_positions(positions: Array[Vector2i]) -> Array[Vector2i]:
 	var segment: Array[Vector2i] = positions
-	var positions_to_check = [positions[0], positions[-1]]
+	var positions_to_check = positions.duplicate()
 	while positions_to_check:
 		var position_to_check = positions_to_check.pop_back()
 		if len(tracks_at_position(position_to_check)) <= 2:
