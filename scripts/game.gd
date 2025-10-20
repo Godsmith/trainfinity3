@@ -573,28 +573,6 @@ func _reserve_forward_positions(train: Train, forward_positions: Array[Vector2i]
 	assert(is_reservation_successful, "reservation notsuccessful, something has gone wrong")
 
 
-func _wait_for_reservation(train: Train, point_path: PackedVector2Array):
-	var positions_to_reserve: Array[Vector2i] = []
-	# 1. Reserve wagon positions
-	for pos in train.get_wagon_positions():
-		positions_to_reserve.append(Vector2i(pos))
-	# 2. Reserve train position
-	positions_to_reserve.append(Vector2i(point_path[0]))
-	# 3. Reserve next position
-	if len(point_path) > 1:
-		positions_to_reserve.append(Vector2i(point_path[1]))
-	# 4. Extend reservation to entire segments
-	var segments_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
-	var is_reservation_successful = track_reservations.reserve_train_positions(segments_to_reserve, train)
-	while not is_reservation_successful:
-		_show_popup("Blocked!", train.get_train_position())
-		train.no_route_timer.start()
-		train.target_speed = 0.0
-		train.absolute_speed = 0.0
-		train.is_stopped = true
-		await train.no_route_timer.timeout
-		is_reservation_successful = track_reservations.reserve_train_positions(positions_to_reserve, train)
-
 func _adjust_reservations_to_where_train_is(train: Train):
 	var positions_to_reserve: Array[Vector2i] = [Vector2i(train.get_train_position().snapped(Global.TILE))]
 	for pos in train.get_wagon_positions():
