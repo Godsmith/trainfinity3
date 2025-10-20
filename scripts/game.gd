@@ -459,10 +459,12 @@ func _on_train_reaches_end_of_curve(train: Train):
 			train.destination_index += 1
 			train.destination_index %= len(train.destinations)
 			target_tile = train.destinations[train.destination_index]
-			var point_path = await _wait_for_point_path(train, target_tile, true)
-			train.set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(current_tile, current_tile))
-			train.is_stopped = false
-			train.target_speed = train.max_speed
+			var point_path = await _get_shortest_unblocked_path(train, target_tile, true)
+			# Must check if the train has been deleted while we waited
+			if is_instance_valid(train):
+				train.set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(current_tile, current_tile))
+				train.is_stopped = false
+				train.target_speed = train.max_speed
 			return
 	else:
 		target_tile = destination_tile
@@ -474,7 +476,10 @@ func _on_train_reaches_end_of_curve(train: Train):
 		train.absolute_speed = 0.0
 		train.is_stopped = true
 		await train.no_route_timer.timeout
-	var point_path = await _wait_for_point_path(train, target_tile, false)
+	var point_path = await _get_shortest_unblocked_path(train, target_tile, false)
+	# Must check if the train has been deleted while we waited
+	if not is_instance_valid(train):
+		return
 	train.add_next_point_to_curve(point_path)
 	train.is_stopped = false
 	train.target_speed = train.max_speed
@@ -496,23 +501,6 @@ func _furthest_in_at_platform(train: Train, tile: Vector2i) -> Vector2i:
 			assert(false, "strange amount of degrees")
 	return Vector2i() # never hit
 
-func _wait_for_point_path(train: Train, target_position: Vector2i, is_at_station: bool) -> PackedVector2Array:
-	var point_path: PackedVector2Array
-	while true:
-		point_path = _get_shortest_unblocked_path(train, target_position, is_at_station)
-		if point_path:
-			return point_path
-
-		_show_popup("Cannot find route!", train.get_train_position())
-		_adjust_reservations_to_where_train_is(train)
-		train.no_route_timer.start()
-		train.target_speed = 0.0
-		train.absolute_speed = 0.0
-		train.is_stopped = true
-		await train.no_route_timer.timeout
-
-	# Never hit
-	return point_path
 
 func _get_shortest_unblocked_path(train: Train, target_position: Vector2i, is_at_station: bool) -> PackedVector2Array:
 	var current_position = Vector2i(train.get_train_position().snapped(Global.TILE))
@@ -522,10 +510,25 @@ func _get_shortest_unblocked_path(train: Train, target_position: Vector2i, is_at
 	if not is_turnaround_allowed:
 		for wagon_position in train.get_wagon_positions():
 			new_astar.set_point_disabled(astar_id_from_position[Vector2i(wagon_position)])
+	var blocked_positions: Array[Vector2i] = []
 	while true:
 		var point_path = _get_shortest_path_ignoring_trains(current_position, target_position, new_astar)
 		if not point_path:
-			return PackedVector2Array()
+			_adjust_reservations_to_where_train_is(train)
+			train.target_speed = 0.0
+			train.absolute_speed = 0.0
+			train.is_stopped = true
+			await _wait_for_any_position_getting_unblocked(train, blocked_positions)
+			# Must check if the train has been deleted while we waited
+			if not is_instance_valid(train):
+				return PackedVector2Array()
+			# Mark all blocked positions as as unblocked again
+			for blocked_position in blocked_positions:
+				new_astar.set_point_disabled(astar_id_from_position[blocked_position], false)
+			blocked_positions.clear()
+			continue
+
+
 		var reservation_point_path = point_path.slice(1)
 		# When starting from a platform, the point_path goes from the end of the platform,
 		# so we have to skip all the platform tiles before we can start reserving tiles
@@ -538,12 +541,23 @@ func _get_shortest_unblocked_path(train: Train, target_position: Vector2i, is_at
 		if pos_reserved_by_other_train_or_none.has_value:
 			# Current shortest route is blocked by another train, go back and try to find another route
 			new_astar.set_point_disabled(astar_id_from_position[pos_reserved_by_other_train_or_none.value])
+			blocked_positions.append(pos_reserved_by_other_train_or_none.value)
 		else:
 			# No intersections or reserved track directly ahead, reserve and continue
 			_reserve_forward_positions(train, upcoming_positions_until_next_non_intersection)
 			return point_path
 	# Just to appease syntax checker; this is never hit
 	return PackedVector2Array()
+
+func _wait_for_any_position_getting_unblocked(train: Train, positions: Array[Vector2i]) -> void:
+	while true:
+		await track_reservations.reservations_updated
+		# Must check if the train has been deleted while we waited
+		if not is_instance_valid(train):
+			return
+		for pos in positions:
+			if not track_reservations.is_reserved_by_another_train(pos, train):
+				return
 
 
 func _get_first_position_reserved_by_other_train(train: Train, positions: Array[Vector2i]) -> Vector2iOrNone:

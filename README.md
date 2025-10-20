@@ -43,8 +43,6 @@
 - expand building area
 - different prices and production rate for different goods
 - cities consume only OTHER cities' mail
-- optimization: when a train waits for another train, it should not say "Cannot find 
-  route", and it should subscribe to the rail being cleared
 - refactoring: fix so that Game does not use so many internal methods and properties on 
   train and wagon
 - help menu showing the controls
