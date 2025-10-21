@@ -36,6 +36,8 @@
 ## TODO
 
 - make bank nonglobal again and use signals to communicate to gui instead
+- crash when rail is built or removed so that two trains are on the same rail
+- destroy train also when marking any of the wagons
 - if a new track is built next to a train that is blocked, it should evaluate that new track as well
 - steelworks only produce when they get coal and iron
 - pop up the change in money when buying something
