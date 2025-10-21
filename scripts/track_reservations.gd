@@ -27,5 +27,10 @@ func clear_reservations(train: Train):
 			reservations.erase(pos)
 	reservations_updated.emit()
 
+
+func is_reserved(pos: Vector2i):
+	return pos in reservations
+
+
 func is_reserved_by_another_train(pos: Vector2i, train: Train):
-	return pos in reservations and reservations[pos] != train
+	return is_reserved(pos) and reservations[pos] != train

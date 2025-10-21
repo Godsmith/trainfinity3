@@ -420,6 +420,10 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 		return
 	if platform_tile_set.are_connected(platform1, platform2):
 		return
+	if track_reservations.is_reserved(Vector2i(platform1.position)):
+		_show_popup("Track reserved!", platform1.position)
+		_show_popup("Track reserved!", platform2.position)
+		return
 	GlobalBank.buy(Global.Asset.TRAIN)
 
 	var train = TRAIN.instantiate()
