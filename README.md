@@ -35,6 +35,7 @@
 
 ## TODO
 
+- make bank nonglobal again and use signals to communicate to gui instead
 - steelworks only produce when they get coal and iron
 - pop up the change in money when buying something
 - more sound effects and music
