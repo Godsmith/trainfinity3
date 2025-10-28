@@ -2,14 +2,6 @@ extends Node2D
 
 class_name Game
 
-class Vector2iOrNone:
-	var value: Vector2i
-	var has_value: bool
-
-	func _init(has_value_: bool, value_: Vector2i = Vector2i.ZERO):
-		self.has_value = has_value_
-		self.value = value_
-
 const SCALE_FACTOR := 2 # Don't remember where I set this
 
 const STATION = preload("res://scenes/station.tscn")
@@ -267,6 +259,7 @@ func _try_create_tracks():
 	GlobalBank.buy(Global.Asset.TRACK, len(ghost_tracks))
 	AudioManager.play(AudioManager.COIN_SPLASH, ghost_tracks[-1].global_position)
 	platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(ghost_track_tile_positions, _get_stations(), _create_platform_tile)
+	Events.track_reservations_updated.emit()
 	ghost_tracks.clear()
 
 func _reset_ghost_tracks():
@@ -291,6 +284,7 @@ func _destroy_track(positions: Array[Vector2i]):
 			track_set.erase(track)
 	# Might not work, since we have already removed the tracks?
 	platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(track_positions.keys(), _get_stations(), _create_platform_tile)
+	Events.track_reservations_updated.emit()
 
 ##################################################################
 
@@ -515,14 +509,20 @@ func _get_shortest_unblocked_path(train: Train, target_position: Vector2i, is_at
 		for wagon_position in train.get_wagon_positions():
 			new_astar.set_point_disabled(astar_id_from_position[Vector2i(wagon_position)])
 	var blocked_positions: Array[Vector2i] = []
+	var is_reservation_successful = true
 	while true:
 		var point_path = _get_shortest_path_ignoring_trains(current_position, target_position, new_astar)
-		if not point_path:
+		# If either there is no path, or there is a path but reservation was
+		# unsuccesful, pause until track reservations are updated, after which we try to
+		# reserve again
+		if not point_path or not is_reservation_successful:
 			_adjust_reservations_to_where_train_is(train)
 			train.target_speed = 0.0
 			train.absolute_speed = 0.0
 			train.is_stopped = true
-			await _wait_for_any_position_getting_unblocked(train, blocked_positions)
+			var train_emitting_signal = await Events.track_reservations_updated
+			if train_emitting_signal == train:
+				return PackedVector2Array()
 			# Must check if the train has been deleted while we waited
 			if not is_instance_valid(train):
 				return PackedVector2Array()
@@ -530,6 +530,7 @@ func _get_shortest_unblocked_path(train: Train, target_position: Vector2i, is_at
 			for blocked_position in blocked_positions:
 				new_astar.set_point_disabled(astar_id_from_position[blocked_position], false)
 			blocked_positions.clear()
+			is_reservation_successful = true
 			continue
 
 
@@ -548,27 +549,21 @@ func _get_shortest_unblocked_path(train: Train, target_position: Vector2i, is_at
 			blocked_positions.append(pos_reserved_by_other_train_or_none.value)
 		else:
 			# No intersections or reserved track directly ahead, reserve and continue
-			_reserve_forward_positions(train, upcoming_positions_until_next_non_intersection)
-			return point_path
+			var position_that_could_not_be_reserved_or_none = _reserve_forward_positions(train, upcoming_positions_until_next_non_intersection)
+			if not position_that_could_not_be_reserved_or_none.has_value:
+				return point_path
+			blocked_positions.append(position_that_could_not_be_reserved_or_none.value)
+			is_reservation_successful = false
+			
 	# Just to appease syntax checker; this is never hit
 	return PackedVector2Array()
 
-func _wait_for_any_position_getting_unblocked(train: Train, positions: Array[Vector2i]) -> void:
-	while true:
-		await track_reservations.reservations_updated
-		# Must check if the train has been deleted while we waited
-		if not is_instance_valid(train):
-			return
-		for pos in positions:
-			if not track_reservations.is_reserved_by_another_train(pos, train):
-				return
 
-
-func _get_first_position_reserved_by_other_train(train: Train, positions: Array[Vector2i]) -> Vector2iOrNone:
+func _get_first_position_reserved_by_other_train(train: Train, positions: Array[Vector2i]) -> Global.Vector2iOrNone:
 	for pos in positions:
 		if track_reservations.is_reserved_by_another_train(pos, train):
-			return Vector2iOrNone.new(true, pos)
-	return Vector2iOrNone.new(false)
+			return Global.Vector2iOrNone.new(true, pos)
+	return Global.Vector2iOrNone.new(false)
 
 
 func _get_positions_until_next_non_intersection(positions: PackedVector2Array) -> Array[Vector2i]:
@@ -581,14 +576,13 @@ func _get_positions_until_next_non_intersection(positions: PackedVector2Array) -
 	return []
 
 
-func _reserve_forward_positions(train: Train, forward_positions: Array[Vector2i]):
+func _reserve_forward_positions(train: Train, forward_positions: Array[Vector2i]) -> Global.Vector2iOrNone:
 	var positions_to_reserve = forward_positions.duplicate()
 	positions_to_reserve.append(Vector2i(train.get_train_position().snapped(Global.TILE)))
 	for pos in train.get_wagon_positions():
 		positions_to_reserve.append(Vector2i(pos))
 	var segments_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
-	var is_reservation_successful = track_reservations.reserve_train_positions(segments_to_reserve, train)
-	assert(is_reservation_successful, "reservation notsuccessful, something has gone wrong")
+	return track_reservations.reserve_train_positions(segments_to_reserve, train)
 
 
 func _adjust_reservations_to_where_train_is(train: Train):

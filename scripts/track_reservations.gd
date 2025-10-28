@@ -3,13 +3,13 @@ extends Node
 class_name TrackReservations
 
 var reservations: Dictionary[Vector2i, Train] = {}
-signal reservations_updated
 
-func reserve_train_positions(new_positions: Array[Vector2i], train: Train) -> bool:
+## Returns the first blocked position if the reservation was unsuccessful
+func reserve_train_positions(new_positions: Array[Vector2i], train: Train) -> Global.Vector2iOrNone:
 	# check first
 	for pos in new_positions:
 		if reservations.has(pos) and reservations[pos] != train:
-			return false
+			return Global.Vector2iOrNone.new(true, pos)
 	# erase old reservation
 	for pos in reservations.keys():
 		if reservations[pos] == train:
@@ -17,15 +17,15 @@ func reserve_train_positions(new_positions: Array[Vector2i], train: Train) -> bo
 	# set new reservation
 	for pos in new_positions:
 		reservations[pos] = train
-	reservations_updated.emit()
-	return true
+	Events.track_reservations_updated.emit(train)
+	return Global.Vector2iOrNone.new(false)
 
 
 func clear_reservations(train: Train):
 	for pos in reservations.keys():
 		if reservations[pos] == train:
 			reservations.erase(pos)
-	reservations_updated.emit()
+	Events.track_reservations_updated.emit(train)
 
 
 func is_reserved(pos: Vector2i):
