@@ -5,7 +5,6 @@ class_name Game
 const SCALE_FACTOR := 2 # Don't remember where I set this
 
 const STATION = preload("res://scenes/station.tscn")
-const TRAIN = preload("res://scenes/train.tscn")
 const TRACK = preload("res://scenes/track.tscn")
 const LIGHT = preload("res://scenes/light.tscn")
 const POPUP = preload("res://scenes/popup.tscn")
@@ -441,10 +440,8 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 		_show_popup("Track reserved!", platform2.position)
 		return
 	GlobalBank.buy(Global.Asset.TRAIN)
-
-	var train = TRAIN.instantiate()
+	var train = Train.create(min(platform_tile_set.platform_size(platform1.position), platform_tile_set.platform_size(platform2.position)) - 1)
 	AudioManager.play(AudioManager.COIN_SPLASH, train.global_position)
-	train.wagon_count = min(platform_tile_set.platform_size(platform1.position), platform_tile_set.platform_size(platform2.position)) - 1
 
 	# Get path from the beginning of the first tile of the source platform
 	# to the last tile of the target platform

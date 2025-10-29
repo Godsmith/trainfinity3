@@ -2,6 +2,7 @@ extends Path2D
 
 class_name Train
 
+const TRAIN = preload("res://scenes/train.tscn")
 const WAGON = preload("res://scenes/wagon.tscn")
 
 signal end_of_curve_reached(train: Train)
@@ -30,6 +31,11 @@ var destinations: Array[Vector2i] = []
 var destination_index := 0
 
 var reservation_color: Color
+
+static func create(wagon_count_: int) -> Train:
+	var train = TRAIN.instantiate()
+	train.wagon_count = wagon_count_
+	return train
 
 func _ready() -> void:
 	reservation_color = _random_color()
