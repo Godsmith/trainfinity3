@@ -27,8 +27,7 @@ var ghost_track_tile_positions: Array[Vector2i] = []
 var destroy_markers: Array[Polygon2D] = []
 var trains_marked_for_destruction_set: Dictionary[Train, int] = {}
 
-var astar = AStar2D.new()
-var astar_id_from_position: Dictionary[Vector2i, int] = {}
+var astar = Astar.new()
 
 @onready var camera = $Camera2D
 @onready var gui: Gui = $Gui
@@ -251,12 +250,10 @@ func _try_create_tracks():
 			track_set.add(track)
 			track.set_ghostly(false)
 		track.track_clicked.connect(_on_track_clicked)
-	var ids = []
 	for ghost_track_position in ghost_track_tile_positions:
-		_add_position_to_astar(ghost_track_position)
-		ids.append(astar_id_from_position[ghost_track_position])
-	for i in range(1, len(ids)):
-		astar.connect_points(ids[i - 1], ids[i])
+		astar.add_position(ghost_track_position)
+	for i in range(1, len(ghost_track_tile_positions)):
+		astar.connect_positions(ghost_track_tile_positions[i - 1], ghost_track_tile_positions[i])
 	GlobalBank.buy(Global.Asset.TRACK, len(ghost_tracks))
 	AudioManager.play(AudioManager.COIN_SPLASH, ghost_tracks[-1].global_position)
 	platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(ghost_track_tile_positions, _get_stations(), _create_platform_tile)
@@ -268,17 +265,11 @@ func _reset_ghost_tracks():
 		track.queue_free()
 	ghost_tracks.clear()
 
-func _add_position_to_astar(new_position: Vector2i):
-	if not new_position in astar_id_from_position:
-		var id = astar.get_available_point_id()
-		astar_id_from_position[new_position] = id
-		astar.add_point(id, new_position)
-
 func _destroy_track(positions: Array[Vector2i]):
 	var track_positions: Dictionary[Vector2i, int] = {}
 	for pos in positions:
 		for track in track_set.tracks_at_position(pos).duplicate():
-			astar.disconnect_points(astar_id_from_position[track.pos1], astar_id_from_position[track.pos2])
+			astar.disconnect_positions(track.pos1, track.pos2)
 			GlobalBank.destroy(Global.Asset.TRACK)
 			track_positions[track.pos1] = 0
 			track_positions[track.pos2] = 0
@@ -292,16 +283,14 @@ func _destroy_track(positions: Array[Vector2i]):
 func _on_track_clicked(track: Track):
 	if gui_state == Gui.State.ONE_WAY_TRACK:
 		track.rotate_one_way_direction()
-		var id1 = astar_id_from_position[track.pos1]
-		var id2 = astar_id_from_position[track.pos2]
-		astar.disconnect_points(id1, id2)
+		astar.disconnect_positions(track.pos1, track.pos2)
 		match track.direction:
 			track.Direction.BOTH:
-				astar.connect_points(id1, id2)
+				astar.connect_positions(track.pos1, track.pos2)
 			track.Direction.POS1_TO_POS2:
-				astar.connect_points(id1, id2, false)
+				astar.connect_positions(track.pos1, track.pos2, false)
 			track.Direction.POS2_TO_POS1:
-				astar.connect_points(id2, id1, false)
+				astar.connect_positions(track.pos2, track.pos1, false)
 
 ##################################################################
 
@@ -415,12 +404,10 @@ func _get_stations() -> Array[Station]:
 
 func _platform_tile_clicked(platform_tile: PlatformTile):
 	if gui_state == Gui.State.TRAIN1:
-		var id1 = astar_id_from_position[Vector2i(platform_tile.position)]
 		for other_platform: PlatformTile in get_tree().get_nodes_in_group("platforms"):
 			other_platform.modulate = Color(1, 1, 1, 1)
 			if not platform_tile_set.are_connected(platform_tile, other_platform):
-				var id2 = astar_id_from_position[Vector2i(other_platform.position)]
-				if astar.get_point_path(id1, id2):
+				if astar.get_point_path(Vector2i(platform_tile.position), Vector2i(other_platform.position)):
 					other_platform.modulate = Color(0, 1, 0, 1)
 		selected_platform_tile = platform_tile
 		_change_gui_state(Gui.State.TRAIN2)
@@ -447,215 +434,15 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 		return
 
 	GlobalBank.buy(Global.Asset.TRAIN)
-	var train = Train.create(min(platform_tile_set.platform_size(platform1.position), platform_tile_set.platform_size(platform2.position)) - 1)
+	var wagon_count = min(platform_tile_set.platform_size(platform1.position), platform_tile_set.platform_size(platform2.position)) - 1
+	var train = Train.create(wagon_count, point_path, platform_tile_set, track_set, track_reservations, astar)
 	AudioManager.play(AudioManager.COIN_SPLASH, train.global_position)
 
-	train.end_of_curve_reached.connect(_on_train_reaches_end_of_curve)
 	train.train_clicked.connect(_on_train_clicked)
 	add_child(train)
 
-	train.destinations = [point_path[0], point_path[-1]] as Array[Vector2i]
 	train.set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(point_path[0], point_path[0]))
-	_on_train_reaches_end_of_curve(train)
-
-
-func _on_train_reaches_end_of_curve(train: Train):
-	_adjust_reservations_to_where_train_is(train)
-	var destination_tile = train.destinations[train.destination_index]
-	var current_tile = Vector2i(train.get_train_position().snapped(Global.TILE))
-
-	var target_tile
-	if current_tile in platform_tile_set.connected_platform_tile_positions(destination_tile):
-		target_tile = _furthest_in_at_platform(train, destination_tile)
-		if current_tile == target_tile:
-			train.target_speed = 0.0
-			train.absolute_speed = 0.0
-			train.is_stopped = true
-			await _load_and_unload(train)
-			train.destination_index += 1
-			train.destination_index %= len(train.destinations)
-			target_tile = train.destinations[train.destination_index]
-			var point_path = await _get_shortest_unblocked_path(train, target_tile, true)
-			# Must check if the train has been deleted while we waited
-			if is_instance_valid(train):
-				train.set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(current_tile, current_tile))
-				train.is_stopped = false
-				train.target_speed = train.max_speed
-			return
-	else:
-		target_tile = destination_tile
-
-	while not platform_tile_set.has_platform(target_tile):
-		_show_popup("No platform at destination!", train.get_train_position())
-		train.no_route_timer.start()
-		train.target_speed = 0.0
-		train.absolute_speed = 0.0
-		train.is_stopped = true
-		await train.no_route_timer.timeout
-	var point_path = await _get_shortest_unblocked_path(train, target_tile, false)
-	# Must check if the train has been deleted while we waited
-	if not is_instance_valid(train):
-		return
-	train.add_next_point_to_curve(point_path)
-	train.is_stopped = false
-	train.target_speed = train.max_speed
-
-
-func _furthest_in_at_platform(train: Train, tile: Vector2i) -> Vector2i:
-	var endpoints = platform_tile_set.platform_endpoints(tile)
-	var degrees = posmod(train.path_follow.rotation_degrees, 360)
-	match degrees:
-		0:
-			return endpoints[0] if endpoints[0].x > endpoints[1].x else endpoints[1]
-		90:
-			return endpoints[0] if endpoints[0].y > endpoints[1].y else endpoints[1]
-		180:
-			return endpoints[0] if endpoints[0].x < endpoints[1].x else endpoints[1]
-		270:
-			return endpoints[0] if endpoints[0].y < endpoints[1].y else endpoints[1]
-		_:
-			assert(false, "strange amount of degrees")
-	return Vector2i() # never hit
-
-
-func _get_shortest_unblocked_path(train: Train, target_position: Vector2i, is_at_station: bool) -> PackedVector2Array:
-	var current_position = Vector2i(train.get_train_position().snapped(Global.TILE))
-	var new_astar = clone_astar(astar)
-	# Set wagon positions to disabled to prevent turnaround.
-	var is_turnaround_allowed = is_at_station
-	if not is_turnaround_allowed:
-		for wagon_position in train.get_wagon_positions():
-			new_astar.set_point_disabled(astar_id_from_position[Vector2i(wagon_position)])
-	var blocked_positions: Array[Vector2i] = []
-	var is_reservation_successful = true
-	while true:
-		var point_path = _get_shortest_path_ignoring_trains(current_position, target_position, new_astar)
-		# If either there is no path, or there is a path but reservation was
-		# unsuccesful, pause until track reservations are updated, after which we try to
-		# reserve again
-		if not point_path or not is_reservation_successful:
-			_adjust_reservations_to_where_train_is(train)
-			train.target_speed = 0.0
-			train.absolute_speed = 0.0
-			train.is_stopped = true
-			var train_emitting_signal = await Events.track_reservations_updated
-			if train_emitting_signal == train:
-				return PackedVector2Array()
-			# Must check if the train has been deleted while we waited
-			if not is_instance_valid(train):
-				return PackedVector2Array()
-			# Mark all blocked positions as as unblocked again
-			for blocked_position in blocked_positions:
-				new_astar.set_point_disabled(astar_id_from_position[blocked_position], false)
-			blocked_positions.clear()
-			is_reservation_successful = true
-			# TODO: if was blocking because of no route, needs to clone astar anew
-			continue
-
-
-		var reservation_point_path = point_path.slice(1)
-		# When starting from a platform, the point_path goes from the end of the platform,
-		# so we have to skip all the platform tiles before we can start reserving tiles
-		if is_at_station:
-			while platform_tile_set.has_platform(reservation_point_path[0]):
-				reservation_point_path = reservation_point_path.slice(1)
-
-		var upcoming_positions_until_next_non_intersection := _get_positions_until_next_non_intersection(reservation_point_path)
-		var pos_reserved_by_other_train_or_none = _get_first_position_reserved_by_other_train(train, upcoming_positions_until_next_non_intersection)
-		if pos_reserved_by_other_train_or_none.has_value:
-			# Current shortest route is blocked by another train, go back and try to find another route
-			new_astar.set_point_disabled(astar_id_from_position[pos_reserved_by_other_train_or_none.value])
-			blocked_positions.append(pos_reserved_by_other_train_or_none.value)
-		else:
-			# No intersections or reserved track directly ahead, reserve and continue
-			var position_that_could_not_be_reserved_or_none = _reserve_forward_positions(train, upcoming_positions_until_next_non_intersection)
-			if not position_that_could_not_be_reserved_or_none.has_value:
-				return point_path
-			blocked_positions.append(position_that_could_not_be_reserved_or_none.value)
-			is_reservation_successful = false
-			
-	# Just to appease syntax checker; this is never hit
-	return PackedVector2Array()
-
-
-func _get_first_position_reserved_by_other_train(train: Train, positions: Array[Vector2i]) -> Global.Vector2iOrNone:
-	for pos in positions:
-		if track_reservations.is_reserved_by_another_train(pos, train):
-			return Global.Vector2iOrNone.new(true, pos)
-	return Global.Vector2iOrNone.new(false)
-
-
-func _get_positions_until_next_non_intersection(positions: PackedVector2Array) -> Array[Vector2i]:
-	var return_value: Array[Vector2i] = []
-	for pos in positions:
-		return_value.append(Vector2i(pos))
-		if not track_set.is_intersection(Vector2i(pos)):
-			return return_value
-	assert(false, "train path ends at intersection, this should not happen")
-	return []
-
-
-func _reserve_forward_positions(train: Train, forward_positions: Array[Vector2i]) -> Global.Vector2iOrNone:
-	var positions_to_reserve = forward_positions.duplicate()
-	positions_to_reserve.append(Vector2i(train.get_train_position().snapped(Global.TILE)))
-	for pos in train.get_wagon_positions():
-		positions_to_reserve.append(Vector2i(pos))
-	var segments_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
-	return track_reservations.reserve_train_positions(segments_to_reserve, train)
-
-
-func _adjust_reservations_to_where_train_is(train: Train):
-	var positions_to_reserve: Array[Vector2i] = [Vector2i(train.get_train_position().snapped(Global.TILE))]
-	for pos in train.get_wagon_positions():
-		positions_to_reserve.append(Vector2i(pos))
-	positions_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
-	track_reservations.reserve_train_positions(positions_to_reserve, train)
-
-func clone_astar(original: AStar2D) -> AStar2D:
-	var clone = AStar2D.new()
-
-	# Copy all points
-	for id in original.get_point_ids():
-		var pos = original.get_point_position(id)
-		var weight = original.get_point_weight_scale(id)
-		clone.add_point(id, pos, weight)
-
-	# Copy all connections
-	for id in original.get_point_ids():
-		for neighbor in original.get_point_connections(id):
-			clone.connect_points(id, neighbor, false)
-
-	# Copy disabled status
-	for id in original.get_point_ids():
-		if original.is_point_disabled(id):
-			clone.set_point_disabled(id, true)
-
-	return clone
-
-
-func _load_and_unload(train: Train):
-	var train_position = train.get_train_position().snapped(Global.TILE)
-	var reversed_wagons_at_platform: Array[Wagon] = []
-	for i in train.wagon_count:
-		var wagon = train.wagons[-i - 1]
-		if Vector2i(wagon.get_wagon_position().snapped(Global.TILE)) in platform_tile_set.connected_platform_tile_positions(train_position):
-			reversed_wagons_at_platform.append(wagon)
-	for station in platform_tile_set.stations_connected_to_platform(train_position, _get_stations()):
-		for consumer in get_tree().get_nodes_in_group("resource_consumers"):
-			if not Global.is_orthogonally_adjacent(consumer.get_global_position(), station.position):
-				continue
-			for wagon in reversed_wagons_at_platform:
-				for ore_type in consumer.consumes:
-					var ore_count = wagon.get_ore_count(ore_type)
-					if ore_count > 0:
-						_show_popup("$%s" % ore_count, train.get_train_position())
-						AudioManager.play(AudioManager.COIN_SPLASH, train.global_position)
-					GlobalBank.earn(ore_count)
-					await wagon.remove_all_ore(ore_type)
-		for wagon in reversed_wagons_at_platform:
-			while station.get_total_ore_count() > 0 and wagon.get_total_ore_count() < wagon.max_capacity:
-				var ore_type = station.remove_ore()
-				await wagon.add_ore(ore_type)
+	train._on_train_reaches_end_of_curve()
 
 
 func _mark_trains_for_destruction():
@@ -688,14 +475,9 @@ func _get_point_path_between_platforms(platform_pos1: Vector2i,
 	var point_paths: Array[PackedVector2Array] = []
 	for p1 in platform_tile_set.platform_endpoints(platform_pos1):
 		for p2 in platform_tile_set.platform_endpoints(platform_pos2):
-			point_paths.append(_get_shortest_path_ignoring_trains(p1, p2))
+			point_paths.append(astar.get_shortest_path_ignoring_trains(p1, p2))
 	point_paths.sort_custom(func(a, b): return len(a) < len(b))
 	return point_paths[-1]
-
-func _get_shortest_path_ignoring_trains(pos1: Vector2i, pos2: Vector2i, astar_: AStar2D = astar) -> PackedVector2Array:
-	var id1 = astar_id_from_position[Vector2i(pos1)]
-	var id2 = astar_id_from_position[Vector2i(pos2)]
-	return astar_.get_point_path(id1, id2)
 
 
 ###################################################################################

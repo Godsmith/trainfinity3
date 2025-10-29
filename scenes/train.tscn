@@ -15,6 +15,11 @@ polygon = PackedVector2Array(-5.47687, -2.52878, 5.51235, -2.51152, 5.52185, 2.4
 z_index = -350
 curve = SubResource("Curve2D_68jl8")
 script = ExtResource("1_68jl8")
+target_speed = null
+absolute_speed = null
+acceleration = null
+wagons = null
+is_stopped = null
 
 [node name="PathFollow2D" type="PathFollow2D" parent="."]
 loop = false
