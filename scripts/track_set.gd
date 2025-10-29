@@ -39,6 +39,14 @@ func positions_connected_to(position: Vector2i) -> Array[Vector2i]:
 		positions.append(track.other_position(position))
 	return positions
 
+## All positions adjacent and connected to [position] without one way track
+func positions_bidirectionally_connected_to(position: Vector2i) -> Array[Vector2i]:
+	var positions: Array[Vector2i] = []
+	for track in _tracks_from_position[position]:
+		if track.direction == Track.Direction.BOTH:
+			positions.append(track.other_position(position))
+	return positions
+
 func has_track(position: Vector2i) -> bool:
 	return get_track_count(position) > 0
 
@@ -60,7 +68,7 @@ func get_segments_connected_to_positions(positions: Array[Vector2i]) -> Array[Ve
 		var position_to_check = positions_to_check.pop_back()
 		if len(tracks_at_position(position_to_check)) <= 2:
 			segment.append(position_to_check)
-			for connected_position in positions_connected_to(position_to_check):
+			for connected_position in positions_bidirectionally_connected_to(position_to_check):
 				if connected_position not in segment:
 					positions_to_check.append(connected_position)
 	return segment
