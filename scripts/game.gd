@@ -635,20 +635,6 @@ func clone_astar(original: AStar2D) -> AStar2D:
 			clone.set_point_disabled(id, true)
 
 	return clone
-	
-## This method assumes the train has wagons, otherwise it will never stop
-func _is_furthest_in_at_target_platform(train: Train) -> bool:
-	var tile_position = Vector2i(train.get_train_position().snapped(Global.TILE))
-	var target_position = train.destinations[train.destination_index]
-	var connected_platform_positions = platform_tile_set.connected_platform_tile_positions(tile_position)
-	if not target_position in connected_platform_positions:
-		return false
-	if not tile_position in platform_tile_set.platform_endpoints(tile_position):
-		return false
-	for wagon_position in train.get_wagon_positions():
-		if Vector2i(wagon_position) in connected_platform_positions:
-			return true
-	return false
 
 
 func _load_and_unload(train: Train):
