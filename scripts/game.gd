@@ -95,6 +95,7 @@ func _ready():
 	GlobalBank.update_gui()
 	# TODO: do not expose Gui innards this way
 	$Gui/HBoxContainer/TrackButton.connect("toggled", _on_trackbutton_toggled)
+	$Gui/HBoxContainer/OneWayTrackButton.connect("toggled", _on_onewaytrackbutton_toggled)
 	$Gui/HBoxContainer/StationButton.connect("toggled", _on_stationbutton_toggled)
 	$Gui/HBoxContainer/TrainButton.connect("toggled", _on_trainbutton_toggled)
 	$Gui/HBoxContainer/LightButton.connect("toggled", _on_lightbutton_toggled)
@@ -250,6 +251,7 @@ func _try_create_tracks():
 		else:
 			track_set.add(track)
 			track.set_ghostly(false)
+		track.track_clicked.connect(_on_track_clicked)
 	var ids = []
 	for ghost_track_position in ghost_track_tile_positions:
 		_add_position_to_astar(ghost_track_position)
@@ -288,9 +290,29 @@ func _destroy_track(positions: Array[Vector2i]):
 
 ##################################################################
 
+func _on_track_clicked(track: Track):
+	if gui_state == Gui.State.ONE_WAY_TRACK:
+		track.rotate_one_way_direction()
+		var id1 = astar_id_from_position[track.pos1]
+		var id2 = astar_id_from_position[track.pos2]
+		astar.disconnect_points(id1, id2)
+		match track.direction:
+			track.Direction.BOTH:
+				astar.connect_points(id1, id2)
+			track.Direction.POS1_TO_POS2:
+				astar.connect_points(id1, id2, false)
+			track.Direction.POS2_TO_POS1:
+				astar.connect_points(id2, id1, false)
+
+##################################################################
+
 func _on_trackbutton_toggled(toggled_on: bool) -> void:
 	if toggled_on:
 		_change_gui_state(Gui.State.TRACK1)
+
+func _on_onewaytrackbutton_toggled(toggled_on: bool) -> void:
+	if toggled_on:
+		_change_gui_state(Gui.State.ONE_WAY_TRACK)
 
 func _on_stationbutton_toggled(toggled_on: bool) -> void:
 	if toggled_on:
@@ -531,6 +553,7 @@ func _get_shortest_unblocked_path(train: Train, target_position: Vector2i, is_at
 				new_astar.set_point_disabled(astar_id_from_position[blocked_position], false)
 			blocked_positions.clear()
 			is_reservation_successful = true
+			# TODO: if was blocking because of no route, needs to clone astar anew
 			continue
 
 
@@ -604,8 +627,7 @@ func clone_astar(original: AStar2D) -> AStar2D:
 	# Copy all connections
 	for id in original.get_point_ids():
 		for neighbor in original.get_point_connections(id):
-			if not clone.are_points_connected(id, neighbor):
-				clone.connect_points(id, neighbor)
+			clone.connect_points(id, neighbor, false)
 
 	# Copy disabled status
 	for id in original.get_point_ids():

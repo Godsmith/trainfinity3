@@ -12,6 +12,11 @@ var pos2: Vector2i
 var is_ghostly := false
 var is_allowed := true
 
+enum Direction {BOTH, POS1_TO_POS2, POS2_TO_POS1}
+
+@onready var direction_arrow = $DirectionArrow
+var direction = Direction.BOTH
+
 static func create(p1: Vector2i, p2: Vector2i) -> Track:
 	var track: Track = TRACK.instantiate()
 	track.pos1 = p1
@@ -78,3 +83,17 @@ func other_position(pos: Vector2i) -> Vector2i:
 	else:
 		assert(false, "pos neither pos1 nor pos2")
 		return pos1
+
+func rotate_one_way_direction():
+	match direction:
+		Direction.BOTH:
+			direction = Direction.POS1_TO_POS2
+			direction_arrow.visible = true
+			direction_arrow.rotation_degrees = 0.0
+		Direction.POS1_TO_POS2:
+			direction = Direction.POS2_TO_POS1
+			direction_arrow.visible = true
+			direction_arrow.rotation_degrees = 180.0
+		Direction.POS2_TO_POS1:
+			direction = Direction.BOTH
+			direction_arrow.visible = false

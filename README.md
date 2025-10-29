@@ -35,6 +35,7 @@
 
 ## TODO
 
+- one way track should end reservation segments
 - make bank nonglobal again and use signals to communicate to gui instead
 - destroy train also when marking any of the wagons
 - steelworks only produce when they get coal and iron
@@ -78,6 +79,7 @@
 
 ### Issues
 
+- When train does not have a path, reconnecting the path does nothing
 - Circular tracks with multiple train do not work since they will block each other,
   and if you artificially split it up into segments trains will probably get deadlocked.
   - Need one-way signs to avoid this.

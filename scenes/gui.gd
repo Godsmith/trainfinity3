@@ -2,7 +2,7 @@ extends CanvasLayer
 
 class_name Gui
 
-enum State {NONE, TRACK1, TRACK2, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY1, DESTROY2, FOLLOW_TRAIN}
+enum State {NONE, TRACK1, TRACK2, ONE_WAY_TRACK, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY1, DESTROY2, FOLLOW_TRAIN}
 
 func _ready() -> void:
 	$UpgradesMenu.close_button_clicked.connect(_upgrades_close_button_clicked)
@@ -24,6 +24,8 @@ func set_pressed_no_signal(gui_state: State):
 	match gui_state:
 		State.TRACK1, State.TRACK2:
 			$HBoxContainer/TrackButton.set_pressed_no_signal(true)
+		State.ONE_WAY_TRACK:
+			$HBoxContainer/OneWayTrackButton.set_pressed_no_signal(true)
 		State.STATION:
 			$HBoxContainer/StationButton.set_pressed_no_signal(true)
 		State.TRAIN1, State.TRAIN2:

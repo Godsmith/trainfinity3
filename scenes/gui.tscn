@@ -26,6 +26,13 @@ toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "Track"
 
+[node name="OneWayTrackButton" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+button_group = SubResource("ButtonGroup_lbhrr")
+text = "One way track"
+
 [node name="StationButton" type="Button" parent="HBoxContainer"]
 layout_mode = 2
 focus_mode = 0
