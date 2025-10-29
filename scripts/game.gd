@@ -475,7 +475,7 @@ func _get_point_path_between_platforms(platform_pos1: Vector2i,
 	var point_paths: Array[PackedVector2Array] = []
 	for p1 in platform_tile_set.platform_endpoints(platform_pos1):
 		for p2 in platform_tile_set.platform_endpoints(platform_pos2):
-			point_paths.append(astar.get_shortest_path_ignoring_trains(p1, p2))
+			point_paths.append(astar.get_point_path(p1, p2))
 	point_paths.sort_custom(func(a, b): return len(a) < len(b))
 	return point_paths[-1]
 

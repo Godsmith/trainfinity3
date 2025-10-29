@@ -23,11 +23,6 @@ func get_point_path(pos1: Vector2i, pos2: Vector2i):
 func set_position_disabled(pos: Vector2i, disabled: bool = true):
 	astar.set_point_disabled(astar_id_from_position[pos], disabled)
 
-func get_shortest_path_ignoring_trains(pos1: Vector2i, pos2: Vector2i) -> PackedVector2Array:
-	var id1 = astar_id_from_position[Vector2i(pos1)]
-	var id2 = astar_id_from_position[Vector2i(pos2)]
-	return astar.get_point_path(id1, id2)
-
 func clone() -> Astar:
 	var original = astar
 	var astar2d = AStar2D.new()

@@ -329,7 +329,7 @@ func _get_shortest_unblocked_path(target_position: Vector2i, is_at_station: bool
 	var blocked_positions: Array[Vector2i] = []
 	var is_reservation_successful = true
 	while true:
-		var point_path = new_astar.get_shortest_path_ignoring_trains(current_position, target_position)
+		var point_path = new_astar.get_point_path(current_position, target_position)
 		# If either there is no path, or there is a path but reservation was
 		# unsuccesful, pause until track reservations are updated, after which we try to
 		# reserve again
