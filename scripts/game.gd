@@ -439,18 +439,16 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 		_show_popup("Track reserved!", platform1.position)
 		_show_popup("Track reserved!", platform2.position)
 		return
-	GlobalBank.buy(Global.Asset.TRAIN)
-	var train = Train.create(min(platform_tile_set.platform_size(platform1.position), platform_tile_set.platform_size(platform2.position)) - 1)
-	AudioManager.play(AudioManager.COIN_SPLASH, train.global_position)
 
 	# Get path from the beginning of the first tile of the source platform
 	# to the last tile of the target platform
-	# TODO: change to between platforms instead
-	# TODO: this does not take reserved spaces into account, so will likely lead to crash
 	var point_path = _get_point_path_between_platforms(platform1.position, platform2.position)
-
 	if not point_path:
 		return
+
+	GlobalBank.buy(Global.Asset.TRAIN)
+	var train = Train.create(min(platform_tile_set.platform_size(platform1.position), platform_tile_set.platform_size(platform2.position)) - 1)
+	AudioManager.play(AudioManager.COIN_SPLASH, train.global_position)
 
 	train.end_of_curve_reached.connect(_on_train_reaches_end_of_curve)
 	train.train_clicked.connect(_on_train_clicked)
@@ -459,6 +457,7 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 	train.destinations = [point_path[0], point_path[-1]] as Array[Vector2i]
 	train.set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(point_path[0], point_path[0]))
 	_on_train_reaches_end_of_curve(train)
+
 
 func _on_train_reaches_end_of_curve(train: Train):
 	_adjust_reservations_to_where_train_is(train)
