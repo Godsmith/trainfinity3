@@ -326,7 +326,6 @@ func _get_shortest_unblocked_path(target_position: Vector2i, is_at_station: bool
 	if not is_turnaround_allowed:
 		for wagon_position in _get_wagon_positions():
 			new_astar.set_position_disabled(Vector2i(wagon_position))
-	var blocked_positions: Array[Vector2i] = []
 	var is_reservation_successful = true
 	while true:
 		var point_path = new_astar.get_point_path(current_position, target_position)
@@ -344,12 +343,9 @@ func _get_shortest_unblocked_path(target_position: Vector2i, is_at_station: bool
 			# Must check if the train has been deleted while we waited
 			if not is_instance_valid(self):
 				return PackedVector2Array()
-			# Mark all blocked positions as as unblocked again
-			for blocked_position in blocked_positions:
-				new_astar.set_position_disabled(blocked_position, false)
-			blocked_positions.clear()
+			# clone astar anew, removing all blocks
+			new_astar = astar.clone()
 			is_reservation_successful = true
-			# TODO: if was blocking because of no route, needs to clone astar anew
 			continue
 
 
@@ -365,13 +361,11 @@ func _get_shortest_unblocked_path(target_position: Vector2i, is_at_station: bool
 		if pos_reserved_by_other_train_or_none.has_value:
 			# Current shortest route is blocked by another train, go back and try to find another route
 			new_astar.set_position_disabled(pos_reserved_by_other_train_or_none.value)
-			blocked_positions.append(pos_reserved_by_other_train_or_none.value)
 		else:
 			# No intersections or reserved track directly ahead, reserve and continue
 			var position_that_could_not_be_reserved_or_none = _reserve_forward_positions(upcoming_positions_until_next_non_intersection)
 			if not position_that_could_not_be_reserved_or_none.has_value:
 				return point_path
-			blocked_positions.append(position_that_could_not_be_reserved_or_none.value)
 			is_reservation_successful = false
 			
 	# Just to appease syntax checker; this is never hit
