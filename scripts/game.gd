@@ -291,6 +291,7 @@ func _on_track_clicked(track: Track):
 				astar.connect_positions(track.pos1, track.pos2, false)
 			track.Direction.POS2_TO_POS1:
 				astar.connect_positions(track.pos2, track.pos1, false)
+		Events.track_reservations_updated.emit()
 
 ##################################################################
 

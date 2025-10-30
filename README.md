@@ -79,7 +79,6 @@
 
 ### Issues
 
-- Signal blocked trains when changing one way track
 - Wagons fill from the wrong way around again
 - How to prevent the situation when, if a mine and the factory aligns, just create one
   long station that connects them both?
