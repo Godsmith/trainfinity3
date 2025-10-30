@@ -2,6 +2,8 @@ extends Node
 
 class_name Bank
 
+const POPUP = preload("res://scenes/popup.tscn")
+
 signal money_changed(current_amount)
 
 const _start_price := {
@@ -49,8 +51,10 @@ func spend_money(amount: int):
 	gui.show_money(money)
 	money_changed.emit()
 
-func buy(asset: Global.Asset, amount := 1):
-	money -= cost(asset, amount)
+func buy(asset: Global.Asset, amount: int, pos: Vector2):
+	var cost_ = cost(asset, amount)
+	money -= cost_
+	_show_buy_popup(cost_, pos)
 	_asset_count[asset] += amount
 	self._update_prices()
 	gui.show_money(money)
@@ -75,3 +79,14 @@ func earn(amount: int):
 func destroy(asset: Global.Asset):
 	_asset_count[asset] -= 1
 	self._update_prices()
+
+
+func _show_popup(text: String, pos: Vector2, modulate: Color = Color(1.0, 1.0, 1.0, 1.0)):
+	var popup = POPUP.instantiate()
+	popup.modulate = modulate
+	popup.position = pos
+	add_child(popup)
+	popup.show_popup(text)
+
+func _show_buy_popup(amount_spent: int, pos: Vector2):
+	_show_popup("-$%s" % amount_spent, pos, Color(1.0, 0.0, 0.0, 1.0))

@@ -254,7 +254,7 @@ func _try_create_tracks():
 		astar.add_position(ghost_track_position)
 	for i in range(1, len(ghost_track_tile_positions)):
 		astar.connect_positions(ghost_track_tile_positions[i - 1], ghost_track_tile_positions[i])
-	GlobalBank.buy(Global.Asset.TRACK, len(ghost_tracks))
+	GlobalBank.buy(Global.Asset.TRACK, len(ghost_tracks), ghost_tracks[-1].global_position)
 	AudioManager.play(AudioManager.COIN_SPLASH, ghost_tracks[-1].global_position)
 	platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(ghost_track_tile_positions, _get_stations(), _create_platform_tile)
 	Events.track_reservations_updated.emit()
@@ -378,7 +378,7 @@ func _try_create_station(station_position: Vector2i):
 	var station = STATION.instantiate()
 	station.position = station_position
 	add_child(station)
-	GlobalBank.buy(Global.Asset.STATION)
+	GlobalBank.buy(Global.Asset.STATION, 1, station.global_position)
 	AudioManager.play(AudioManager.COIN_SPLASH, station.global_position)
 	platform_tile_set.create_platform_tiles([station], _create_platform_tile)
 
@@ -434,7 +434,6 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 	if not point_path:
 		return
 
-	GlobalBank.buy(Global.Asset.TRAIN)
 	var wagon_count = min(platform_tile_set.platform_size(platform1.position), platform_tile_set.platform_size(platform2.position)) - 1
 	var train = Train.create(wagon_count, point_path, platform_tile_set, track_set, track_reservations, astar)
 	AudioManager.play(AudioManager.COIN_SPLASH, train.global_position)
@@ -442,8 +441,12 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 	train.train_clicked.connect(_on_train_clicked)
 	add_child(train)
 
+
 	train.set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(point_path[0], point_path[0]))
 	train._on_train_reaches_end_of_curve()
+
+	# Need to do this after curve has been set, or it will be in the wrong position
+	GlobalBank.buy(Global.Asset.TRAIN, 1, train.get_train_position())
 
 
 func _mark_trains_for_destruction():
@@ -482,11 +485,15 @@ func _get_point_path_between_platforms(platform_pos1: Vector2i,
 
 ###################################################################################
 
-func _show_popup(text: String, pos: Vector2):
+func _show_popup(text: String, pos: Vector2, modulate: Color = Color(1.0, 1.0, 1.0, 1.0)):
 	var popup = POPUP.instantiate()
+	popup.modulate = modulate
 	popup.position = pos
 	add_child(popup)
 	popup.show_popup(text)
+
+func _show_buy_popup(amount_spent: String, pos: Vector2):
+	_show_popup("-$%s" % amount_spent, pos, Color(1.0, 0.0, 0.0, 1.0))
 
 ######################################################################
 

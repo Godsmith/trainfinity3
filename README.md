@@ -36,7 +36,6 @@
 ## TODO
 
 - steelworks only produce when they get coal and iron
-- pop up the change in money when buying something
 - more sound effects and music
 - disallow building out of bounds
 - expand building area
