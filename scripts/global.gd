@@ -4,8 +4,10 @@ class_name Global
 
 const TILE_SIZE := 16
 const TILE := Vector2(TILE_SIZE, TILE_SIZE)
+const POPUP = preload("res://scenes/popup.tscn")
 
 enum Asset {TRACK, STATION, TRAIN}
+
 
 class Vector2iOrNone:
 	var value: Vector2i
@@ -24,3 +26,11 @@ static func orthogonally_adjacent(pos: Vector2i) -> Array[Vector2i]:
 				  Vector2i(0, TILE_SIZE), Vector2i(0, -TILE_SIZE)]:
 		out.append(pos + delta)
 	return out
+
+
+static func show_popup(text: String, pos: Vector2, parent: Node, modulate: Color = Color(1.0, 1.0, 1.0, 1.0)):
+	var popup = POPUP.instantiate()
+	popup.modulate = modulate
+	popup.position = pos
+	parent.add_child(popup)
+	popup.show_popup(text)

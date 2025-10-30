@@ -4,7 +4,6 @@ class_name Train
 
 const TRAIN = preload("res://scenes/train.tscn")
 const WAGON = preload("res://scenes/wagon.tscn")
-const POPUP = preload("res://scenes/popup.tscn")
 
 signal train_clicked(train: Train)
 
@@ -247,7 +246,7 @@ func _on_train_reaches_end_of_curve():
 		target_tile = destination_tile
 
 	while not platform_tile_set.has_platform(target_tile):
-		_show_popup("No platform at destination!")
+		Global.show_popup("No platform at destination!", current_tile, self)
 		no_route_timer.start()
 		target_speed = 0.0
 		absolute_speed = 0.0
@@ -302,7 +301,7 @@ func _load_and_unload():
 				for ore_type in consumer.consumes:
 					var ore_count = wagon.get_ore_count(ore_type)
 					if ore_count > 0:
-						_show_popup("$%s" % ore_count)
+						Global.show_popup("$%s" % ore_count, train_position, self)
 						AudioManager.play(AudioManager.COIN_SPLASH, global_position)
 					GlobalBank.earn(ore_count)
 					await wagon.remove_all_ore(ore_type)
@@ -318,13 +317,6 @@ func _get_stations() -> Array[Station]:
 		if node is Station:
 			stations.append(node)
 	return stations
-
-
-func _show_popup(text: String):
-	var popup = POPUP.instantiate()
-	popup.position = get_train_position()
-	add_child(popup)
-	popup.show_popup(text)
 
 
 func _get_shortest_unblocked_path(target_position: Vector2i, is_at_station: bool) -> PackedVector2Array:

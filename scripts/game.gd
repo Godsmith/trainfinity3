@@ -7,7 +7,6 @@ const SCALE_FACTOR := 2 # Don't remember where I set this
 const STATION = preload("res://scenes/station.tscn")
 const TRACK = preload("res://scenes/track.tscn")
 const LIGHT = preload("res://scenes/light.tscn")
-const POPUP = preload("res://scenes/popup.tscn")
 const DESTROY_MARKER = preload("res://scenes/destroy_marker.tscn")
 
 @onready var terrain = $Terrain
@@ -424,8 +423,8 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 	if platform_tile_set.are_connected(platform1, platform2):
 		return
 	if track_reservations.is_reserved(Vector2i(platform1.position)):
-		_show_popup("Track reserved!", platform1.position)
-		_show_popup("Track reserved!", platform2.position)
+		Global.show_popup("Track reserved!", platform1.position, self)
+		Global.show_popup("Track reserved!", platform2.position, self)
 		return
 
 	# Get path from the beginning of the first tile of the source platform
@@ -481,19 +480,6 @@ func _get_point_path_between_platforms(platform_pos1: Vector2i,
 			point_paths.append(astar.get_point_path(p1, p2))
 	point_paths.sort_custom(func(a, b): return len(a) < len(b))
 	return point_paths[-1]
-
-
-###################################################################################
-
-func _show_popup(text: String, pos: Vector2, modulate: Color = Color(1.0, 1.0, 1.0, 1.0)):
-	var popup = POPUP.instantiate()
-	popup.modulate = modulate
-	popup.position = pos
-	add_child(popup)
-	popup.show_popup(text)
-
-func _show_buy_popup(amount_spent: String, pos: Vector2):
-	_show_popup("-$%s" % amount_spent, pos, Color(1.0, 0.0, 0.0, 1.0))
 
 ######################################################################
 
