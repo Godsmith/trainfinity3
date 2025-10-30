@@ -201,14 +201,23 @@ func add_next_point_to_curve(train_point_path: PackedVector2Array):
 func get_train_position() -> Vector2:
 	return path_follow.global_position
 
-func _get_wagon_positions() -> Array:
-	# TODO: return Vector2i and adjust all calling positions
-	return wagons.map(func(w): return w.path_follow.global_position.snapped(Global.TILE))
+func _get_wagon_positions() -> Array[Vector2i]:
+	return Array(wagons.map(func(w): return Vector2i(w.path_follow.global_position.snapped(Global.TILE))), TYPE_VECTOR2I, "", null)
 
 func mark_for_destruction(is_marked: bool):
 	red_marker.visible = is_marked
 	for wagon in wagons:
 		wagon.mark_for_destruction(is_marked)
+
+
+func is_train_or_wagon_at_position(pos: Vector2i):
+	var train_position = Vector2i(get_train_position().snapped(Global.TILE))
+	if train_position == pos:
+		return true
+	for wagon_position in _get_wagon_positions():
+		if wagon_position == pos:
+			return true
+	return false
 
 
 func _on_train_reaches_end_of_curve():
@@ -256,7 +265,7 @@ func _on_train_reaches_end_of_curve():
 func _adjust_reservations_to_where_train_is():
 	var positions_to_reserve: Array[Vector2i] = [Vector2i(get_train_position().snapped(Global.TILE))]
 	for pos in _get_wagon_positions():
-		positions_to_reserve.append(Vector2i(pos))
+		positions_to_reserve.append(pos)
 	positions_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
 	track_reservations.reserve_train_positions(positions_to_reserve, self)
 
@@ -325,7 +334,7 @@ func _get_shortest_unblocked_path(target_position: Vector2i, is_at_station: bool
 	var is_turnaround_allowed = is_at_station
 	if not is_turnaround_allowed:
 		for wagon_position in _get_wagon_positions():
-			new_astar.set_position_disabled(Vector2i(wagon_position))
+			new_astar.set_position_disabled(wagon_position)
 	var is_reservation_successful = true
 	while true:
 		var point_path = new_astar.get_point_path(current_position, target_position)
@@ -393,6 +402,6 @@ func _reserve_forward_positions(forward_positions: Array[Vector2i]) -> Global.Ve
 	var positions_to_reserve = forward_positions.duplicate()
 	positions_to_reserve.append(Vector2i(get_train_position().snapped(Global.TILE)))
 	for pos in _get_wagon_positions():
-		positions_to_reserve.append(Vector2i(pos))
+		positions_to_reserve.append(pos)
 	var segments_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
 	return track_reservations.reserve_train_positions(segments_to_reserve, self)

@@ -449,9 +449,8 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 func _mark_trains_for_destruction():
 	for train in get_tree().get_nodes_in_group("trains"):
 		var train_marked_for_destruction = false
-		var train_position = Vector2i(train.get_train_position().snapped(Global.TILE))
 		for marker in destroy_markers:
-			if Vector2i(marker.position) == train_position:
+			if train.is_train_or_wagon_at_position(Vector2i(marker.position)):
 				train_marked_for_destruction = true
 				break
 		train.mark_for_destruction(train_marked_for_destruction)
