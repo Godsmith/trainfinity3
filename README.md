@@ -35,8 +35,6 @@
 
 ## TODO
 
-- one way track should end reservation segments
-- make bank nonglobal again and use signals to communicate to gui instead
 - destroy train also when marking any of the wagons
 - steelworks only produce when they get coal and iron
 - pop up the change in money when buying something
@@ -76,6 +74,9 @@
 - build platforms instead of stations
   - done on create-platform-like-track branchs, had some issues; 
 	turned out to be a bit fiddly for the user
+- non-global bank using signals
+  - Multiple nodes need to query how much money is available, so signals were not 
+    practical.
 
 ### Issues
 
