@@ -31,10 +31,11 @@ static func create(p1: Vector2i, p2: Vector2i) -> Track:
 		track.set_rotation_and_adjust_length(PI / 4)
 	else:
 		track.set_rotation_and_adjust_length(PI * 3 / 4)
+	print("pos1: %s, pos2: %s, rotation: %s" % [track.pos1, track.pos2, track.rotation])
 	return track
 
 func set_rotation_and_adjust_length(radians: float):
-	if is_equal_approx(radians, PI / 4) or is_equal_approx(radians, PI * 3 / 4):
+	if is_equal_approx(fposmod(radians, PI / 2), PI / 4):
 		_set_length_extended()
 	else:
 		_set_length_normal()
