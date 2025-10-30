@@ -21,25 +21,13 @@ static func create(p1: Vector2i, p2: Vector2i) -> Track:
 	var track: Track = TRACK.instantiate()
 	track.pos1 = p1
 	track.pos2 = p2
-	if p2.y == p1.y:
-		pass
-	elif p2.x == p1.x:
-		track.set_rotation_and_adjust_length(PI / 2)
-	elif p2.y > p1.y and p2.x > p1.x:
-		track.set_rotation_and_adjust_length(PI / 4)
-	elif p2.y < p1.y and p2.x < p1.x:
-		track.set_rotation_and_adjust_length(PI / 4)
+	track.rotation = atan2(p2.y - p1.y, p2.x - p1.x)
+	# If diagonal, extend length
+	if is_equal_approx(fposmod(track.rotation, PI / 2), PI / 4):
+		track._set_length_extended()
 	else:
-		track.set_rotation_and_adjust_length(PI * 3 / 4)
-	print("pos1: %s, pos2: %s, rotation: %s" % [track.pos1, track.pos2, track.rotation])
+		track._set_length_normal()
 	return track
-
-func set_rotation_and_adjust_length(radians: float):
-	if is_equal_approx(fposmod(radians, PI / 2), PI / 4):
-		_set_length_extended()
-	else:
-		_set_length_normal()
-	rotation = radians
 
 func _set_length_normal():
 	$Sleeper1/Sleeper5.visible = false

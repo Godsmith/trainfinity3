@@ -79,9 +79,7 @@
 
 ### Issues
 
-- Circular tracks with multiple train do not work since they will block each other,
-  and if you artificially split it up into segments trains will probably get deadlocked.
-  - Need one-way signs to avoid this.
+- Signal blocked trains when changing one way track
 - Wagons fill from the wrong way around again
 - How to prevent the situation when, if a mine and the factory aligns, just create one
   long station that connects them both?
