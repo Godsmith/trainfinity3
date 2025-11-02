@@ -41,8 +41,6 @@
 - expand building area
 - different prices and production rate for different goods
 - cities consume only OTHER cities' mail
-- refactoring: fix so that Game does not use so many internal methods and properties on 
-  train and wagon
 - help menu showing the controls
 - train should mark the tile it wants to go to when it cannot find path
   - either when you select the train, or it can create a red line to the taget
@@ -59,12 +57,9 @@
 	At least in debug mode, need to test performance after exporting as well.
 - saving the game
   - will be useful for debugging as well, since can load into a certain state
-- run in the browser
 
 ### Thinking about it
 
-- one-way rail
-- train collisions
 - signals
 
 ### Discarded ideas
