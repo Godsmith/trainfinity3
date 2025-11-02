@@ -2,7 +2,9 @@ extends Node2D
 
 class_name Terrain
 
-const HALF_GRID_SIZE := 32
+const CHUNK_WIDTH := 11
+
+enum ChunkType {FACTORY, STEELWORKS, FOREST, CITY, EMPTY}
 
 const FACTORY = preload("res://scenes/factory.tscn")
 const STEELWORKS = preload("res://scenes/steelworks.tscn")
@@ -29,51 +31,107 @@ const CITY = preload("res://scenes/city.tscn")
 # have union types.
 var obstacle_position_set: Dictionary = {}
 
+# Forests spawn on grass
+var _grass_positions: Array[Vector2i] = []
+
+var _grid_positions: Array[Vector2i] = []
+var _noise_from_position: Dictionary[Vector2i, float] = {}
+
+@onready var noise := FastNoiseLite.new()
+	
+# Store every type of node under a separate node, since the Godot editor
+# is very slow when it has to show all nodes at ones in the tree view
+@onready var water_node = Node.new()
+@onready var sand_node = Node.new()
+@onready var wall_node = Node.new()
+@onready var forest_node = Node.new()
+@onready var city_node = Node.new()
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
+	# TODO: Consider checking so that factories etc are accessible 
+	# - either no mountains or water around them, or not too much, or unbroken path
+	#   from them to a corresponding consumer/producer
 	print("Starting terrain generation")
-	var noise := FastNoiseLite.new()
 	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
 	noise.seed = randi() # random terrain each run
 	noise.frequency = 0.05
 
-	var factory = FACTORY.instantiate()
-	factory.position = Vector2(0, 0)
-	add_child(factory)
-
-	var steelworks = STEELWORKS.instantiate()
-	steelworks.position = Vector2(10 * Global.TILE_SIZE, 0)
-	add_child(steelworks)
-
-	# Forests spawn on grass
-	var grass_positions: Array[Vector2i] = []
-
-	var grid_positions: Array[Vector2i] = []
-	var noise_from_position: Dictionary[Vector2i, float] = {}
-	
-	# Store every type of node under a separate node, since the Godot editor
-	# is very slow when it has to show all nodes at ones in the tree view
-	var water_node = Node.new()
-	var sand_node = Node.new()
-	var wall_node = Node.new()
-	var forest_node = Node.new()
-	var city_node = Node.new()
 	add_child(water_node)
 	add_child(sand_node)
 	add_child(wall_node)
 	add_child(forest_node)
 	add_child(city_node)
 
-	for x in range(-HALF_GRID_SIZE, HALF_GRID_SIZE):
-		for y in range(-HALF_GRID_SIZE, HALF_GRID_SIZE):
-			if x >= -1 and x <= 1 and y >= -1 and y <= 1:
-				# Do not place around starting factory
-				continue
+	add_chunk(-1, -1, ChunkType.CITY)
+	add_chunk(0, -1, ChunkType.FOREST)
+	add_chunk(1, -1, ChunkType.EMPTY)
+	add_chunk(-1, 0, ChunkType.EMPTY)
+
+	add_chunk(0, 0, ChunkType.STEELWORKS)
+
+	add_chunk(1, 0, ChunkType.FACTORY)
+	add_chunk(-1, 1, ChunkType.EMPTY)
+	add_chunk(0, 1, ChunkType.FOREST)
+	add_chunk(1, 1, ChunkType.CITY)
+
+
+func add_chunk(chunk_x: int, chunk_y: int, chunk_type: ChunkType):
+	_create_terrain(chunk_x, chunk_y)
+
+	# TODO: New things are generated everywhere, not just in the new chunk
+	match chunk_type:
+		ChunkType.EMPTY:
+			pass
+		ChunkType.FACTORY:
+			var factory = FACTORY.instantiate()
+			factory.position = _grass_positions.pick_random()
+			add_child(factory)
+		ChunkType.STEELWORKS:
+			var steelworks = STEELWORKS.instantiate()
+			steelworks.position = _grass_positions.pick_random()
+			add_child(steelworks)
+		ChunkType.FOREST:
+			var forest = FOREST.instantiate()
+			forest.position = _grass_positions.pick_random()
+			forest_node.add_child(forest)
+		ChunkType.CITY:
+			var possible_city_positions: Array[Vector2i] = []
+			for pos in _grid_positions:
+				if pos not in obstacle_position_set:
+					possible_city_positions.append(pos)
+			var city_position = possible_city_positions.pick_random()
+			possible_city_positions.erase(city_position)
+			var city = CITY.instantiate()
+			city.position = city_position
+			city_node.add_child(city)
+			
+			print("Starting city extension")
+			var target_size = randi_range(3, 10)
+			var current_size = 1
+			var handled_city_positions := [city_position]
+			var possible_new_city_positions = Global.orthogonally_adjacent(city_position)
+			while current_size < target_size and possible_new_city_positions:
+				var new_city_position = possible_new_city_positions.pick_random()
+				possible_new_city_positions.erase(new_city_position)
+				if new_city_position not in obstacle_position_set and new_city_position not in handled_city_positions and new_city_position in _grid_positions:
+					current_size += 1
+					handled_city_positions.append(new_city_position)
+					possible_new_city_positions.append_array(Global.orthogonally_adjacent(new_city_position))
+					var new_city = CITY.instantiate()
+					new_city.position = new_city_position
+					add_child(new_city)
+			print("City extension done")
+
+
+func _create_terrain(chunk_x: int, chunk_y: int):
+	for x in range(chunk_x * CHUNK_WIDTH - (CHUNK_WIDTH - 1) / 2, chunk_x * CHUNK_WIDTH + (CHUNK_WIDTH - 1) / 2 + 1):
+		for y in range(chunk_y * CHUNK_WIDTH - (CHUNK_WIDTH - 1) / 2, chunk_y * CHUNK_WIDTH + (CHUNK_WIDTH - 1) / 2 + 1):
 			var grid_position = Vector2i(x, y) * Global.TILE_SIZE
-			grid_positions.append(grid_position)
-			noise_from_position[grid_position] = noise.get_noise_2d(x, y)
-	for pos in grid_positions:
-		var noise_level = noise_from_position[pos]
+			_grid_positions.append(grid_position)
+			_noise_from_position[grid_position] = noise.get_noise_2d(x, y)
+	for pos in _grid_positions:
+		var noise_level = _noise_from_position[pos]
 		if noise_level < water_level:
 			var water = WATER.instantiate()
 			var water_position = pos
@@ -102,7 +160,7 @@ func _ready() -> void:
 				ore.position = Vector2.ZERO # relative to wall
 				wall.add_child(ore)
 		else:
-			grass_positions.append(pos)
+			_grass_positions.append(pos)
 
 	# Make walls look nicer
 	for pos in obstacle_position_set.keys():
@@ -124,45 +182,3 @@ func _ready() -> void:
 			wall.get_node("South").visible = false
 		if not north_of in obstacle_position_set or obstacle_position_set[north_of] is not Wall:
 			wall.get_node("North").visible = false
-
-	# Add forests
-	var forest_positions: Dictionary[Vector2i, int] = {}
-	while (len(forest_positions) < forest_count):
-		forest_positions[grass_positions.pick_random()] = 0
-	for pos in forest_positions:
-		var forest = FOREST.instantiate()
-		forest.position = pos
-		forest_node.add_child(forest)
-		
-
-	# Add cities
-	var possible_city_positions: Array[Vector2i] = []
-	for pos in grid_positions:
-		if pos not in obstacle_position_set:
-			possible_city_positions.append(pos)
-	var city_positions = []
-	for i in city_count:
-		var city_position = possible_city_positions.pick_random()
-		possible_city_positions.erase(city_position)
-		var city = CITY.instantiate()
-		city_positions.append(city_position)
-		city.position = city_position
-		city_node.add_child(city)
-	
-	print("Starting city extension")
-	for original_city_position in city_positions:
-		var target_size = randi_range(1, 10)
-		var current_size = 1
-		var handled_city_positions := [original_city_position]
-		var possible_new_city_positions = Global.orthogonally_adjacent(original_city_position)
-		while current_size < target_size and possible_new_city_positions:
-			var new_city_position = possible_new_city_positions.pick_random()
-			possible_new_city_positions.erase(new_city_position)
-			if new_city_position not in obstacle_position_set and new_city_position not in handled_city_positions and new_city_position in grid_positions:
-				current_size += 1
-				handled_city_positions.append(new_city_position)
-				possible_new_city_positions.append_array(Global.orthogonally_adjacent(new_city_position))
-				var city = CITY.instantiate()
-				city.position = new_city_position
-				add_child(city)
-	print("City extension done")
