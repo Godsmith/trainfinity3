@@ -78,7 +78,7 @@
 
 ### Issues
 
-- Crash in set_new_curve_from_platform if platform has ceased to exist
+- Changing a platform length to 1 puts wagon on top of train engine
 - Wagons fill from the wrong way around again
 - How to prevent the situation when, if a mine and the factory aligns, just create one
   long station that connects them both?

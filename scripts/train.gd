@@ -231,6 +231,8 @@ func _on_train_reaches_end_of_curve():
 			target_speed = 0.0
 			absolute_speed = 0.0
 			is_stopped = true
+			# Store this into a variable now in case platform is removed when waiting
+			var platform_tile_positions = platform_tile_set.connected_ordered_platform_tile_positions(current_tile, current_tile)
 			await _load_and_unload()
 			destination_index += 1
 			destination_index %= len(destinations)
@@ -238,7 +240,7 @@ func _on_train_reaches_end_of_curve():
 			var point_path = await _get_shortest_unblocked_path(target_tile, true)
 			# Must check if the train has been deleted while we waited
 			if is_instance_valid(self):
-				set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(current_tile, current_tile))
+				set_new_curve_from_platform(point_path, platform_tile_positions)
 				is_stopped = false
 				target_speed = max_speed
 			return
