@@ -8,6 +8,7 @@ enum ChunkType {FACTORY, STEELWORKS, FOREST, CITY, EMPTY}
 
 const FACTORY = preload("res://scenes/factory.tscn")
 const STEELWORKS = preload("res://scenes/steelworks.tscn")
+const GRASS = preload("res://scenes/grass.tscn")
 const WATER = preload("res://scenes/water.tscn")
 const SAND = preload("res://scenes/sand.tscn")
 const WALL = preload("res://scenes/wall.tscn")
@@ -41,6 +42,7 @@ var _noise_from_position: Dictionary[Vector2i, float] = {}
 	
 # Store every type of node under a separate node, since the Godot editor
 # is very slow when it has to show all nodes at ones in the tree view
+@onready var grass_node = Node.new()
 @onready var water_node = Node.new()
 @onready var sand_node = Node.new()
 @onready var wall_node = Node.new()
@@ -59,6 +61,7 @@ func _ready() -> void:
 	noise.seed = randi() # random terrain each run
 	noise.frequency = 0.05
 
+	add_child(grass_node)
 	add_child(water_node)
 	add_child(sand_node)
 	add_child(wall_node)
@@ -155,6 +158,12 @@ func _create_terrain(chunk_x: int, chunk_y: int):
 			sand.position = pos
 			sand_node.add_child(sand)
 		elif noise_level > mountain_level:
+			# Show grass under mountain
+			_grass_positions.append(pos)
+			var grass = GRASS.instantiate()
+			grass.position = pos
+			grass_node.add_child(grass)
+
 			var wall = WALL.instantiate()
 			var wall_position = pos
 			wall.position = wall_position
@@ -173,6 +182,9 @@ func _create_terrain(chunk_x: int, chunk_y: int):
 				wall.add_child(ore)
 		else:
 			_grass_positions.append(pos)
+			var grass = GRASS.instantiate()
+			grass.position = pos
+			grass_node.add_child(grass)
 
 	# Make walls look nicer
 	for pos in obstacle_position_set.keys():
