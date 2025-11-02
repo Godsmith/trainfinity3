@@ -303,15 +303,19 @@ func _load_and_unload():
 				GlobalBank.earn(ore_count)
 				await wagon.remove_all_ore(ore_type)
 		for wagon in reversed_wagons_at_platform:
-			while station.get_total_ore_count() > 0 and wagon.get_total_ore_count() < wagon.max_capacity:
-				var ore_type = station.remove_ore()
-				await wagon.add_ore(ore_type)
+			for ore_type in _ores_accepted_at_destinations():
+				while station.get_ore_count(ore_type) > 0 and wagon.get_total_ore_count() < wagon.max_capacity:
+					station.remove_ore(ore_type)
+					await wagon.add_ore(ore_type)
 
-#func _station_accepts
 
-
-#func _does_station_in_route_consume_ore(type: Ore.OreType) -> bool:
-#	return false
+func _ores_accepted_at_destinations() -> Array[Ore.OreType]:
+	var ore_types_dict: Dictionary[Ore.OreType, int] = {}
+	for destination in destinations:
+		for station in platform_tile_set.stations_connected_to_platform(destination, _get_stations()):
+			for ore_type in station.accepts():
+				ore_types_dict[ore_type] = 0
+	return ore_types_dict.keys()
 
 
 func _get_stations() -> Array[Station]:

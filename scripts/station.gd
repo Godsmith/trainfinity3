@@ -42,12 +42,14 @@ func extract_ore():
 
 func get_total_ore_count() -> int:
 	return len(_chunks)
+
+func get_ore_count(ore_type: Ore.OreType) -> int:
+	return _chunks.reduce(func(accum, chunk): return accum + 1 if chunk.ore_type == ore_type else accum, 0)
 		
-func remove_ore() -> Ore.OreType:
-	var chunk = _chunks.pop_back()
-	var ore_type = chunk.ore_type
+func remove_ore(ore_type: Ore.OreType):
+	var index = _chunks.find_custom(func(x): return x.ore_type == ore_type)
+	var chunk = _chunks.pop_at(index)
 	chunk.queue_free()
-	return ore_type
 
 func set_color(is_ghostly: bool, is_allowed: bool):
 	var r = 1.0
