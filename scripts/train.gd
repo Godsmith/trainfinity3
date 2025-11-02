@@ -294,21 +294,24 @@ func _load_and_unload():
 		if Vector2i(wagon.get_wagon_position().snapped(Global.TILE)) in platform_tile_set.connected_platform_tile_positions(train_position):
 			reversed_wagons_at_platform.append(wagon)
 	for station in platform_tile_set.stations_connected_to_platform(train_position, _get_stations()):
-		for consumer in get_tree().get_nodes_in_group("resource_consumers"):
-			if not Global.is_orthogonally_adjacent(consumer.get_global_position(), station.position):
-				continue
-			for wagon in reversed_wagons_at_platform:
-				for ore_type in consumer.consumes:
-					var ore_count = wagon.get_ore_count(ore_type)
-					if ore_count > 0:
-						Global.show_popup("$%s" % ore_count, train_position, self)
-						AudioManager.play(AudioManager.COIN_SPLASH, global_position)
-					GlobalBank.earn(ore_count)
-					await wagon.remove_all_ore(ore_type)
+		for wagon in reversed_wagons_at_platform:
+			for ore_type in station.accepts():
+				var ore_count = wagon.get_ore_count(ore_type)
+				if ore_count > 0:
+					Global.show_popup("$%s" % ore_count, train_position, self)
+					AudioManager.play(AudioManager.COIN_SPLASH, global_position)
+				GlobalBank.earn(ore_count)
+				await wagon.remove_all_ore(ore_type)
 		for wagon in reversed_wagons_at_platform:
 			while station.get_total_ore_count() > 0 and wagon.get_total_ore_count() < wagon.max_capacity:
 				var ore_type = station.remove_ore()
 				await wagon.add_ore(ore_type)
+
+#func _station_accepts
+
+
+#func _does_station_in_route_consume_ore(type: Ore.OreType) -> bool:
+#	return false
 
 
 func _get_stations() -> Array[Station]:

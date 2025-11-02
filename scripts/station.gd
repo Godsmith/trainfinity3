@@ -55,3 +55,11 @@ func set_color(is_ghostly: bool, is_allowed: bool):
 	var b = 1.0 if is_allowed else 0.5
 	var a = 0.5 if is_ghostly else 1.0
 	modulate = Color(r, g, b, a)
+
+func accepts() -> Array[Ore.OreType]:
+	var accepted_ore_types_dict: Dictionary[Ore.OreType, int] = {}
+	for consumer in get_tree().get_nodes_in_group("resource_consumers"):
+		if Global.is_orthogonally_adjacent(consumer.get_global_position(), position):
+			for ore_type in consumer.consumes:
+				accepted_ore_types_dict[ore_type] = 0
+	return accepted_ore_types_dict.keys()
