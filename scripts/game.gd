@@ -132,8 +132,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			is_right_mouse_button_held_down = event.is_pressed()
 		elif event.button_index == MOUSE_BUTTON_WHEEL_UP and not event.is_echo():
 			camera.zoom_camera(1.1)
+			_restrict_camera()
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and not event.is_echo():
 			camera.zoom_camera(1 / 1.1)
+			_restrict_camera()
 	
 	if event is InputEventMouseButton and event.is_released() and event.button_index == MOUSE_BUTTON_LEFT:
 		var snapped_mouse_position = _get_snapped_mouse_position(event)
@@ -172,7 +174,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if is_right_mouse_button_held_down:
 			follow_train = null
 			camera.position -= event.get_relative() / camera.zoom.x
-		
+			_restrict_camera()
 
 	elif event is InputEventKey and event.pressed and not event.is_echo():
 		match event.keycode:
@@ -191,6 +193,46 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if OS.is_debug_build() and event is InputEventKey and event.is_pressed() and event.keycode == KEY_C:
 		show_reservation_markers = !show_reservation_markers
+
+
+func _restrict_camera():
+	var viewport_size := get_viewport_rect().size
+	var center = camera.get_screen_center_position()
+	var zoom = camera.zoom
+
+	var half_width = (viewport_size.x * 0.5) / zoom.x
+	var half_height = (viewport_size.y * 0.5) / zoom.y
+
+	var left = center.x - half_width
+	var right = center.x + half_width
+	var top = center.y - half_height
+	var bottom = center.y + half_height
+
+	var margin = Terrain.CHUNK_WIDTH * Global.TILE_SIZE
+	var min_x = terrain.boundaries.position.x - margin
+	var max_x = terrain.boundaries.end.x + margin
+	var min_y = terrain.boundaries.position.y - margin
+	var max_y = terrain.boundaries.end.y + margin
+
+	# If we have zoomed out so far that we spill over both edges, zoom in again
+	if (left < min_x and right > max_x) or (top < min_y and bottom > max_y):
+		camera.zoom_camera(1.1)
+		return
+
+	# Otherwise, bounce camera position back in-bound
+	var dx = 0
+	var dy = 0
+	if left < min_x:
+		dx += min_x - left
+	if right > max_x:
+		dx += max_x - right
+	if top < min_y:
+		dy += min_y - top
+	if bottom > max_y:
+		dy += max_y - bottom
+	camera.global_position.x += dx
+	camera.global_position.y += dy
+
 
 func _get_snapped_mouse_position(event: InputEventMouse):
 	# This is equivalent to doing get_local_mouse_position(), but I wanted to use the

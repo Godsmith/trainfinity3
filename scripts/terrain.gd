@@ -47,6 +47,8 @@ var _noise_from_position: Dictionary[Vector2i, float] = {}
 @onready var forest_node = Node.new()
 @onready var city_node = Node.new()
 
+var boundaries = Rect2i()
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	# TODO: Consider checking so that factories etc are accessible 
@@ -130,6 +132,16 @@ func _create_terrain(chunk_x: int, chunk_y: int):
 			var grid_position = Vector2i(x, y) * Global.TILE_SIZE
 			_grid_positions.append(grid_position)
 			_noise_from_position[grid_position] = noise.get_noise_2d(x, y)
+	var min_x = 0
+	var max_x = 0
+	var min_y = 0
+	var max_y = 0
+	for pos in _grid_positions:
+		min_x = min(min_x, pos.x)
+		max_x = max(max_x, pos.x)
+		min_y = min(min_y, pos.y)
+		max_y = max(max_y, pos.y)
+	boundaries = Rect2i(min_x, min_y, max_x - min_x, max_y - min_y)
 	for pos in _grid_positions:
 		var noise_level = _noise_from_position[pos]
 		if noise_level < water_level:
