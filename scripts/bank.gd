@@ -3,7 +3,7 @@ extends Node
 class_name Bank
 
 
-signal money_changed(current_amount)
+signal money_changed
 
 const _start_price := {
 	Global.Asset.TRACK: 1.0,
@@ -45,8 +45,10 @@ func can_afford(asset: Global.Asset, amount := 1) -> bool:
 	return cost(asset, amount) <= money
 
 ## If buying an asset, use [buy] instead
-func spend_money(amount: int):
-	money -= amount
+func spend_money(cost_: int, pos: Vector2):
+	money -= cost_
+	AudioManager.play(AudioManager.COIN_SPLASH, pos)
+	_show_buy_popup(cost_, pos)
 	gui.show_money(money)
 	money_changed.emit()
 
@@ -54,6 +56,7 @@ func buy(asset: Global.Asset, amount: int, pos: Vector2):
 	var cost_ = cost(asset, amount)
 	money -= cost_
 	_show_buy_popup(cost_, pos)
+	AudioManager.play(AudioManager.COIN_SPLASH, pos)
 	_asset_count[asset] += amount
 	self._update_prices()
 	gui.show_money(money)

@@ -36,7 +36,7 @@ func update_grid() -> void:
 		else:
 			button.text = "Upgrade ($%d)" % upgrade.get_next_cost()
 		button.focus_mode = Control.FOCUS_NONE
-		button.pressed.connect(_on_upgrade_pressed.bind(upgrade))
+		button.pressed.connect(_on_upgrade_pressed.bind(upgrade, button))
 		_button_from_upgrade[upgrade] = button
 		grid.add_child(button)
 
@@ -51,8 +51,8 @@ func set_buttons_enabled():
 			)
 
 
-func _on_upgrade_pressed(upgrade: Upgrades.Upgrade):
-	GlobalBank.spend_money(upgrade.get_next_cost())
+func _on_upgrade_pressed(upgrade: Upgrades.Upgrade, button: Button):
+	GlobalBank.spend_money(upgrade.get_next_cost(), button.global_position)
 	upgrade.upgrade()
 	update_grid()
 

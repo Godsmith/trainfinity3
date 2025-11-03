@@ -296,7 +296,6 @@ func _try_create_tracks():
 	for i in range(1, len(ghost_track_tile_positions)):
 		astar.connect_positions(ghost_track_tile_positions[i - 1], ghost_track_tile_positions[i])
 	GlobalBank.buy(Global.Asset.TRACK, len(ghost_tracks), ghost_tracks[-1].global_position)
-	AudioManager.play(AudioManager.COIN_SPLASH, ghost_tracks[-1].global_position)
 	platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(ghost_track_tile_positions, _get_stations(), _create_platform_tile)
 	Events.track_reservations_updated.emit()
 	ghost_tracks.clear()
@@ -420,7 +419,6 @@ func _try_create_station(station_position: Vector2i):
 	station.position = station_position
 	add_child(station)
 	GlobalBank.buy(Global.Asset.STATION, 1, station.global_position)
-	AudioManager.play(AudioManager.COIN_SPLASH, station.global_position)
 	platform_tile_set.create_platform_tiles([station], _create_platform_tile)
 
 func _destroy_stations(positions: Array[Vector2i]):
@@ -477,7 +475,6 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 
 	var wagon_count = min(platform_tile_set.platform_size(platform1.position), platform_tile_set.platform_size(platform2.position)) - 1
 	var train = Train.create(wagon_count, point_path, platform_tile_set, track_set, track_reservations, astar)
-	AudioManager.play(AudioManager.COIN_SPLASH, train.global_position)
 
 	train.train_clicked.connect(_on_train_clicked)
 	add_child(train)
