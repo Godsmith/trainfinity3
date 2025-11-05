@@ -583,7 +583,12 @@ func _light_clicked(light: Light):
 ######################################################################
 	
 func _on_timer_timeout():
-	for station: Station in _get_stations():
-		station.extract_ore()
+	for node: Node in get_tree().get_nodes_in_group("resource_producers"):
+		for station: Station in _get_stations():
+			if Global.is_orthogonally_adjacent(Vector2i(station.global_position), Vector2i(node.global_position)):
+				# All nodes in the resource_producers group must have a property ore_type,
+				# or this will crash. Would be good with a trait here.
+				if not station.is_at_max_capacity():
+					station.add_ore(node.ore_type)
 
 ######################################################################
