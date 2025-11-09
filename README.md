@@ -35,7 +35,13 @@
 
 ## TODO
 
-- steelworks only produce when they get coal and iron
+- iron not always available; sometimes in the innards of mountains.
+  coal similar, but not so serious since it is more common.
+  Make it behave like other types of producers?
+- Remove the need of so many different groups, like resource_exchangers
+  etc
+- costs are very harsh, money runs out quickly and rail etc is 
+  expensive. Increase pay for deliveries?
 - more sound effects and music
 - disallow building out of bounds
 - expand building area
@@ -73,7 +79,13 @@
 
 ### Issues
 
+- Cities are consuming their own mail, so not producing anything
+- Trains stop and wait at intersections sometimes, but it's better if they stop one space before
+  so that other trains can pass by the intersection. 
+  ![Trains stopping too late](docs/trains-stopping-to-late.png)
 - Changing a platform length to 1 puts wagon on top of train engine
+  - Test also reducing platform length to less than train length to confirm that this
+	has the same effect
 - Wagons fill from the wrong way around again
 - How to prevent the situation when, if a mine and the factory aligns, just create one
   long station that connects them both?

@@ -303,11 +303,13 @@ func _load_and_unload():
 					Global.show_popup("$%s" % ore_count, train_position, self)
 					AudioManager.play(AudioManager.COIN_SPLASH, global_position)
 				GlobalBank.earn(ore_count)
-				await wagon.remove_all_ore(ore_type)
+				await wagon.unload_to_station(ore_type, station)
 				if not is_instance_valid(station):
 					return
 		for wagon in reversed_wagons_at_platform:
 			for ore_type in _ores_accepted_at_destinations():
+				if ore_type in station.accepts():
+					continue
 				while station.get_ore_count(ore_type) > 0 and wagon.get_total_ore_count() < wagon.max_capacity:
 					station.remove_ore(ore_type)
 					await wagon.add_ore(ore_type)

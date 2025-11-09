@@ -583,12 +583,39 @@ func _light_clicked(light: Light):
 ######################################################################
 	
 func _on_timer_timeout():
+	var stations = _get_stations()
 	for node: Node in get_tree().get_nodes_in_group("resource_producers"):
-		for station: Station in _get_stations():
-			if Global.is_orthogonally_adjacent(Vector2i(station.global_position), Vector2i(node.global_position)):
-				# All nodes in the resource_producers group must have a property ore_type,
-				# or this will crash. Would be good with a trait here.
-				if not station.is_at_max_capacity():
-					station.add_ore(node.ore_type)
-
+		for station: Station in _adjacent_stations(node, stations):
+			# All nodes in the resource_producers group must have a property ore_type,
+			# or this will crash. Would be good with a trait here.
+			if not station.is_at_max_capacity():
+				station.add_ore(node.ore_type)
+	for node: Node in get_tree().get_nodes_in_group("resource_consumers"):
+		for station: Station in _adjacent_stations(node, stations):
+			# All nodes in the resource_consumers group must have a property consumes
+			for ore_type in node.consumes:
+				if station.get_ore_count(ore_type) > 0:
+					station.remove_ore(ore_type)
+	for node: Node in get_tree().get_nodes_in_group("resource_exchangers"):
+		var adjacent_stations = _adjacent_stations(node, stations)
+		var station_from_ore_type: Dictionary[Ore.OreType, Station] = {}
+		# All nodes in the resource_exchangers group must have a property consumes
+		# and a property ore_type
+		for ore_type in node.consumes:
+			for station: Station in adjacent_stations:
+				if station.get_ore_count(ore_type) > 0:
+					station_from_ore_type[ore_type] = station
+					break
+		# If all material is available, produce
+		if len(station_from_ore_type) == len(node.consumes):
+			for ore_type in station_from_ore_type:
+				station_from_ore_type[ore_type].remove_ore(ore_type)
+			adjacent_stations.pick_random().add_ore(node.ore_type)
+			
 ######################################################################
+
+func _adjacent_stations(node: Node, stations: Array[Station]) -> Array[Station]:
+	var adjacent_stations: Array[Station]
+	adjacent_stations.assign(stations.filter(func(station): return Global.is_orthogonally_adjacent(
+			Vector2i(station.global_position), Vector2i(node.global_position))))
+	return adjacent_stations

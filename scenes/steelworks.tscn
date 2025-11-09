@@ -6,7 +6,7 @@
 cull_mode = 2
 polygon = PackedVector2Array(-8, -8, -6, -8, -6, -2, 8, -2, 8, 8, -8, 8)
 
-[node name="Steelworks" type="Node2D" groups=["buildings", "factories", "resource_consumers", "resource_producers"]]
+[node name="Steelworks" type="Node2D" groups=["buildings", "factories", "resource_exchangers"]]
 z_index = -650
 script = ExtResource("1_hw7v4")
 consumes = Array[int]([0, 1])

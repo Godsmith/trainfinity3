@@ -39,6 +39,7 @@ project/assembly_name="Trainfinity"
 buildings=""
 resource_producers=""
 resource_consumers=""
+resource_exchangers=""
 
 [gui]
 

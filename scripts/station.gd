@@ -34,6 +34,7 @@ func get_total_ore_count() -> int:
 func get_ore_count(ore_type: Ore.OreType) -> int:
 	return _chunks.reduce(func(accum, chunk): return accum + 1 if chunk.ore_type == ore_type else accum, 0)
 		
+## Remove a single chunk of ore from the station
 func remove_ore(ore_type: Ore.OreType):
 	var index = _chunks.find_custom(func(x): return x.ore_type == ore_type)
 	var chunk = _chunks.pop_at(index)
@@ -48,7 +49,7 @@ func set_color(is_ghostly: bool, is_allowed: bool):
 
 func accepts() -> Array[Ore.OreType]:
 	var accepted_ore_types_dict: Dictionary[Ore.OreType, int] = {}
-	for consumer in get_tree().get_nodes_in_group("resource_consumers"):
+	for consumer in get_tree().get_nodes_in_group("resource_consumers") + get_tree().get_nodes_in_group("resource_exchangers"):
 		if Global.is_orthogonally_adjacent(consumer.get_global_position(), position):
 			for ore_type in consumer.consumes:
 				accepted_ore_types_dict[ore_type] = 0
