@@ -307,9 +307,7 @@ func _load_and_unload():
 				if not is_instance_valid(station):
 					return
 		for wagon in reversed_wagons_at_platform:
-			for ore_type in _ores_accepted_at_destinations():
-				if ore_type in station.accepts():
-					continue
+			for ore_type in _ores_accepted_at_other_destinations(destination_index):
 				while station.get_ore_count(ore_type) > 0 and wagon.get_total_ore_count() < wagon.max_capacity:
 					station.remove_ore(ore_type)
 					await wagon.add_ore(ore_type)
@@ -317,10 +315,12 @@ func _load_and_unload():
 						return
 
 
-func _ores_accepted_at_destinations() -> Array[Ore.OreType]:
+func _ores_accepted_at_other_destinations(this_destination_index: int) -> Array[Ore.OreType]:
 	var ore_types_dict: Dictionary[Ore.OreType, int] = {}
-	for destination in destinations:
-		for station in platform_tile_set.stations_connected_to_platform(destination, _get_stations()):
+	for i in len(destinations):
+		if i == this_destination_index:
+			continue
+		for station in platform_tile_set.stations_connected_to_platform(destinations[i], _get_stations()):
 			for ore_type in station.accepts():
 				ore_types_dict[ore_type] = 0
 	return ore_types_dict.keys()

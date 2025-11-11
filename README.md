@@ -79,7 +79,6 @@
 
 ### Issues
 
-- Cities are consuming their own mail, so not producing anything
 - Trains stop and wait at intersections sometimes, but it's better if they stop one space before
   so that other trains can pass by the intersection. 
   ![Trains stopping too late](docs/trains-stopping-to-late.png)

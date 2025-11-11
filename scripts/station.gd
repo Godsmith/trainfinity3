@@ -14,8 +14,9 @@ func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> voi
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		station_clicked.emit(self)
 
-func add_ore(ore_type: Ore.OreType):
+func add_ore(ore_type: Ore.OreType, is_created_here: bool):
 	var new_chunk := $Chunk.duplicate()
+	new_chunk.is_created_here = is_created_here
 	# Some magic position numbers to not place ores too much outside. Will probably be changed anyway.
 	new_chunk.position = Vector2(randf_range(-Global.TILE_SIZE / 2 + 5, Global.TILE_SIZE / 2 + 1),
 									randf_range(-Global.TILE_SIZE / 2 + 5, Global.TILE_SIZE / 2 + 1))
@@ -33,6 +34,9 @@ func get_total_ore_count() -> int:
 
 func get_ore_count(ore_type: Ore.OreType) -> int:
 	return _chunks.reduce(func(accum, chunk): return accum + 1 if chunk.ore_type == ore_type else accum, 0)
+
+func get_ore_not_created_here_count(ore_type: Ore.OreType) -> int:
+	return _chunks.reduce(func(accum, chunk): return accum + 1 if chunk.ore_type == ore_type and not chunk.is_created_here else accum, 0)
 		
 ## Remove a single chunk of ore from the station
 func remove_ore(ore_type: Ore.OreType):

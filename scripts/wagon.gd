@@ -48,7 +48,7 @@ func get_ore_count(ore_type: Ore.OreType) -> int:
 func unload_to_station(ore_type: Ore.OreType, station: Station):
 	while get_ore_count(ore_type) > 0:
 		await remove_ore(ore_type)
-		station.add_ore(ore_type)
+		station.add_ore(ore_type, false)
 
 func remove_ore(ore_type):
 	ore_timer.start()
