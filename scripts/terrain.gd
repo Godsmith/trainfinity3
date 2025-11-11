@@ -48,6 +48,10 @@ var _button_from_chunk_position: Dictionary[Vector2i, ExpandButton] = {}
 
 var boundaries = Rect2i()
 
+class TerrainChunk:
+	var buildable_positions: Array[Vector2i] = []
+	var wall_positions: Array[Vector2i] = []
+
 class ExpandButton:
 	extends Button
 
@@ -102,22 +106,22 @@ func add_chunk(chunk_x: int, chunk_y: int, chunk_type: ChunkType):
 			var grid_position = Vector2i(x, y) * Global.TILE_SIZE
 			grid_positions.append(grid_position)
 			noise_from_position[grid_position] = noise.get_noise_2d(x, y)
-	var buildable_positions = _create_terrain(grid_positions, noise_from_position)
+	var terrain_chunk = _create_terrain(grid_positions, noise_from_position)
 
 	match chunk_type:
 		ChunkType.EMPTY:
 			pass
 		ChunkType.FACTORY:
 			var factory = FACTORY.instantiate()
-			factory.position = buildable_positions.pick_random()
+			factory.position = terrain_chunk.buildable_positions.pick_random()
 			add_child(factory)
 		ChunkType.STEELWORKS:
 			var steelworks = STEELWORKS.instantiate()
-			steelworks.position = buildable_positions.pick_random()
+			steelworks.position = terrain_chunk.buildable_positions.pick_random()
 			add_child(steelworks)
 		ChunkType.FOREST:
 			var forest = FOREST.instantiate()
-			forest.position = buildable_positions.pick_random()
+			forest.position = terrain_chunk.buildable_positions.pick_random()
 			forest_node.add_child(forest)
 		ChunkType.CITY:
 			var possible_city_positions: Array[Vector2i] = []
@@ -179,9 +183,9 @@ func _expand_button_clicked(button: ExpandButton, chunk_x: int, chunk_y: int, ch
 	add_chunk(chunk_x, chunk_y, chunk_type)
 
 
-func _create_terrain(grid_positions: Array[Vector2i], noise_from_position: Dictionary[Vector2i, float]) -> Array[Vector2i]:
+func _create_terrain(grid_positions: Array[Vector2i], noise_from_position: Dictionary[Vector2i, float]) -> TerrainChunk:
 	# TODO: consider just using obstacle_position_set instead of buildable_positions
-	var buildable_positions: Array[Vector2i] = []
+	var terrain_chunk = TerrainChunk.new()
 	for pos in grid_positions:
 		var new_position = Vector2i(min(boundaries.position.x, pos.x),
 									min(boundaries.position.y, pos.y))
@@ -224,7 +228,7 @@ func _create_terrain(grid_positions: Array[Vector2i], noise_from_position: Dicti
 				ore.position = Vector2.ZERO # relative to wall
 				wall.add_child(ore)
 		else:
-			buildable_positions.append(pos)
+			terrain_chunk.buildable_positions.append(pos)
 			var grass = GRASS.instantiate()
 			grass.position = pos
 			grass_node.add_child(grass)
@@ -250,7 +254,7 @@ func _create_terrain(grid_positions: Array[Vector2i], noise_from_position: Dicti
 		if not north_of in obstacle_position_set or obstacle_position_set[north_of] is not Wall:
 			wall.get_node("North").visible = false
 
-	return buildable_positions
+	return terrain_chunk
 
 
 func _on_money_changed():
