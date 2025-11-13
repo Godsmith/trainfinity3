@@ -35,6 +35,8 @@
 
 ## TODO
 
+- Select an industry to show what it is adding and producing
+- Select a train to show destinations
 - Remove the need of so many different groups, like resource_exchangers
   etc
 - costs are very harsh, money runs out quickly and rail etc is 
@@ -50,14 +52,10 @@
 - change graphics for end of platform, so it can't look like two stations are one
   large platform
 - producers/consumers of the same resource not less apart than the longest station length (5 tiles?)
-- expand map, adding new resources
 - show ghost platforms when building station
 - show ghost platforms when building track
 - heavier trains should have slower acceleration
 - change train paths when changing length of starting or ending station
-- prevent scrolling past edges of the map
-  - note that duplicating the map size and zooming out max makes the game stutter, so adjustments needed. 
-	At least in debug mode, need to test performance after exporting as well.
 - saving the game
   - will be useful for debugging as well, since can load into a certain state
 
