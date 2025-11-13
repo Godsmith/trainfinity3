@@ -13,7 +13,6 @@ const DESTROY_MARKER = preload("res://scenes/destroy_marker.tscn")
 @onready var ghost_track = $GhostTrack
 @onready var ghost_station = $GhostStation
 @onready var ghost_light = $GhostLight
-@onready var track_creation_arrow = $TrackCreationArrow
 
 var gui_state := Gui.State.NONE
 var is_right_mouse_button_held_down := false
@@ -41,6 +40,8 @@ var follow_train: Train = null
 var reservation_markers: Array[Polygon2D] = []
 var time_since_last_reservation_refresh := 0.0
 var show_reservation_markers := false
+
+var current_tile_marker: Line2D
 
 func _process(delta: float) -> void:
 	if follow_train:
@@ -103,7 +104,11 @@ func _ready():
 	ghost_station.remove_from_group("stations")
 	ghost_station.remove_from_group("buildings")
 
-	track_creation_arrow.visible = false
+	current_tile_marker = Line2D.new()
+	current_tile_marker.width = 2
+	current_tile_marker.default_color = Color(0, 0, 0, 0.2)
+	current_tile_marker.visible = false
+	add_child(current_tile_marker)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
@@ -114,8 +119,8 @@ func _unhandled_input(event: InputEvent) -> void:
 					_change_gui_state(Gui.State.TRACK2)
 					mouse_down_position = snapped_mouse_position
 					ghost_track.visible = false
-					track_creation_arrow.position = snapped_mouse_position
-					track_creation_arrow.visible = true
+					_show_current_tile_marker(snapped_mouse_position)
+					current_tile_marker.visible = true
 				Gui.State.TRACK2:
 					if snapped_mouse_position == mouse_down_position:
 						_change_gui_state(Gui.State.TRACK1)
@@ -162,9 +167,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 		if gui_state == Gui.State.TRACK2:
 			var new_ghost_track_tile_positions = _positions_between(mouse_down_position, snapped_mouse_position)
-			track_creation_arrow.visible = (len(new_ghost_track_tile_positions) == 1)
 			if new_ghost_track_tile_positions != ghost_track_tile_positions:
 				_show_ghost_track(new_ghost_track_tile_positions)
+			_show_current_tile_marker(snapped_mouse_position)
+
 		if gui_state == Gui.State.STATION:
 			ghost_station.set_color(true, _is_legal_station_position(snapped_mouse_position))
 		if gui_state == Gui.State.DESTROY1:
@@ -193,6 +199,16 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if OS.is_debug_build() and event is InputEventKey and event.is_pressed() and event.keycode == KEY_C:
 		show_reservation_markers = !show_reservation_markers
+
+func _show_current_tile_marker(pos: Vector2i):
+	current_tile_marker.clear_points()
+	var x = pos.x - Global.TILE_SIZE / 2
+	var y = pos.y - Global.TILE_SIZE / 2
+	current_tile_marker.add_point(Vector2(x, y))
+	current_tile_marker.add_point(Vector2(x + Global.TILE_SIZE, y))
+	current_tile_marker.add_point(Vector2(x + Global.TILE_SIZE, y + Global.TILE_SIZE))
+	current_tile_marker.add_point(Vector2(x, y + Global.TILE_SIZE))
+	current_tile_marker.add_point(Vector2(x, y))
 
 
 func _restrict_camera():
@@ -368,6 +384,7 @@ func _change_gui_state(new_state: Gui.State):
 	ghost_track.visible = false
 	ghost_station.visible = false
 	ghost_light.visible = false
+	current_tile_marker.visible = false
 
 	# Set platform colors
 	if new_state == Gui.State.TRAIN1:
@@ -382,6 +399,8 @@ func _change_gui_state(new_state: Gui.State):
 		
 	if new_state == Gui.State.TRACK1:
 		ghost_track.visible = true
+	elif new_state == Gui.State.TRACK2:
+		current_tile_marker.visible = true
 	elif new_state == Gui.State.STATION:
 		ghost_station.visible = true
 	elif new_state == Gui.State.LIGHT:
@@ -389,8 +408,6 @@ func _change_gui_state(new_state: Gui.State):
 
 	if new_state != Gui.State.TRACK1:
 		_reset_ghost_tracks()
-	if new_state != Gui.State.TRACK2:
-		track_creation_arrow.visible = false
 	if new_state != Gui.State.DESTROY1:
 		_hide_destroy_markers()
 	
