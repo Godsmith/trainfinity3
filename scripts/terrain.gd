@@ -4,7 +4,7 @@ class_name Terrain
 
 const CHUNK_WIDTH := 11
 
-enum ChunkType {FACTORY, STEELWORKS, FOREST, CITY, EMPTY}
+enum ChunkType {COAL, IRON, FACTORY, STEELWORKS, FOREST, CITY}
 
 const FACTORY = preload("res://scenes/factory.tscn")
 const STEELWORKS = preload("res://scenes/steelworks.tscn")
@@ -18,9 +18,6 @@ const CITY = preload("res://scenes/city.tscn")
 @export_range(-1.0, 1.0) var water_level: float = -0.2
 @export_range(-1.0, 1.0) var sand_level: float = -0.1
 @export_range(-1.0, 1.0) var mountain_level: float = 0.3
-@export_range(0.0, 1.0) var ore_chance: float = 0.1
-@export_range(0.0, 1.0) var iron_chance: float = 0.25
-@export_range(0.0, 1.0) var coal_chance: float = 1.0 - iron_chance
 @export_range(0, 100) var city_count: int = 5
 @export_range(0, 100) var forest_count: int = 5
 
@@ -50,7 +47,7 @@ var boundaries = Rect2i()
 
 class TerrainChunk:
 	var buildable_positions: Array[Vector2i] = []
-	var wall_positions: Array[Vector2i] = []
+	var exterior_wall_positions: Array[Vector2i] = []
 
 class ExpandButton:
 	extends Button
@@ -80,15 +77,19 @@ func _ready() -> void:
 	add_child(forest_node)
 	add_child(city_node)
 
+	# CITY  FOREST      COAL
+	# COAL  STEELWORKS  FACTORY
+	# IRON  FOREST
+
 	add_chunk(-1, -1, ChunkType.CITY)
 	add_chunk(0, -1, ChunkType.FOREST)
-	add_chunk(1, -1, ChunkType.EMPTY)
-	add_chunk(-1, 0, ChunkType.EMPTY)
+	add_chunk(1, -1, ChunkType.COAL)
+	add_chunk(-1, 0, ChunkType.COAL)
 
 	add_chunk(0, 0, ChunkType.STEELWORKS)
 
 	add_chunk(1, 0, ChunkType.FACTORY)
-	add_chunk(-1, 1, ChunkType.EMPTY)
+	add_chunk(-1, 1, ChunkType.IRON)
 	add_chunk(0, 1, ChunkType.FOREST)
 	add_chunk(1, 1, ChunkType.CITY)
 
@@ -109,8 +110,16 @@ func add_chunk(chunk_x: int, chunk_y: int, chunk_type: ChunkType):
 	var terrain_chunk = _create_terrain(grid_positions, noise_from_position)
 
 	match chunk_type:
-		ChunkType.EMPTY:
-			pass
+		ChunkType.COAL:
+			if terrain_chunk.exterior_wall_positions:
+				var ore = Ore.create(Ore.OreType.COAL)
+				ore.position = terrain_chunk.exterior_wall_positions.pick_random()
+				add_child(ore)
+		ChunkType.IRON:
+			if terrain_chunk.exterior_wall_positions:
+				var ore = Ore.create(Ore.OreType.IRON)
+				ore.position = terrain_chunk.exterior_wall_positions.pick_random()
+				add_child(ore)
 		ChunkType.FACTORY:
 			var factory = FACTORY.instantiate()
 			factory.position = terrain_chunk.buildable_positions.pick_random()
@@ -186,6 +195,7 @@ func _expand_button_clicked(button: ExpandButton, chunk_x: int, chunk_y: int, ch
 func _create_terrain(grid_positions: Array[Vector2i], noise_from_position: Dictionary[Vector2i, float]) -> TerrainChunk:
 	# TODO: consider just using obstacle_position_set instead of buildable_positions
 	var terrain_chunk = TerrainChunk.new()
+	var wall_positions: Array[Vector2i] = []
 	for pos in grid_positions:
 		var new_position = Vector2i(min(boundaries.position.x, pos.x),
 									min(boundaries.position.y, pos.y))
@@ -216,43 +226,36 @@ func _create_terrain(grid_positions: Array[Vector2i], noise_from_position: Dicti
 			wall.position = wall_position
 			obstacle_position_set[wall_position] = wall
 			wall_node.add_child(wall)
-
-			# maybe add ore inside this wall
-			if randf() < ore_chance:
-				var ore_type: Ore.OreType
-				if randf() < iron_chance:
-					ore_type = Ore.OreType.IRON
-				else:
-					ore_type = Ore.OreType.COAL
-				var ore = Ore.create(ore_type)
-				ore.position = Vector2.ZERO # relative to wall
-				wall.add_child(ore)
+			wall_positions.append(pos)
 		else:
 			terrain_chunk.buildable_positions.append(pos)
 			var grass = GRASS.instantiate()
 			grass.position = pos
 			grass_node.add_child(grass)
 
-	# Make walls look nicer
-	for pos in obstacle_position_set.keys():
+	# Make walls look nicer 
+	for pos in wall_positions:
 		var wall = obstacle_position_set[pos]
-		if not wall is Wall:
-			continue
 		
-		var west_of = pos + Vector2i(-Global.TILE_SIZE, 0)
-		var east_of = pos + Vector2i(Global.TILE_SIZE, 0)
-		var north_of = pos + Vector2i(0, -Global.TILE_SIZE)
-		var south_of = pos + Vector2i(0, Global.TILE_SIZE)
+		var is_no_wall_to_the_west = not _west_of(pos) in obstacle_position_set or obstacle_position_set[_west_of(pos)] is not Wall
+		var is_no_wall_to_the_east = not _east_of(pos) in obstacle_position_set or obstacle_position_set[_east_of(pos)] is not Wall
+		var is_no_wall_to_the_north = not _north_of(pos) in obstacle_position_set or obstacle_position_set[_north_of(pos)] is not Wall
+		var is_no_wall_to_the_south = not _south_of(pos) in obstacle_position_set or obstacle_position_set[_south_of(pos)] is not Wall
 
-
-		if not west_of in obstacle_position_set or obstacle_position_set[west_of] is not Wall:
+		if is_no_wall_to_the_west:
 			wall.get_node("West").visible = false
-		if not east_of in obstacle_position_set or obstacle_position_set[east_of] is not Wall:
+		if is_no_wall_to_the_east:
 			wall.get_node("East").visible = false
-		if not south_of in obstacle_position_set or obstacle_position_set[south_of] is not Wall:
-			wall.get_node("South").visible = false
-		if not north_of in obstacle_position_set or obstacle_position_set[north_of] is not Wall:
+		if is_no_wall_to_the_north:
 			wall.get_node("North").visible = false
+		if is_no_wall_to_the_south:
+			wall.get_node("South").visible = false
+
+		if (_west_of(pos) in terrain_chunk.buildable_positions or
+			_east_of(pos) in terrain_chunk.buildable_positions or
+			_north_of(pos) in terrain_chunk.buildable_positions or
+			_south_of(pos) in terrain_chunk.buildable_positions):
+			terrain_chunk.exterior_wall_positions.append(pos)
 
 	return terrain_chunk
 
@@ -260,3 +263,15 @@ func _create_terrain(grid_positions: Array[Vector2i], noise_from_position: Dicti
 func _on_money_changed():
 	for button in _button_from_chunk_position.values():
 		button.disabled = (button.cost > GlobalBank.money)
+
+func _west_of(pos: Vector2i) -> Vector2i:
+	return pos + Vector2i(-Global.TILE_SIZE, 0)
+
+func _east_of(pos: Vector2i) -> Vector2i:
+	return pos + Vector2i(Global.TILE_SIZE, 0)
+
+func _north_of(pos: Vector2i) -> Vector2i:
+	return pos + Vector2i(0, -Global.TILE_SIZE)
+
+func _south_of(pos: Vector2i) -> Vector2i:
+	return pos + Vector2i(0, Global.TILE_SIZE)

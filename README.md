@@ -35,9 +35,6 @@
 
 ## TODO
 
-- iron not always available; sometimes in the innards of mountains.
-  coal similar, but not so serious since it is more common.
-  Make it behave like other types of producers?
 - Remove the need of so many different groups, like resource_exchangers
   etc
 - costs are very harsh, money runs out quickly and rail etc is 
