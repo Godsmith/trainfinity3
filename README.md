@@ -35,6 +35,7 @@
 
 ## TODO
 
+- Show ghost track arrow
 - Select an industry to show what it is adding and producing
 - Select a train to show destinations
 - Remove the need of so many different groups, like resource_exchangers
@@ -59,21 +60,10 @@
 - saving the game
   - will be useful for debugging as well, since can load into a certain state
 
-### Thinking about it
-
-- signals
-
-### Discarded ideas
-
-- build platforms instead of stations
-  - done on create-platform-like-track branchs, had some issues; 
-	turned out to be a bit fiddly for the user
-- non-global bank using signals
-  - Multiple nodes need to query how much money is available, so signals were not 
-	practical.
-
 ### Issues
 
+- Looks like there might still be a problem with trains picking up mail that they
+  just left at a station
 - Trains stop and wait at intersections sometimes, but it's better if they stop one space before
   so that other trains can pass by the intersection. 
   ![Trains stopping too late](docs/trains-stopping-to-late.png)
@@ -98,6 +88,20 @@
 	   problem, try it out.
 - When creating and removing rail, sometimes existing stations will be unexpectedly 
   rejigged.
+
+### Thinking about it
+
+- signals
+
+### Discarded ideas
+
+- build platforms instead of stations
+  - done on create-platform-like-track branchs, had some issues; 
+	turned out to be a bit fiddly for the user
+- non-global bank using signals
+  - Multiple nodes need to query how much money is available, so signals were not 
+	practical.
+
 
 ### In-game upgrades
 - range of stations (start with 1) - though it looks ugly when they are too far from ore
