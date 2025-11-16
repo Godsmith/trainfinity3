@@ -35,7 +35,9 @@
 
 ## TODO
 
-- Show ghost track arrow
+- Complete save and load functionality
+- Building on existing track still costs money
+- Show ghost one-way-track-arrow
 - Select an industry to show what it is adding and producing
 - Select a train to show destinations
 - Remove the need of so many different groups, like resource_exchangers
@@ -57,8 +59,6 @@
 - show ghost platforms when building track
 - heavier trains should have slower acceleration
 - change train paths when changing length of starting or ending station
-- saving the game
-  - will be useful for debugging as well, since can load into a certain state
 
 ### Issues
 

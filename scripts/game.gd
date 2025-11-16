@@ -99,6 +99,8 @@ func _ready():
 	$Gui/HBoxContainer/LightButton.connect("toggled", _on_lightbutton_toggled)
 	$Gui/HBoxContainer/DestroyButton.connect("toggled", _on_destroybutton_toggled)
 	$Gui/HBoxContainer/FollowTrainButton.connect("toggled", _on_followtrainbutton_toggled)
+	$Gui/HBoxContainer/SaveButton.connect("pressed", _on_savebutton_pressed)
+	$Gui/HBoxContainer/LoadButton.connect("pressed", _on_loadbutton_pressed)
 	$Timer.connect("timeout", _on_timer_timeout)
 	# Remove ghost station from groups so that it does begin to gather ore etc
 	ghost_station.remove_from_group("stations")
@@ -379,6 +381,11 @@ func _on_followtrainbutton_toggled(toggled_on: bool) -> void:
 	if toggled_on:
 		_change_gui_state(Gui.State.FOLLOW_TRAIN)
 
+func _on_savebutton_pressed() -> void:
+	_save_game()
+
+func _on_loadbutton_pressed() -> void:
+	_load_game()
 
 func _change_gui_state(new_state: Gui.State):
 	ghost_track.visible = false
@@ -636,3 +643,27 @@ func _adjacent_stations(node: Node, stations: Array[Station]) -> Array[Station]:
 	adjacent_stations.assign(stations.filter(func(station): return Global.is_orthogonally_adjacent(
 			Vector2i(station.global_position), Vector2i(node.global_position))))
 	return adjacent_stations
+
+func _save_game():
+	# Currently only saving tracks
+	var data = {}
+	data["tracks"] = track_set._tracks.values().map(func(t): return {"pos1": t.pos1, "pos2": t.pos2})
+	#var data = JSON.stringify({"tracks": tracks.map()})
+
+	# get_datetime_string_from_system gives strings on the form "2025-11-14 20:51:33"
+	var timestamp = Time.get_datetime_string_from_system(true, true).replace(" ", "_").replace(":", "-")
+	var file_path = "res://savegames/" + timestamp + ".save"
+	var save_file = FileAccess.open(file_path, FileAccess.WRITE)
+	save_file.store_var(data)
+	save_file.close()
+	print("Saved game to %s" % file_path)
+
+func _load_game():
+	# file_path is typically on the form"res://savegames/foo.save"
+	var file_path = "res://savegames/2025-11-16_17-47-30.save"
+
+	var save_file = FileAccess.open(file_path, FileAccess.READ)
+	var data = save_file.get_var()
+	for track_dict in data.tracks:
+		_show_ghost_track([track_dict["pos1"], track_dict["pos2"]])
+		_try_create_tracks()

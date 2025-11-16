@@ -85,4 +85,14 @@ focus_mode = 0
 toggle_mode = true
 text = "Upgrades"
 
+[node name="SaveButton" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+text = "Save"
+
+[node name="LoadButton" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+text = "Load"
+
 [connection signal="toggled" from="HBoxContainer/UpgradesButton" to="." method="_on_upgrades_button_toggled"]
