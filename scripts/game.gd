@@ -648,7 +648,7 @@ func _save_game():
 	# Currently only saving tracks
 	var data = {}
 	data["tracks"] = track_set._tracks.values().map(func(t): return {"pos1": t.pos1, "pos2": t.pos2})
-	#var data = JSON.stringify({"tracks": tracks.map()})
+	data["stations"] = _get_stations().map(func(s): return {"position": s.position})
 
 	# get_datetime_string_from_system gives strings on the form "2025-11-14 20:51:33"
 	var timestamp = Time.get_datetime_string_from_system(true, true).replace(" ", "_").replace(":", "-")
@@ -660,10 +660,12 @@ func _save_game():
 
 func _load_game():
 	# file_path is typically on the form"res://savegames/foo.save"
-	var file_path = "res://savegames/2025-11-16_17-47-30.save"
+	var file_path = "res://savegames/2025-11-16_19-26-08.save"
 
 	var save_file = FileAccess.open(file_path, FileAccess.READ)
 	var data = save_file.get_var()
 	for track_dict in data.tracks:
 		_show_ghost_track([track_dict["pos1"], track_dict["pos2"]])
 		_try_create_tracks()
+	for station_dict in data.stations:
+		_try_create_station(station_dict["position"])
