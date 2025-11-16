@@ -15,6 +15,9 @@ diagonal_track = true
 
 [node name="Terrain" type="Node2D" parent="."]
 script = ExtResource("2_jcyc3")
+water_level = -1.0
+sand_level = -1.0
+mountain_level = 1.0
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(38, 20)
