@@ -63,6 +63,9 @@ func _get_positions_with_track_suitable_for_platform_tiles() -> Array[Vector2i]:
 					out.append(track_position)
 	return out
 
+func get_platform_tile_at(pos: Vector2i):
+	return _platform_tiles[pos]
+
 func stations_connected_to_platform(platform_tile_position: Vector2i, all_stations: Array[Station]) -> Array[Station]:
 	var connected_positions = connected_platform_tile_positions(platform_tile_position)
 	var stations: Array[Station] = []
