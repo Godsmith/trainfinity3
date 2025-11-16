@@ -193,6 +193,8 @@ func _expand_button_clicked(button: ExpandButton, chunk_x: int, chunk_y: int, ch
 
 
 func _create_terrain(grid_positions: Array[Vector2i], noise_from_position: Dictionary[Vector2i, float]) -> TerrainChunk:
+	# TODO: split into generating the terrain and actually creating the objects
+	# to be able to load terrain from save game
 	# TODO: consider just using obstacle_position_set instead of buildable_positions
 	var terrain_chunk = TerrainChunk.new()
 	var wall_positions: Array[Vector2i] = []
