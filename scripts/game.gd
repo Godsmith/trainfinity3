@@ -385,7 +385,9 @@ func _on_savebutton_pressed() -> void:
 	_save_game()
 
 func _on_loadbutton_pressed() -> void:
-	_load_game()
+	# Does nothing right now
+	#_load_game()
+	pass
 
 func _change_gui_state(new_state: Gui.State):
 	ghost_track.visible = false
@@ -659,10 +661,9 @@ func _save_game():
 	save_file.close()
 	print("Saved game to %s" % file_path)
 
-func _load_game():
+func _load_game(file_path: String):
 	# file_path is typically on the form"res://savegames/foo.save"
-	var file_path = "res://savegames/2025-11-16_19-35-32.save"
-
+	#var file_path = "res://savegames/2025-11-16_19-35-32.save"
 	var save_file = FileAccess.open(file_path, FileAccess.READ)
 	var data = save_file.get_var()
 	for track_dict in data.tracks:

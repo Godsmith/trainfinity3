@@ -4,7 +4,7 @@ class_name Terrain
 
 const CHUNK_WIDTH := 11
 
-enum ChunkType {COAL, IRON, FACTORY, STEELWORKS, FOREST, CITY}
+enum ChunkType {COAL, IRON, FACTORY, STEELWORKS, FOREST, CITY, EMPTY}
 
 const FACTORY = preload("res://scenes/factory.tscn")
 const STEELWORKS = preload("res://scenes/steelworks.tscn")
@@ -18,8 +18,6 @@ const CITY = preload("res://scenes/city.tscn")
 @export_range(-1.0, 1.0) var water_level: float = -0.2
 @export_range(-1.0, 1.0) var sand_level: float = -0.1
 @export_range(-1.0, 1.0) var mountain_level: float = 0.3
-@export_range(0, 100) var city_count: int = 5
-@export_range(0, 100) var forest_count: int = 5
 
 # When creating terrain, walls and water positions are recorded here,
 # so that when building things later we can check this set to see
@@ -77,10 +75,16 @@ func _ready() -> void:
 	add_child(forest_node)
 	add_child(city_node)
 
+	_add_starting_chunks()
+
+	GlobalBank.money_changed.connect(_on_money_changed)
+	# Disable buttons
+	_on_money_changed()
+
+func _add_starting_chunks():
 	# CITY  FOREST      COAL
 	# COAL  STEELWORKS  FACTORY
 	# IRON  FOREST
-
 	add_chunk(-1, -1, ChunkType.CITY)
 	add_chunk(0, -1, ChunkType.FOREST)
 	add_chunk(1, -1, ChunkType.COAL)
@@ -92,10 +96,6 @@ func _ready() -> void:
 	add_chunk(-1, 1, ChunkType.IRON)
 	add_chunk(0, 1, ChunkType.FOREST)
 	add_chunk(1, 1, ChunkType.CITY)
-
-	GlobalBank.money_changed.connect(_on_money_changed)
-	# Disable buttons
-	_on_money_changed()
 
 
 func add_chunk(chunk_x: int, chunk_y: int, chunk_type: ChunkType):
@@ -110,6 +110,8 @@ func add_chunk(chunk_x: int, chunk_y: int, chunk_type: ChunkType):
 	var terrain_chunk = _create_terrain(grid_positions, noise_from_position)
 
 	match chunk_type:
+		ChunkType.EMPTY:
+			pass
 		ChunkType.COAL:
 			if terrain_chunk.exterior_wall_positions:
 				var ore = Ore.create(Ore.OreType.COAL)
