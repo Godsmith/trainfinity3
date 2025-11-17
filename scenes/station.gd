@@ -53,8 +53,8 @@ func set_color(is_ghostly: bool, is_allowed: bool):
 
 func accepts() -> Array[Ore.OreType]:
 	var accepted_ore_types_dict: Dictionary[Ore.OreType, int] = {}
-	for consumer in get_tree().get_nodes_in_group("resource_consumers") + get_tree().get_nodes_in_group("resource_exchangers"):
-		if Global.is_orthogonally_adjacent(consumer.get_global_position(), position):
-			for ore_type in consumer.consumes:
+	for industry in get_tree().get_nodes_in_group("industries"):
+		if Global.is_orthogonally_adjacent(industry.get_global_position(), position):
+			for ore_type in industry.consumes:
 				accepted_ore_types_dict[ore_type] = 0
 	return accepted_ore_types_dict.keys()

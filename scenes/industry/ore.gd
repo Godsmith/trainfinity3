@@ -20,6 +20,7 @@ var ore_type
 static func create(ore_type_: OreType) -> Ore:
 	var ore = ORE.instantiate()
 	ore.ore_type = ore_type_
+	ore.produces.append(ore_type_)
 	return ore
 		
 func _ready() -> void:

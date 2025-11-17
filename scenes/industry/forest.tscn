@@ -2,10 +2,11 @@
 
 [ext_resource type="Script" uid="uid://edpvmt12il4g" path="res://scenes/industry/forest.gd" id="1_xijx7"]
 
-[node name="Forest" type="Node2D" groups=["buildings", "resource_producers"]]
+[node name="Forest" type="Node2D" groups=["buildings", "industries"]]
 z_index = -700
 z_as_relative = false
 script = ExtResource("1_xijx7")
+produces = Array[int]([3])
 
 [node name="Chunk8" type="Polygon2D" parent="."]
 position = Vector2(8, -2)

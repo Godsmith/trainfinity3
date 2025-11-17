@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bk3wlpgvcqbqe" path="res://scenes/industry/ore.gd" id="1_84iim"]
 [ext_resource type="PackedScene" uid="uid://dfqsthsrw4g1g" path="res://scenes/industry/chunk.tscn" id="2_f6cf6"]
 
-[node name="Ore" type="Node2D" groups=["resource_producers"]]
+[node name="Ore" type="Node2D" groups=["industries"]]
 z_index = -700
 z_as_relative = false
 script = ExtResource("1_84iim")

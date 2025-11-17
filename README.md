@@ -38,11 +38,10 @@
 - Select an industry to show what it is adding and producing
 	- clicking could also show what it pays for different goods
 	- fix so that Select state persists in GUI
+	- Bug: cities don't produce anything
 - Complete save and load functionality
 - Show ghost one-way-track-arrow
 - Select a train to show destinations
-- Remove the need of so many different groups, like resource_exchangers
-  etc, now that everything are Industries
 - costs are very harsh, money runs out quickly and rail etc is 
   expensive. Increase pay for deliveries?
 - more sound effects and music
