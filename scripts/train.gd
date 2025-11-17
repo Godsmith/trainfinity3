@@ -222,7 +222,9 @@ func is_train_or_wagon_at_position(pos: Vector2i):
 
 
 func _on_train_reaches_end_of_curve():
-	_adjust_reservations_to_where_train_is()
+	# Enabling this row creates deadlock. Not sure why this was here in the first place
+	# but commenting out this instead of removing it in case I was missing something.
+	#_adjust_reservations_to_where_train_is()
 	var destination_tile = destinations[destination_index]
 	var current_tile = Vector2i(get_train_position().snapped(Global.TILE))
 

@@ -64,9 +64,6 @@
 
 - Looks like there might still be a problem with trains picking up mail that they
   just left at a station
-- Trains stop and wait at intersections sometimes, but it's better if they stop one space before
-  so that other trains can pass by the intersection. 
-  ![Trains stopping too late](docs/trains-stopping-to-late.png)
 - Changing a platform length to 1 puts wagon on top of train engine
   - Test also reducing platform length to less than train length to confirm that this
 	has the same effect
