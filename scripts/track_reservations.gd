@@ -17,6 +17,9 @@ func reserve_train_positions(new_positions: Array[Vector2i], train: Train) -> Gl
 	# set new reservation
 	for pos in new_positions:
 		reservations[pos] = train
+	# TODO: when this signal is emitted stuff gets a bit complicated,
+	# since potentially multiple trains will resume execution.
+	# Consider implementing a state machine to increase observability.
 	Events.track_reservations_updated.emit(train)
 	return Global.Vector2iOrNone.new(false)
 
