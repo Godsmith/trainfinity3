@@ -36,7 +36,6 @@
 ## TODO
 
 - Complete save and load functionality
-- Building on existing track still costs money
 - Show ghost one-way-track-arrow
 - Select an industry to show what it is adding and producing
 - Select a train to show destinations

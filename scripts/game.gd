@@ -310,18 +310,20 @@ func _try_create_tracks():
 		_reset_ghost_tracks()
 		return
 	
+	var new_track_count = 0
 	for track in ghost_tracks:
 		if track_set.exists(track):
 			track.queue_free()
 		else:
 			track_set.add(track)
 			track.set_ghostly(false)
+			new_track_count += 1
 		track.track_clicked.connect(_on_track_clicked)
 	for ghost_track_position in ghost_track_tile_positions:
 		astar.add_position(ghost_track_position)
 	for i in range(1, len(ghost_track_tile_positions)):
 		astar.connect_positions(ghost_track_tile_positions[i - 1], ghost_track_tile_positions[i])
-	GlobalBank.buy(Global.Asset.TRACK, len(ghost_tracks), ghost_tracks[-1].global_position)
+	GlobalBank.buy(Global.Asset.TRACK, new_track_count, ghost_tracks[-1].global_position)
 	platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(ghost_track_tile_positions, _get_stations(), _create_platform_tile)
 	Events.track_reservations_updated.emit()
 	ghost_tracks.clear()
