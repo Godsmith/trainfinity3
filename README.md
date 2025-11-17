@@ -37,7 +37,6 @@
 
 - Select an industry to show what it is adding and producing
 	- clicking could also show what it pays for different goods
-	- make everything an Industry and add Area2D to everything
 	- fix so that Select state persists in GUI
 - Complete save and load functionality
 - Show ghost one-way-track-arrow

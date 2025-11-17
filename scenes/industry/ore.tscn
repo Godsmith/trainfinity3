@@ -34,3 +34,12 @@ position = Vector2(7, 5)
 [node name="Chunk7" parent="." instance=ExtResource("2_f6cf6")]
 visible = true
 position = Vector2(3, 8)
+
+[node name="Area2D" type="Area2D" parent="."]
+position = Vector2(-16, 16)
+
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="Area2D"]
+position = Vector2(16, -16)
+polygon = PackedVector2Array(-6, -1, -4, -4, 3, -4, 6, -2, 6, 0, 5, 3, 1, 6, -1, 6, -6, 1)
+
+[connection signal="input_event" from="Area2D" to="." method="_on_input_event"]
