@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bewqc8lscap32"]
 
-[ext_resource type="Script" uid="uid://edpvmt12il4g" path="res://scripts/forest.gd" id="1_xijx7"]
+[ext_resource type="Script" uid="uid://edpvmt12il4g" path="res://scenes/industry/forest.gd" id="1_xijx7"]
 
 [node name="Forest" type="Node2D" groups=["buildings", "resource_producers"]]
 z_index = -700

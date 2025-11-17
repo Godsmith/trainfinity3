@@ -1,4 +1,4 @@
-extends "game.gd"
+extends Game
 
 func _ready():
 	super._ready()

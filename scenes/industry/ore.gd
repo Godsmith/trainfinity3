@@ -5,7 +5,7 @@ class_name Ore
 # TODO: move this out of class and rename to Resource
 enum OreType {COAL, IRON, MAIL, WOOD, STEEL}
 
-const ORE := preload("res://scenes/ore.tscn")
+const ORE := preload("res://scenes/industry/ore.tscn")
 
 const ORE_COLOR = {
 	OreType.COAL: Color(0, 0, 0, 1),

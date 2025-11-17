@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://r51qtkr38kh4"]
 
-[ext_resource type="Script" uid="uid://7y5wwjpvapau" path="res://scripts/steelworks.gd" id="1_hw7v4"]
+[ext_resource type="Script" uid="uid://7y5wwjpvapau" path="res://scenes/industry/steelworks.gd" id="1_hw7v4"]
 
 [sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_rod8h"]
 cull_mode = 2

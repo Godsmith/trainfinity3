@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://b4kkdoufxj3o1"]
 
-[ext_resource type="Script" uid="uid://dah5oi8vyt7cx" path="res://scripts/wagon.gd" id="1_asyws"]
-[ext_resource type="PackedScene" uid="uid://dfqsthsrw4g1g" path="res://scenes/chunk.tscn" id="2_e0vi3"]
+[ext_resource type="Script" uid="uid://dah5oi8vyt7cx" path="res://scenes/wagon.gd" id="1_asyws"]
+[ext_resource type="PackedScene" uid="uid://dfqsthsrw4g1g" path="res://scenes/industry/chunk.tscn" id="2_e0vi3"]
 
 [sub_resource type="Curve2D" id="Curve2D_e0vi3"]
 

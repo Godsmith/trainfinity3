@@ -6,14 +6,14 @@ const CHUNK_WIDTH := 11
 
 enum ChunkType {COAL, IRON, FACTORY, STEELWORKS, FOREST, CITY, EMPTY}
 
-const FACTORY = preload("res://scenes/factory.tscn")
-const STEELWORKS = preload("res://scenes/steelworks.tscn")
-const GRASS = preload("res://scenes/grass.tscn")
-const WATER = preload("res://scenes/water.tscn")
-const SAND = preload("res://scenes/sand.tscn")
-const WALL = preload("res://scenes/wall.tscn")
-const FOREST = preload("res://scenes/forest.tscn")
-const CITY = preload("res://scenes/city.tscn")
+const FACTORY = preload("res://scenes/industry/factory.tscn")
+const STEELWORKS = preload("res://scenes/industry/steelworks.tscn")
+const GRASS = preload("res://scenes/terrain/grass.tscn")
+const WATER = preload("res://scenes/terrain/water.tscn")
+const SAND = preload("res://scenes/terrain/sand.tscn")
+const WALL = preload("res://scenes/terrain/wall.tscn")
+const FOREST = preload("res://scenes/industry/forest.tscn")
+const CITY = preload("res://scenes/industry/city.tscn")
 
 @export_range(-1.0, 1.0) var water_level: float = -0.2
 @export_range(-1.0, 1.0) var sand_level: float = -0.1

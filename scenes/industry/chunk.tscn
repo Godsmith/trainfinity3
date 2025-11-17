@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dfqsthsrw4g1g"]
 
-[ext_resource type="Script" uid="uid://db4b8xc5kvbhx" path="res://scripts/chunk.gd" id="1_jas4a"]
+[ext_resource type="Script" uid="uid://db4b8xc5kvbhx" path="res://scenes/industry/chunk.gd" id="1_jas4a"]
 
 [node name="Chunk" type="Polygon2D"]
 visible = false

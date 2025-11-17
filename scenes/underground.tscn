@@ -1,12 +1,12 @@
 [gd_scene load_steps=8 format=3 uid="uid://s0oc52imgck4"]
 
-[ext_resource type="Script" uid="uid://brgjmqfhds48i" path="res://scripts/underground.gd" id="1_cpwbu"]
+[ext_resource type="Script" uid="uid://brgjmqfhds48i" path="res://scenes/underground.gd" id="1_cpwbu"]
 [ext_resource type="PackedScene" uid="uid://vyo6h6rte1xu" path="res://scenes/gui.tscn" id="2_6vnne"]
 [ext_resource type="Script" uid="uid://d070mqp5unjky" path="res://scripts/camera_2d.gd" id="2_iubgi"]
 [ext_resource type="PackedScene" uid="uid://rq8dlyspro46" path="res://scenes/track.tscn" id="3_6vnne"]
 [ext_resource type="PackedScene" uid="uid://b1064yqqmy7mf" path="res://scenes/station.tscn" id="4_x50qk"]
 [ext_resource type="PackedScene" uid="uid://cxgimf5dgovcu" path="res://scenes/light.tscn" id="5_4b2bf"]
-[ext_resource type="Script" uid="uid://bk3wlpgvcqbqe" path="res://scripts/ore.gd" id="6_dikfm"]
+[ext_resource type="Script" uid="uid://bk3wlpgvcqbqe" path="res://scenes/industry/ore.gd" id="6_dikfm"]
 
 [node name="Underground" type="Node2D"]
 script = ExtResource("1_cpwbu")

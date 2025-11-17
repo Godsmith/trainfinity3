@@ -1,8 +1,8 @@
 extends Game
 
 const T = Global.TILE_SIZE
-const STEELWORKS = preload("res://scenes/steelworks.tscn")
-const FACTORY = preload("res://scenes/factory.tscn")
+const STEELWORKS = preload("res://scenes/industry/steelworks.tscn")
+const FACTORY = preload("res://scenes/industry/factory.tscn")
 
 func _ready():
 	super._ready()
