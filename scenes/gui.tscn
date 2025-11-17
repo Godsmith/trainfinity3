@@ -19,6 +19,13 @@ offset_bottom = -165.0
 offset_right = 89.0
 offset_bottom = 31.0
 
+[node name="SelectButton" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+button_group = SubResource("ButtonGroup_lbhrr")
+text = "Select"
+
 [node name="TrackButton" type="Button" parent="HBoxContainer"]
 layout_mode = 2
 focus_mode = 0

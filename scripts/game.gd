@@ -93,6 +93,7 @@ func _ready():
 	GlobalBank.gui = gui
 	GlobalBank.update_gui()
 	# TODO: do not expose Gui innards this way
+	$Gui/HBoxContainer/SelectButton.connect("toggled", _on_selectbutton_toggled)
 	$Gui/HBoxContainer/TrackButton.connect("toggled", _on_trackbutton_toggled)
 	$Gui/HBoxContainer/OneWayTrackButton.connect("toggled", _on_onewaytrackbutton_toggled)
 	$Gui/HBoxContainer/StationButton.connect("toggled", _on_stationbutton_toggled)
@@ -112,6 +113,8 @@ func _ready():
 	current_tile_marker.default_color = Color(0, 0, 0, 0.2)
 	current_tile_marker.visible = false
 	add_child(current_tile_marker)
+
+	Events.industry_clicked.connect(_on_industry_clicked)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
@@ -362,6 +365,10 @@ func _on_track_clicked(track: Track):
 		Events.track_reservations_updated.emit()
 
 ##################################################################
+
+func _on_selectbutton_toggled(toggled_on: bool) -> void:
+	if toggled_on:
+		_change_gui_state(Gui.State.SELECT)
 
 func _on_trackbutton_toggled(toggled_on: bool) -> void:
 	if toggled_on:
@@ -656,6 +663,13 @@ func _adjacent_stations(node: Node, stations: Array[Station]) -> Array[Station]:
 	adjacent_stations.assign(stations.filter(func(station): return Global.is_orthogonally_adjacent(
 			Vector2i(station.global_position), Vector2i(node.global_position))))
 	return adjacent_stations
+
+######################################################################
+
+func _on_industry_clicked(industry: Industry):
+	print(industry)
+
+######################################################################
 
 func _save_game():
 	# Currently only saving tracks

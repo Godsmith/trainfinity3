@@ -2,7 +2,7 @@ extends CanvasLayer
 
 class_name Gui
 
-enum State {NONE, TRACK1, TRACK2, ONE_WAY_TRACK, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY1, DESTROY2, FOLLOW_TRAIN}
+enum State {NONE, SELECT, TRACK1, TRACK2, ONE_WAY_TRACK, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY1, DESTROY2, FOLLOW_TRAIN}
 
 func _ready() -> void:
 	$UpgradesMenu.close_button_clicked.connect(_upgrades_close_button_clicked)
