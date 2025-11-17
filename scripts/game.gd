@@ -8,6 +8,7 @@ const STATION = preload("res://scenes/station.tscn")
 const TRACK = preload("res://scenes/track.tscn")
 const LIGHT = preload("res://scenes/light.tscn")
 const DESTROY_MARKER = preload("res://scenes/destroy_marker.tscn")
+const DEBUG_COORDINATES = preload("res://debug/debug_coordinates.tscn")
 
 @onready var terrain = $Terrain
 @onready var ghost_track = $GhostTrack
@@ -201,6 +202,13 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if OS.is_debug_build() and event is InputEventKey and event.is_pressed() and event.keycode == KEY_C:
 		show_reservation_markers = !show_reservation_markers
+		for track in track_set.get_all_tracks():
+			for pos in [track.pos1, track.pos2]:
+				var coordinates = DEBUG_COORDINATES.instantiate()
+				coordinates.position = pos - Vector2i(Global.TILE) / 3
+				coordinates.text = "%s,%s" % [pos.x, pos.y]
+				add_child(coordinates)
+
 
 func _show_current_tile_marker(pos: Vector2i):
 	current_tile_marker.clear_points()
@@ -499,8 +507,9 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 	if not point_path:
 		return
 
+	var train_number = len(get_tree().get_nodes_in_group("trains")) + 1
 	var wagon_count = min(platform_tile_set.platform_size(platform1.position), platform_tile_set.platform_size(platform2.position)) - 1
-	var train = Train.create(wagon_count, point_path, platform_tile_set, track_set, track_reservations, astar)
+	var train = Train.create("Train %s" % train_number, wagon_count, point_path, platform_tile_set, track_set, track_reservations, astar)
 
 	train.train_clicked.connect(_on_train_clicked)
 	add_child(train)

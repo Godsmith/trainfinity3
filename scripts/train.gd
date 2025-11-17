@@ -36,13 +36,15 @@ var destination_index := 0
 
 var reservation_color: Color
 
-static func create(wagon_count_: int,
+static func create(name_: String,
+				   wagon_count_: int,
 				   point_path: PackedVector2Array,
 				   platform_tile_set_: PlatformTileSet,
 				   track_set_: TrackSet,
 				   track_reservations_: TrackReservations,
 				   astar_: Astar) -> Train:
 	var train = TRAIN.instantiate()
+	train.name = name_
 	train.wagon_count = wagon_count_
 	train.destinations = [point_path[0], point_path[-1]] as Array[Vector2i]
 	train.platform_tile_set = platform_tile_set_
