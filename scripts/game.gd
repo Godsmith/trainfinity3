@@ -669,7 +669,7 @@ func _adjacent_stations(node: Node, stations: Array[Station]) -> Array[Station]:
 func _on_industry_clicked(industry: Industry):
 	current_tile_marker.visible = true
 	_show_current_tile_marker(industry.global_position)
-	var description = industry.name
+	var description = industry.get_script().get_global_name()
 	if industry.consumes:
 		description += "\nConsumes: "
 		description += ", ".join(industry.consumes.map(func(ore_type): return Ore.OreType.keys()[ore_type]))

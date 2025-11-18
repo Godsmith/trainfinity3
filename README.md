@@ -35,9 +35,6 @@
 
 ## TODO
 
-- Select an industry to show what it is adding and producing
-  - fix so that Select state persists in GUI
-  - industries have wrong names
 - Select stations to show content
 - Select trains to 
   - show content
