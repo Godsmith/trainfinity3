@@ -38,7 +38,6 @@
 - Select an industry to show what it is adding and producing
 	- clicking could also show what it pays for different goods
 	- fix so that Select state persists in GUI
-	- Bug: cities don't produce anything
 - Complete save and load functionality
 - Show ghost one-way-track-arrow
 - Select a train to show destinations

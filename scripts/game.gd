@@ -632,22 +632,27 @@ func _on_timer_timeout():
 		var adjacent_stations = _adjacent_stations(industry, stations)
 		if not adjacent_stations:
 			continue
+		if adjacent_stations.all(func(s): return s.is_at_max_capacity()):
+			continue
 
-		# See so that each type of required ore exists at at least one station
-		var station_from_ore_type: Dictionary[Ore.OreType, Station] = {}
-		for ore_type in industry.consumes:
-			for station: Station in adjacent_stations:
-				if station.get_ore_not_created_here_count(ore_type) > 0:
-					station_from_ore_type[ore_type] = station
-					break
-		
-		# If all material is available, produce.
-		# Note that is is also true if 0 material is needed
-		if len(station_from_ore_type) == len(industry.consumes):
-			for ore_type in station_from_ore_type:
-				station_from_ore_type[ore_type].remove_ore(ore_type)
+		if industry.requires_resources_to_produce:
+			# See so that each type of required ore exists at at least one station
+			var station_from_ore_type: Dictionary[Ore.OreType, Station] = {}
+			for ore_type in industry.consumes:
+				for station: Station in adjacent_stations:
+					if station.get_ore_not_created_here_count(ore_type) > 0:
+						station_from_ore_type[ore_type] = station
+						break
+
+			# If all material is available, produce.
+			# Note that is is also true if 0 material is needed
+			if len(station_from_ore_type) == len(industry.consumes):
+				for ore_type in station_from_ore_type:
+					station_from_ore_type[ore_type].remove_ore(ore_type)
+				for ore_type in industry.produces:
+					adjacent_stations.pick_random().add_ore(ore_type, true)
+		else:
 			for ore_type in industry.produces:
-				print("%s created" % Ore.OreType.keys()[ore_type])
 				adjacent_stations.pick_random().add_ore(ore_type, true)
 			
 ######################################################################

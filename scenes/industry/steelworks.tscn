@@ -11,6 +11,7 @@ z_index = -650
 script = ExtResource("1_hw7v4")
 produces = Array[int]([4])
 consumes = Array[int]([0, 1])
+requires_resources_to_produce = true
 
 [node name="Polygon2D6" type="Polygon2D" parent="."]
 position = Vector2(-9, -0.8)
