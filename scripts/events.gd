@@ -12,3 +12,7 @@ signal track_reservations_updated(by_train: Train)
 
 # Emitted when an industry is clicked
 signal industry_clicked(industry: Industry)
+
+
+# Emitted when a station is clicked
+signal station_clicked(station: Station)

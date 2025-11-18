@@ -4,15 +4,13 @@ class_name Station
 
 const MAX_CAPACITY := 24
 
-signal station_clicked(station: Station)
-
 @export var is_ghost := false
 
 var _chunks: Array[Chunk] = []
 
 func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		station_clicked.emit(self)
+		Events.station_clicked.emit(self)
 
 func add_ore(ore_type: Ore.OreType, is_created_here: bool):
 	var new_chunk := $Chunk.duplicate()

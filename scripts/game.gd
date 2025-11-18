@@ -117,6 +117,7 @@ func _ready():
 	add_child(current_tile_marker)
 
 	Events.industry_clicked.connect(_on_industry_clicked)
+	Events.station_clicked.connect(_on_station_clicked)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
@@ -667,16 +668,35 @@ func _adjacent_stations(node: Node, stations: Array[Station]) -> Array[Station]:
 ######################################################################
 
 func _on_industry_clicked(industry: Industry):
+	if gui_state != Gui.State.SELECT:
+		return
 	current_tile_marker.visible = true
 	_show_current_tile_marker(industry.global_position)
 	var description = industry.get_script().get_global_name()
 	if industry.consumes:
 		description += "\nConsumes: "
-		description += ", ".join(industry.consumes.map(func(ore_type): return Ore.OreType.keys()[ore_type]))
+		description += ", ".join(industry.consumes.map(Ore.get_ore_name))
 	if industry.produces:
 		description += "\nProduces: "
-		description += ", ".join(industry.produces.map(func(ore_type): return Ore.OreType.keys()[ore_type]))
+		description += ", ".join(industry.produces.map(Ore.get_ore_name))
 	gui.selection_description_label.text = description
+
+func _on_station_clicked(station: Station):
+	if gui_state != Gui.State.SELECT:
+		return
+	current_tile_marker.visible = true
+	_show_current_tile_marker(station.global_position)
+	var description = "Station\nAccepts: "
+	description += ", ".join(station.accepts().map(Ore.get_ore_name))
+	var ore_strings = []
+	for ore_type in Ore.OreType.values():
+		var count = station.get_ore_count(ore_type)
+		if count > 0:
+			ore_strings.append("%s: %s" % [Ore.get_ore_name(ore_type), count])
+	if ore_strings:
+		description += "\nContains: " + ", ".join(ore_strings)
+	gui.selection_description_label.text = description
+
 
 ######################################################################
 

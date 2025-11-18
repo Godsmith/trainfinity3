@@ -22,6 +22,9 @@ static func create(ore_type_: OreType) -> Ore:
 	ore.ore_type = ore_type_
 	ore.produces.append(ore_type_)
 	return ore
+
+static func get_ore_name(ore_type_: OreType) -> String:
+	return OreType.keys()[ore_type_]
 		
 func _ready() -> void:
 	var chunks = find_children("Chunk*", "", true, false)
