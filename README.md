@@ -36,16 +36,22 @@
 ## TODO
 
 - Select an industry to show what it is adding and producing
-	- clicking could also show what it pays for different goods
-	- fix so that Select state persists in GUI
+  - fix so that Select state persists in GUI
+  - industries have wrong names
+- Select stations to show content
+- Select trains to 
+  - show content
+  - show destinations
+- Move follow train button to after train is selected
 - Complete save and load functionality
 - Show ghost one-way-track-arrow
-- Select a train to show destinations
+- Different industries pays differently depending on distance to resource/time since 
+  last resource received?
+  - clicking an industry shows what it pays for different goods
 - costs are very harsh, money runs out quickly and rail etc is 
   expensive. Increase pay for deliveries?
 - more sound effects and music
 - disallow building out of bounds
-- expand building area
 - different prices and production rate for different goods
 - cities consume only OTHER cities' mail
 - help menu showing the controls

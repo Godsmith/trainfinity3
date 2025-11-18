@@ -15,46 +15,49 @@ offset_top = 61.0
 offset_right = -76.0
 offset_bottom = -165.0
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
-offset_right = 89.0
-offset_bottom = 31.0
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
 
-[node name="SelectButton" type="Button" parent="HBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="SelectButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 focus_mode = 0
 toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "Select"
 
-[node name="TrackButton" type="Button" parent="HBoxContainer"]
+[node name="TrackButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 focus_mode = 0
 toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "Track"
 
-[node name="OneWayTrackButton" type="Button" parent="HBoxContainer"]
+[node name="OneWayTrackButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 focus_mode = 0
 toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "One way track"
 
-[node name="StationButton" type="Button" parent="HBoxContainer"]
+[node name="StationButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 focus_mode = 0
 toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "Station"
 
-[node name="TrainButton" type="Button" parent="HBoxContainer"]
+[node name="TrainButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 focus_mode = 0
 toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "Train"
 
-[node name="LightButton" type="Button" parent="HBoxContainer"]
+[node name="LightButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 visible = false
 layout_mode = 2
 focus_mode = 0
@@ -62,44 +65,49 @@ toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "Light"
 
-[node name="DestroyButton" type="Button" parent="HBoxContainer"]
+[node name="DestroyButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 focus_mode = 0
 toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "Destroy"
 
-[node name="FollowTrainButton" type="Button" parent="HBoxContainer"]
+[node name="FollowTrainButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 focus_mode = 0
 toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "Follow Train"
 
-[node name="VSeparator" type="VSeparator" parent="HBoxContainer"]
+[node name="VSeparator" type="VSeparator" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 
-[node name="Money" type="Label" parent="HBoxContainer"]
+[node name="Money" type="Label" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 text = "$0"
 
-[node name="VSeparator2" type="VSeparator" parent="HBoxContainer"]
+[node name="VSeparator2" type="VSeparator" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 
-[node name="UpgradesButton" type="Button" parent="HBoxContainer"]
+[node name="UpgradesButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 focus_mode = 0
 toggle_mode = true
 text = "Upgrades"
 
-[node name="SaveButton" type="Button" parent="HBoxContainer"]
+[node name="SaveButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 focus_mode = 0
 text = "Save"
 
-[node name="LoadButton" type="Button" parent="HBoxContainer"]
+[node name="LoadButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 focus_mode = 0
 text = "Load"
 
-[connection signal="toggled" from="HBoxContainer/UpgradesButton" to="." method="_on_upgrades_button_toggled"]
+[node name="SelectionDescription" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Description
+Second line"
+
+[connection signal="toggled" from="VBoxContainer/HBoxContainer/UpgradesButton" to="." method="_on_upgrades_button_toggled"]

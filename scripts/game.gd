@@ -93,16 +93,18 @@ func _ready():
 	GlobalBank.gui = gui
 	GlobalBank.update_gui()
 	# TODO: do not expose Gui innards this way
-	$Gui/HBoxContainer/SelectButton.connect("toggled", _on_selectbutton_toggled)
-	$Gui/HBoxContainer/TrackButton.connect("toggled", _on_trackbutton_toggled)
-	$Gui/HBoxContainer/OneWayTrackButton.connect("toggled", _on_onewaytrackbutton_toggled)
-	$Gui/HBoxContainer/StationButton.connect("toggled", _on_stationbutton_toggled)
-	$Gui/HBoxContainer/TrainButton.connect("toggled", _on_trainbutton_toggled)
-	$Gui/HBoxContainer/LightButton.connect("toggled", _on_lightbutton_toggled)
-	$Gui/HBoxContainer/DestroyButton.connect("toggled", _on_destroybutton_toggled)
-	$Gui/HBoxContainer/FollowTrainButton.connect("toggled", _on_followtrainbutton_toggled)
-	$Gui/HBoxContainer/SaveButton.connect("pressed", _on_savebutton_pressed)
-	$Gui/HBoxContainer/LoadButton.connect("pressed", _on_loadbutton_pressed)
+
+	gui.select_button.connect("toggled", _on_selectbutton_toggled)
+	gui.track_button.connect("toggled", _on_trackbutton_toggled)
+	gui.one_way_track_button.connect("toggled", _on_onewaytrackbutton_toggled)
+	gui.station_button.connect("toggled", _on_stationbutton_toggled)
+	gui.train_button.connect("toggled", _on_trainbutton_toggled)
+	gui.light_button.connect("toggled", _on_lightbutton_toggled)
+	gui.destroy_button.connect("toggled", _on_destroybutton_toggled)
+	gui.follow_train_button.connect("toggled", _on_followtrainbutton_toggled)
+	gui.save_button.connect("pressed", _on_savebutton_pressed)
+	gui.load_button.connect("pressed", _on_loadbutton_pressed)
+
 	$Timer.connect("timeout", _on_timer_timeout)
 	# Remove ghost station from groups so that it does begin to gather ore etc
 	ghost_station.remove_from_group("stations")
@@ -411,6 +413,7 @@ func _change_gui_state(new_state: Gui.State):
 	ghost_station.visible = false
 	ghost_light.visible = false
 	current_tile_marker.visible = false
+	gui.selection_description_label.text = ""
 
 	# Set platform colors
 	if new_state == Gui.State.TRAIN1:
@@ -666,7 +669,16 @@ func _adjacent_stations(node: Node, stations: Array[Station]) -> Array[Station]:
 ######################################################################
 
 func _on_industry_clicked(industry: Industry):
-	print(industry)
+	current_tile_marker.visible = true
+	_show_current_tile_marker(industry.global_position)
+	var description = industry.name
+	if industry.consumes:
+		description += "\nConsumes: "
+		description += ", ".join(industry.consumes.map(func(ore_type): return Ore.OreType.keys()[ore_type]))
+	if industry.produces:
+		description += "\nProduces: "
+		description += ", ".join(industry.produces.map(func(ore_type): return Ore.OreType.keys()[ore_type]))
+	gui.selection_description_label.text = description
 
 ######################################################################
 

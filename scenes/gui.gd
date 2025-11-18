@@ -4,16 +4,30 @@ class_name Gui
 
 enum State {NONE, SELECT, TRACK1, TRACK2, ONE_WAY_TRACK, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY1, DESTROY2, FOLLOW_TRAIN}
 
+@onready var select_button := $VBoxContainer/HBoxContainer/SelectButton
+@onready var track_button := $VBoxContainer/HBoxContainer/TrackButton
+@onready var station_button := $VBoxContainer/HBoxContainer/StationButton
+@onready var train_button := $VBoxContainer/HBoxContainer/TrainButton
+@onready var one_way_track_button := $VBoxContainer/HBoxContainer/OneWayTrackButton
+@onready var light_button := $VBoxContainer/HBoxContainer/LightButton
+@onready var destroy_button := $VBoxContainer/HBoxContainer/DestroyButton
+@onready var follow_train_button := $VBoxContainer/HBoxContainer/FollowTrainButton
+@onready var save_button := $VBoxContainer/HBoxContainer/SaveButton
+@onready var load_button := $VBoxContainer/HBoxContainer/LoadButton
+@onready var upgrades_button := $VBoxContainer/HBoxContainer/UpgradesButton
+@onready var money_label := $VBoxContainer/HBoxContainer/Money
+@onready var selection_description_label := $VBoxContainer/SelectionDescription
+
 func _ready() -> void:
 	$UpgradesMenu.close_button_clicked.connect(_upgrades_close_button_clicked)
 
 func show_money(money: int):
-	$HBoxContainer/Money.text = "$%s" % money
+	money_label.text = "$%s" % money
 
 func update_prices(prices: Dictionary[Global.Asset, float]):
-	$HBoxContainer/TrackButton.text = "Track $%s" % floori(prices[Global.Asset.TRACK])
-	$HBoxContainer/StationButton.text = "Station $%s" % floori(prices[Global.Asset.STATION])
-	$HBoxContainer/TrainButton.text = "Train $%s" % floori(prices[Global.Asset.TRAIN])
+	track_button.text = "Track $%s" % floori(prices[Global.Asset.TRACK])
+	station_button.text = "Station $%s" % floori(prices[Global.Asset.STATION])
+	train_button.text = "Train $%s" % floori(prices[Global.Asset.TRAIN])
 
 func _unpress_all():
 	for button: Button in find_children("", "Button", true):
@@ -23,15 +37,15 @@ func set_pressed_no_signal(gui_state: State):
 	_unpress_all()
 	match gui_state:
 		State.TRACK1, State.TRACK2:
-			$HBoxContainer/TrackButton.set_pressed_no_signal(true)
+			track_button.set_pressed_no_signal(true)
 		State.ONE_WAY_TRACK:
-			$HBoxContainer/OneWayTrackButton.set_pressed_no_signal(true)
+			one_way_track_button.set_pressed_no_signal(true)
 		State.STATION:
-			$HBoxContainer/StationButton.set_pressed_no_signal(true)
+			station_button.set_pressed_no_signal(true)
 		State.TRAIN1, State.TRAIN2:
-			$HBoxContainer/TrainButton.set_pressed_no_signal(true)
+			train_button.set_pressed_no_signal(true)
 		State.DESTROY2:
-			$HBoxContainer/DestroyButton.set_pressed_no_signal(true)
+			destroy_button.set_pressed_no_signal(true)
 
 
 func _on_upgrades_button_toggled(toggled_on: bool) -> void:
@@ -39,4 +53,4 @@ func _on_upgrades_button_toggled(toggled_on: bool) -> void:
 
 func _upgrades_close_button_clicked() -> void:
 	$UpgradesMenu.visible = false
-	$HBoxContainer/UpgradesButton.set_pressed_no_signal(false)
+	upgrades_button.set_pressed_no_signal(false)
