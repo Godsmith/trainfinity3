@@ -439,8 +439,6 @@ func _change_gui_state(new_state: Gui.State):
 		_reset_ghost_tracks()
 	if new_state != Gui.State.DESTROY1:
 		_hide_destroy_markers()
-	
-	gui.set_pressed_no_signal(new_state)
 
 	gui_state = new_state
 

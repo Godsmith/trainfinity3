@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://cy1ncg05prhjg" path="res://scenes/upgrades_menu.tscn" id="2_mfius"]
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_lbhrr"]
+resource_local_to_scene = false
 
 [node name="Gui" type="CanvasLayer"]
 script = ExtResource("1_efmwq")

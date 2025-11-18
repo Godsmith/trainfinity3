@@ -29,25 +29,6 @@ func update_prices(prices: Dictionary[Global.Asset, float]):
 	station_button.text = "Station $%s" % floori(prices[Global.Asset.STATION])
 	train_button.text = "Train $%s" % floori(prices[Global.Asset.TRAIN])
 
-func _unpress_all():
-	for button: Button in find_children("", "Button", true):
-		button.set_pressed_no_signal(false)
-
-func set_pressed_no_signal(gui_state: State):
-	_unpress_all()
-	match gui_state:
-		State.TRACK1, State.TRACK2:
-			track_button.set_pressed_no_signal(true)
-		State.ONE_WAY_TRACK:
-			one_way_track_button.set_pressed_no_signal(true)
-		State.STATION:
-			station_button.set_pressed_no_signal(true)
-		State.TRAIN1, State.TRAIN2:
-			train_button.set_pressed_no_signal(true)
-		State.DESTROY2:
-			destroy_button.set_pressed_no_signal(true)
-
-
 func _on_upgrades_button_toggled(toggled_on: bool) -> void:
 	$UpgradesMenu.visible = toggled_on
 
