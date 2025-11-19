@@ -23,6 +23,7 @@ func add_ore(ore_type: Ore.OreType, is_created_here: bool):
 	new_chunk.color = Ore.ORE_COLOR[ore_type]
 	_chunks.append(new_chunk)
 	add_child(new_chunk)
+	Events.station_content_updated.emit(self)
 
 func is_at_max_capacity():
 	return get_total_ore_count() >= MAX_CAPACITY
@@ -41,6 +42,7 @@ func remove_ore(ore_type: Ore.OreType):
 	var index = _chunks.find_custom(func(x): return x.ore_type == ore_type)
 	var chunk = _chunks.pop_at(index)
 	chunk.queue_free()
+	Events.station_content_updated.emit(self)
 
 func set_color(is_ghostly: bool, is_allowed: bool):
 	var r = 1.0

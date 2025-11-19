@@ -16,3 +16,7 @@ signal industry_clicked(industry: Industry)
 
 # Emitted when a station is clicked
 signal station_clicked(station: Station)
+
+
+# Emitted when station content is updated
+signal station_content_updated(station: Station)

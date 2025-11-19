@@ -35,7 +35,6 @@
 
 ## TODO
 
-- Station description is not updated when content changes
 - Select trains to 
   - show content
   - show destinations

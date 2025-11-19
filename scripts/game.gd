@@ -35,6 +35,7 @@ var astar = Astar.new()
 @onready var track_reservations = TrackReservations.new()
 
 var selected_platform_tile: PlatformTile = null
+var selected_station: Station = null
 
 var follow_train: Train = null
 
@@ -118,6 +119,7 @@ func _ready():
 
 	Events.industry_clicked.connect(_on_industry_clicked)
 	Events.station_clicked.connect(_on_station_clicked)
+	Events.station_content_updated.connect(_on_station_content_updated)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
@@ -415,6 +417,7 @@ func _change_gui_state(new_state: Gui.State):
 	ghost_light.visible = false
 	current_tile_marker.visible = false
 	gui.selection_description_label.text = ""
+	selected_station = null
 
 	# Set platform colors
 	if new_state == Gui.State.TRAIN1:
@@ -670,6 +673,7 @@ func _adjacent_stations(node: Node, stations: Array[Station]) -> Array[Station]:
 func _on_industry_clicked(industry: Industry):
 	if gui_state != Gui.State.SELECT:
 		return
+	selected_station = null
 	current_tile_marker.visible = true
 	_show_current_tile_marker(industry.global_position)
 	var description = industry.get_script().get_global_name()
@@ -684,19 +688,29 @@ func _on_industry_clicked(industry: Industry):
 func _on_station_clicked(station: Station):
 	if gui_state != Gui.State.SELECT:
 		return
+	selected_station = station
 	current_tile_marker.visible = true
 	_show_current_tile_marker(station.global_position)
+	_update_selected_station_info()
+
+func _on_station_content_updated(station: Station):
+	if station == selected_station:
+		_update_selected_station_info()
+
+func _update_selected_station_info():
+	if not selected_station:
+		return
 	var description = "Station\nAccepts: "
-	description += ", ".join(station.accepts().map(Ore.get_ore_name))
+	description += ", ".join(selected_station.accepts().map(Ore.get_ore_name))
 	var ore_strings = []
 	for ore_type in Ore.OreType.values():
-		var count = station.get_ore_count(ore_type)
+		var count = selected_station.get_ore_count(ore_type)
 		if count > 0:
 			ore_strings.append("%s: %s" % [Ore.get_ore_name(ore_type), count])
 	if ore_strings:
 		description += "\nContains: " + ", ".join(ore_strings)
 	gui.selection_description_label.text = description
-
+	
 
 ######################################################################
 
