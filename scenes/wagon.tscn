@@ -21,76 +21,75 @@ script = ExtResource("1_asyws")
 
 [node name="PathFollow2D" type="PathFollow2D" parent="."]
 
-[node name="RigidBody2D" type="RigidBody2D" parent="PathFollow2D"]
+[node name="Area2D" type="Area2D" parent="PathFollow2D"]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="PathFollow2D/RigidBody2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PathFollow2D/Area2D"]
 shape = SubResource("RectangleShape2D_asyws")
-disabled = true
 
-[node name="CanvasGroup" type="CanvasGroup" parent="PathFollow2D/RigidBody2D"]
+[node name="CanvasGroup" type="CanvasGroup" parent="PathFollow2D"]
 material = SubResource("ShaderMaterial_3tjt6")
 
-[node name="Polygon2D2" type="Polygon2D" parent="PathFollow2D/RigidBody2D/CanvasGroup"]
+[node name="Polygon2D2" type="Polygon2D" parent="PathFollow2D/CanvasGroup"]
 position = Vector2(-2.48524, 0.497559)
 color = Color(0.350796, 0.357471, 0.352406, 1)
 polygon = PackedVector2Array(-4.51476, 2.50244, 9.48524, 2.50244, 9.48524, -3.49756, -4.51476, -3.49756)
 uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
 
-[node name="Polygon2D" type="Polygon2D" parent="PathFollow2D/RigidBody2D/CanvasGroup"]
+[node name="Polygon2D" type="Polygon2D" parent="PathFollow2D/CanvasGroup"]
 position = Vector2(2.01408, 2.00957)
 color = Color(0.212745, 0.217409, 0.213871, 1)
 polygon = PackedVector2Array(-8.5, 0.5, 4.5, 0.5, 4.5, -4.5, -8.5, -4.5)
 uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
 
-[node name="Chunk1" parent="PathFollow2D/RigidBody2D" instance=ExtResource("2_e0vi3")]
+[node name="Chunk1" parent="PathFollow2D" instance=ExtResource("2_e0vi3")]
 visible = true
 position = Vector2(-2, 4)
 
-[node name="Chunk2" parent="PathFollow2D/RigidBody2D" instance=ExtResource("2_e0vi3")]
+[node name="Chunk2" parent="PathFollow2D" instance=ExtResource("2_e0vi3")]
 visible = true
 position = Vector2(-2, 2)
 
-[node name="Chunk3" parent="PathFollow2D/RigidBody2D" instance=ExtResource("2_e0vi3")]
+[node name="Chunk3" parent="PathFollow2D" instance=ExtResource("2_e0vi3")]
 visible = true
 position = Vector2(0, 4)
 
-[node name="Chunk4" parent="PathFollow2D/RigidBody2D" instance=ExtResource("2_e0vi3")]
+[node name="Chunk4" parent="PathFollow2D" instance=ExtResource("2_e0vi3")]
 visible = true
 position = Vector2(0, 2)
 
-[node name="Chunk5" parent="PathFollow2D/RigidBody2D" instance=ExtResource("2_e0vi3")]
+[node name="Chunk5" parent="PathFollow2D" instance=ExtResource("2_e0vi3")]
 visible = true
 position = Vector2(2, 4)
 
-[node name="Chunk6" parent="PathFollow2D/RigidBody2D" instance=ExtResource("2_e0vi3")]
+[node name="Chunk6" parent="PathFollow2D" instance=ExtResource("2_e0vi3")]
 visible = true
 position = Vector2(2, 2)
 
-[node name="Chunk7" parent="PathFollow2D/RigidBody2D" instance=ExtResource("2_e0vi3")]
+[node name="Chunk7" parent="PathFollow2D" instance=ExtResource("2_e0vi3")]
 visible = true
 position = Vector2(4, 4)
 
-[node name="Chunk8" parent="PathFollow2D/RigidBody2D" instance=ExtResource("2_e0vi3")]
+[node name="Chunk8" parent="PathFollow2D" instance=ExtResource("2_e0vi3")]
 visible = true
 position = Vector2(4, 2)
 
-[node name="Chunk9" parent="PathFollow2D/RigidBody2D" instance=ExtResource("2_e0vi3")]
+[node name="Chunk9" parent="PathFollow2D" instance=ExtResource("2_e0vi3")]
 visible = true
 position = Vector2(6, 4)
 
-[node name="Chunk10" parent="PathFollow2D/RigidBody2D" instance=ExtResource("2_e0vi3")]
+[node name="Chunk10" parent="PathFollow2D" instance=ExtResource("2_e0vi3")]
 visible = true
 position = Vector2(6, 2)
 
-[node name="Chunk11" parent="PathFollow2D/RigidBody2D" instance=ExtResource("2_e0vi3")]
+[node name="Chunk11" parent="PathFollow2D" instance=ExtResource("2_e0vi3")]
 visible = true
 position = Vector2(8, 4)
 
-[node name="Chunk12" parent="PathFollow2D/RigidBody2D" instance=ExtResource("2_e0vi3")]
+[node name="Chunk12" parent="PathFollow2D" instance=ExtResource("2_e0vi3")]
 visible = true
 position = Vector2(8, 2)
 
-[node name="RedMarker" type="Polygon2D" parent="PathFollow2D/RigidBody2D"]
+[node name="RedMarker" type="Polygon2D" parent="PathFollow2D"]
 visible = false
 z_index = 1
 position = Vector2(-2, 1)
@@ -101,3 +100,5 @@ uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358,
 
 [node name="OreTimer" type="Timer" parent="."]
 wait_time = 0.1
+
+[connection signal="input_event" from="PathFollow2D/Area2D" to="." method="_on_input_event"]

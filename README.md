@@ -35,7 +35,6 @@
 
 ## TODO
 
-- Select train also when clicking wagons
 - Update contents of selected train dynamically
 - Show destinations when selecting train
 - Move follow train button to after train is selected

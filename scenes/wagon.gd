@@ -2,19 +2,23 @@ extends Path2D
 
 class_name Wagon
 
+signal wagon_clicked
+
 @onready var _chunks := find_children("Chunk*")
 @onready var max_capacity := len(_chunks)
 @onready var path_follow := $PathFollow2D
-@onready var rigid_body := $PathFollow2D/RigidBody2D
-@onready var collision_shape := $PathFollow2D/RigidBody2D/CollisionShape2D
-@onready var red_marker := $PathFollow2D/RigidBody2D/RedMarker
+@onready var red_marker := $PathFollow2D/RedMarker
 @onready var ore_timer := $OreTimer
-@onready var canvas_group := $PathFollow2D/RigidBody2D/CanvasGroup
+@onready var canvas_group := $PathFollow2D/CanvasGroup
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	for chunk in _chunks:
 		chunk.visible = false
+
+func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+		wagon_clicked.emit()
 
 func add_ore(type: Ore.OreType):
 	ore_timer.start()

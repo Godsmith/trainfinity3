@@ -62,6 +62,7 @@ func _ready() -> void:
 		var wagon = WAGON.instantiate()
 		wagons.append(wagon)
 		add_child(wagon)
+		wagon.wagon_clicked.connect(func(): train_clicked.emit(self))
 
 func _random_color() -> Color:
 	var r = 0.0
@@ -94,17 +95,6 @@ func _physics_process(_delta: float) -> void:
 	# TODO; should not be needed
 	# for wagon in wagons:
 	# 	wagon.rigid_body.position = Vector2(0.0, 0.0)
-
-func derail():
-	on_rails = false
-	rigid_body.linear_velocity = _get_linear_velocity(path_follow)
-	for wagon in wagons:
-		wagon.rigid_body.linear_velocity = _get_linear_velocity(wagon)
-		wagon.collision_shape.disabled = false
-		var global_pos = wagon.rigid_body.global_position
-		get_parent().add_child(wagon.rigid_body)
-		# Global position changes after reparenting, so need to restore it
-		wagon.rigid_body.global_position = global_pos
 
 func _process(delta):
 	# print("=before==========")
