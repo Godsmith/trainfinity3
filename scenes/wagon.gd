@@ -9,6 +9,7 @@ class_name Wagon
 @onready var collision_shape := $PathFollow2D/RigidBody2D/CollisionShape2D
 @onready var red_marker := $PathFollow2D/RigidBody2D/RedMarker
 @onready var ore_timer := $OreTimer
+@onready var canvas_group := $PathFollow2D/RigidBody2D/CanvasGroup
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -61,3 +62,6 @@ func remove_ore(ore_type):
 
 func mark_for_destruction(is_marked: bool):
 	red_marker.visible = is_marked
+
+func select(is_selected: bool):
+	canvas_group.get_material().set_shader_parameter("line_thickness", 3.0 if is_selected else 0.0)

@@ -1,12 +1,19 @@
-[gd_scene load_steps=5 format=3 uid="uid://b4kkdoufxj3o1"]
+[gd_scene load_steps=7 format=3 uid="uid://b4kkdoufxj3o1"]
 
 [ext_resource type="Script" uid="uid://dah5oi8vyt7cx" path="res://scenes/wagon.gd" id="1_asyws"]
 [ext_resource type="PackedScene" uid="uid://dfqsthsrw4g1g" path="res://scenes/industry/chunk.tscn" id="2_e0vi3"]
+[ext_resource type="Shader" uid="uid://be143cudsjr0d" path="res://scenes/train_outline.gdshader" id="2_xikgt"]
 
 [sub_resource type="Curve2D" id="Curve2D_e0vi3"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_asyws"]
 size = Vector2(14, 6)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_3tjt6"]
+resource_local_to_scene = true
+shader = ExtResource("2_xikgt")
+shader_parameter/line_colour = Color(1, 1, 1, 1)
+shader_parameter/line_thickness = 0
 
 [node name="Wagon" type="Path2D"]
 curve = SubResource("Curve2D_e0vi3")
@@ -20,13 +27,16 @@ script = ExtResource("1_asyws")
 shape = SubResource("RectangleShape2D_asyws")
 disabled = true
 
-[node name="Polygon2D2" type="Polygon2D" parent="PathFollow2D/RigidBody2D"]
+[node name="CanvasGroup" type="CanvasGroup" parent="PathFollow2D/RigidBody2D"]
+material = SubResource("ShaderMaterial_3tjt6")
+
+[node name="Polygon2D2" type="Polygon2D" parent="PathFollow2D/RigidBody2D/CanvasGroup"]
 position = Vector2(-2.48524, 0.497559)
 color = Color(0.350796, 0.357471, 0.352406, 1)
 polygon = PackedVector2Array(-4.51476, 2.50244, 9.48524, 2.50244, 9.48524, -3.49756, -4.51476, -3.49756)
 uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
 
-[node name="Polygon2D" type="Polygon2D" parent="PathFollow2D/RigidBody2D"]
+[node name="Polygon2D" type="Polygon2D" parent="PathFollow2D/RigidBody2D/CanvasGroup"]
 position = Vector2(2.01408, 2.00957)
 color = Color(0.212745, 0.217409, 0.213871, 1)
 polygon = PackedVector2Array(-8.5, 0.5, 4.5, 0.5, 4.5, -4.5, -8.5, -4.5)

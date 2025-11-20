@@ -35,10 +35,11 @@
 
 ## TODO
 
-- Select trains to 
-  - show content
-  - show destinations
+- Select train also when clicking wagons
+- Update contents of selected train dynamically
+- Show destinations when selecting train
 - Move follow train button to after train is selected
+- Update tile selection to use the same shader as when selecting trains
 - Complete save and load functionality
 - Show ghost one-way-track-arrow
 - Different industries pays differently depending on distance to resource/time since 

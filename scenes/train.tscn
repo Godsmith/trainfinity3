@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://b2t1f8rkw52mt"]
+[gd_scene load_steps=7 format=3 uid="uid://b2t1f8rkw52mt"]
 
 [ext_resource type="Script" uid="uid://bw0hnr0olk1oj" path="res://scenes/train.gd" id="1_68jl8"]
+[ext_resource type="Shader" uid="uid://be143cudsjr0d" path="res://scenes/train_outline.gdshader" id="2_d43s7"]
 
 [sub_resource type="Curve2D" id="Curve2D_68jl8"]
 
@@ -10,6 +11,12 @@ size = Vector2(12, 6)
 [sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_68jl8"]
 cull_mode = 2
 polygon = PackedVector2Array(-5.47687, -2.52878, 5.51235, -2.51152, 5.52185, 2.49494, -5.47687, 2.49494)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_6b7q7"]
+resource_local_to_scene = true
+shader = ExtResource("2_d43s7")
+shader_parameter/line_colour = Color(1, 1, 1, 1)
+shader_parameter/line_thickness = 0
 
 [node name="Train" type="Path2D" groups=["trains"]]
 z_index = -350
@@ -31,75 +38,78 @@ visible = false
 scale = Vector2(1.08557, 1.19412)
 occluder = SubResource("OccluderPolygon2D_68jl8")
 
-[node name="Polygon2D" type="Polygon2D" parent="RigidBody2D"]
-position = Vector2(-0.542049, 0.582711)
-scale = Vector2(1.08557, 1.19412)
-color = Color(0.212745, 0.217409, 0.213871, 1)
-polygon = PackedVector2Array(-5, 1.46525, -0.996554, 1.48764, -1, -2.49756, -5, -2.49756)
-uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
-
-[node name="Polygon2D6" type="Polygon2D" parent="RigidBody2D"]
-position = Vector2(5.97137, -0.617238)
-scale = Vector2(1.08557, 0.594145)
-color = Color(0.212745, 0.217409, 0.213871, 1)
-polygon = PackedVector2Array(-6, -2, -4, -2, -4, -3, -6, -3)
-uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
-
-[node name="Polygon2D7" type="Polygon2D" parent="RigidBody2D"]
-position = Vector2(9.22808, -0.617238)
-scale = Vector2(1.08557, 0.594145)
-color = Color(0.212745, 0.217409, 0.213871, 1)
-polygon = PackedVector2Array(-6, -2, -4, -2, -4, -3, -6, -3)
-uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
-
-[node name="Polygon2D8" type="Polygon2D" parent="RigidBody2D"]
-position = Vector2(5.97137, 3.52373)
-scale = Vector2(1.08557, 0.582297)
-color = Color(0.212745, 0.217409, 0.213871, 1)
-polygon = PackedVector2Array(-6, -2, -4, -2, -4, -3, -6, -3)
-uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
-
-[node name="Polygon2D9" type="Polygon2D" parent="RigidBody2D"]
-position = Vector2(9.22808, 3.52373)
-scale = Vector2(1.08557, 0.582297)
-color = Color(0.212745, 0.217409, 0.213871, 1)
-polygon = PackedVector2Array(-6, -2, -4.99606, -2, -4, -2, -4, -3, -6, -3)
-uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
-
-[node name="Polygon2D2" type="Polygon2D" parent="RigidBody2D"]
-position = Vector2(-0.542049, 0.582711)
-scale = Vector2(1.08557, 1.19412)
-color = Color(0.350796, 0.357471, 0.352406, 1)
-polygon = PackedVector2Array(-1, 1, 1.91604, 1, 6, 1, 6, -2, -1, -2)
-uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
-
-[node name="Polygon2D3" type="Polygon2D" parent="RigidBody2D"]
-position = Vector2(-0.542049, 0.582711)
-scale = Vector2(1.08557, 1.19412)
-color = Color(0.00178845, 0.00186649, 0.00180712, 1)
-polygon = PackedVector2Array(4, 0, 5, 0, 5, -1, 4, -1)
-uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
-
-[node name="Polygon2D4" type="Polygon2D" parent="RigidBody2D"]
-position = Vector2(-2.71319, 0.582711)
-scale = Vector2(1.08557, 1.19412)
-color = Color(0.644942, 0.652615, 0.646786, 1)
-polygon = PackedVector2Array(4, 0, 5, 0, 5, -1, 4, -1)
-uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
-
-[node name="Polygon2D5" type="Polygon2D" parent="RigidBody2D"]
-position = Vector2(-4.98294, 0.582711)
-scale = Vector2(1.08557, 1.19412)
-color = Color(0.644942, 0.652615, 0.646786, 1)
-polygon = PackedVector2Array(4, 0, 5, 0, 5, -1, 4, -1)
-uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
-
 [node name="RedMarker" type="Polygon2D" parent="RigidBody2D"]
 visible = false
 position = Vector2(-1.13048, 1.27854)
 scale = Vector2(1.17846, 1.42592)
 color = Color(1, 0, 0, 0.498039)
 polygon = PackedVector2Array(-4.1321, 1.20726, 6.05067, 1.20726, 6.05067, -3.00054, -4.1321, -3.00054)
+uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
+
+[node name="CanvasGroup" type="CanvasGroup" parent="RigidBody2D"]
+material = SubResource("ShaderMaterial_6b7q7")
+
+[node name="Polygon2D" type="Polygon2D" parent="RigidBody2D/CanvasGroup"]
+position = Vector2(-0.542049, 0.582711)
+scale = Vector2(1.08557, 1.19412)
+color = Color(0.212745, 0.217409, 0.213871, 1)
+polygon = PackedVector2Array(-5, 1.5, -1, 1.5, -1, -2.49756, -5, -2.49756)
+uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
+
+[node name="Polygon2D6" type="Polygon2D" parent="RigidBody2D/CanvasGroup"]
+position = Vector2(5.97137, -0.617238)
+scale = Vector2(1.08557, 0.594145)
+color = Color(0.212745, 0.217409, 0.213871, 1)
+polygon = PackedVector2Array(-6, -2, -4, -2, -4, -3, -6, -3)
+uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
+
+[node name="Polygon2D7" type="Polygon2D" parent="RigidBody2D/CanvasGroup"]
+position = Vector2(9.22808, -0.617238)
+scale = Vector2(1.08557, 0.594145)
+color = Color(0.212745, 0.217409, 0.213871, 1)
+polygon = PackedVector2Array(-6, -2, -4, -2, -4, -3, -6, -3)
+uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
+
+[node name="Polygon2D8" type="Polygon2D" parent="RigidBody2D/CanvasGroup"]
+position = Vector2(5.97137, 3.52373)
+scale = Vector2(1.08557, 0.582297)
+color = Color(0.212745, 0.217409, 0.213871, 1)
+polygon = PackedVector2Array(-6, -2, -4, -2, -4, -3, -6, -3)
+uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
+
+[node name="Polygon2D9" type="Polygon2D" parent="RigidBody2D/CanvasGroup"]
+position = Vector2(9.22808, 3.52373)
+scale = Vector2(1.08557, 0.582297)
+color = Color(0.212745, 0.217409, 0.213871, 1)
+polygon = PackedVector2Array(-6, -2, -4.99606, -2, -4, -2, -4, -3, -6, -3)
+uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
+
+[node name="Polygon2D2" type="Polygon2D" parent="RigidBody2D/CanvasGroup"]
+position = Vector2(-0.542049, 0.582711)
+scale = Vector2(1.08557, 1.19412)
+color = Color(0.350796, 0.357471, 0.352406, 1)
+polygon = PackedVector2Array(-1, 1, 1.91604, 1, 6, 1, 6, -2, -1, -2)
+uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
+
+[node name="Polygon2D3" type="Polygon2D" parent="RigidBody2D/CanvasGroup"]
+position = Vector2(-0.542049, 0.582711)
+scale = Vector2(1.08557, 1.19412)
+color = Color(0.00178845, 0.00186649, 0.00180712, 1)
+polygon = PackedVector2Array(4, 0, 5, 0, 5, -1, 4, -1)
+uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
+
+[node name="Polygon2D4" type="Polygon2D" parent="RigidBody2D/CanvasGroup"]
+position = Vector2(-2.71319, 0.582711)
+scale = Vector2(1.08557, 1.19412)
+color = Color(0.644942, 0.652615, 0.646786, 1)
+polygon = PackedVector2Array(4, 0, 5, 0, 5, -1, 4, -1)
+uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
+
+[node name="Polygon2D5" type="Polygon2D" parent="RigidBody2D/CanvasGroup"]
+position = Vector2(-4.98294, 0.582711)
+scale = Vector2(1.08557, 1.19412)
+color = Color(0.644942, 0.652615, 0.646786, 1)
+polygon = PackedVector2Array(4, 0, 5, 0, 5, -1, 4, -1)
 uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358, 112.5)
 
 [node name="OreTimer" type="Timer" parent="."]

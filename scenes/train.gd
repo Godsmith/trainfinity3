@@ -30,6 +30,7 @@ var last_delta = 0.0
 @onready var rigid_body := $RigidBody2D
 @onready var no_route_timer := $NoRouteTimer
 @onready var red_marker := $RigidBody2D/RedMarker
+@onready var canvas_group := $RigidBody2D/CanvasGroup
 
 var destinations: Array[Vector2i] = []
 var destination_index := 0
@@ -204,6 +205,13 @@ func get_train_position() -> Vector2:
 
 func _get_wagon_positions() -> Array[Vector2i]:
 	return Array(wagons.map(func(w): return Vector2i(w.path_follow.global_position.snapped(Global.TILE))), TYPE_VECTOR2I, "", null)
+
+
+func select(is_selected: bool):
+	canvas_group.get_material().set_shader_parameter("line_thickness", 3.0 if is_selected else 0.0)
+	for wagon in wagons:
+		wagon.select(is_selected)
+
 
 func mark_for_destruction(is_marked: bool):
 	red_marker.visible = is_marked
