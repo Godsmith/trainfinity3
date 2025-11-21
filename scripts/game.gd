@@ -123,6 +123,8 @@ func _ready():
 	Events.industry_clicked.connect(_on_industry_clicked)
 	Events.station_clicked.connect(_on_station_clicked)
 	Events.station_content_updated.connect(_on_station_content_updated)
+	Events.mouse_enters_track.connect(_on_mouse_enters_track)
+	Events.mouse_exits_track.connect(_on_mouse_exits_track)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
@@ -766,6 +768,16 @@ func _update_selected_train_info():
 	if ore_strings:
 		description += "\nContains: " + ", ".join(ore_strings)
 	gui.selection_description_label.text = description
+
+######################################################################
+
+func _on_mouse_enters_track(track: Track):
+	if gui_state == gui.State.ONE_WAY_TRACK:
+		track.set_highlight(true)
+
+
+func _on_mouse_exits_track(track: Track):
+	track.set_highlight(false)
 
 ######################################################################
 

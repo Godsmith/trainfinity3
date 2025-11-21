@@ -30,16 +30,16 @@ static func create(p1: Vector2i, p2: Vector2i) -> Track:
 	return track
 
 func _set_length_normal():
-	$Sleeper1/Sleeper5.visible = false
-	$Sleeper1/Sleeper6.visible = false
-	$Rail1/LongRail1.visible = false
-	$Rail1/LongRail2.visible = false
+	$CanvasGroupSleeper/Sleeper1/Sleeper5.visible = false
+	$CanvasGroupSleeper/Sleeper1/Sleeper6.visible = false
+	$CanvasGroupRail/Rail1/LongRail1.visible = false
+	$CanvasGroupRail/Rail1/LongRail2.visible = false
 
 func _set_length_extended():
-	$Sleeper1/Sleeper5.visible = true
-	$Sleeper1/Sleeper6.visible = true
-	$Rail1/LongRail1.visible = true
-	$Rail1/LongRail2.visible = true
+	$CanvasGroupSleeper/Sleeper1/Sleeper5.visible = true
+	$CanvasGroupSleeper/Sleeper1/Sleeper6.visible = true
+	$CanvasGroupRail/Rail1/LongRail1.visible = true
+	$CanvasGroupRail/Rail1/LongRail2.visible = true
 
 func set_ghostly(is_ghostly_: bool):
 	is_ghostly = is_ghostly_
@@ -64,6 +64,12 @@ func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> voi
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		track_clicked.emit(self)
 
+func _on_mouse_entered() -> void:
+	Events.mouse_enters_track.emit(self)
+
+func _on_mouse_exited() -> void:
+	Events.mouse_exits_track.emit(self)
+
 func other_position(pos: Vector2i) -> Vector2i:
 	if pos == pos1:
 		return pos2
@@ -86,3 +92,7 @@ func rotate_one_way_direction():
 		Direction.POS2_TO_POS1:
 			direction = Direction.BOTH
 			direction_arrow.visible = false
+
+func set_highlight(is_highlighted: bool):
+	for canvas_group in [$CanvasGroupSleeper, $CanvasGroupRail]:
+		canvas_group.get_material().set_shader_parameter("line_thickness", 3.0 if is_highlighted else 0.0)

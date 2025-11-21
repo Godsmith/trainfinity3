@@ -36,7 +36,6 @@
 ## TODO
 
 - Complete save and load functionality
-- Show ghost one-way-track-arrow
 - Different industries pays differently depending on distance to resource/time since 
   last resource received?
   - clicking an industry shows what it pays for different goods
