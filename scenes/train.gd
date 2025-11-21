@@ -6,6 +6,7 @@ const TRAIN = preload("res://scenes/train.tscn")
 const WAGON = preload("res://scenes/wagon.tscn")
 
 signal train_clicked(train: Train)
+signal train_content_changed(train: Train)
 
 var platform_tile_set: PlatformTileSet
 var track_set: TrackSet
@@ -63,6 +64,7 @@ func _ready() -> void:
 		wagons.append(wagon)
 		add_child(wagon)
 		wagon.wagon_clicked.connect(func(): train_clicked.emit(self))
+		wagon.wagon_content_changed.connect(func(): train_content_changed.emit(self))
 
 func _random_color() -> Color:
 	var r = 0.0

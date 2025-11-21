@@ -528,6 +528,7 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 	var train = Train.create("Train %s" % train_number, wagon_count, point_path, platform_tile_set, track_set, track_reservations, astar)
 
 	train.train_clicked.connect(_on_train_clicked)
+	train.train_content_changed.connect(_on_train_content_changed)
 	add_child(train)
 
 
@@ -568,6 +569,10 @@ func _deselect_all_trains():
 	selected_train = null
 	for train in get_tree().get_nodes_in_group("trains"):
 		train.select(false)
+
+func _on_train_content_changed(train: Train):
+	if train == selected_train:
+		_update_selected_train_info()
 
 ###################################################################################
 

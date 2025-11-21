@@ -3,6 +3,7 @@ extends Path2D
 class_name Wagon
 
 signal wagon_clicked
+signal wagon_content_changed
 
 @onready var _chunks := find_children("Chunk*")
 @onready var max_capacity := len(_chunks)
@@ -30,6 +31,7 @@ func add_ore(type: Ore.OreType):
 			chunk.ore_type = type
 			chunk.color = Ore.ORE_COLOR[type]
 			chunk.visible = true
+			wagon_content_changed.emit()
 			return
 	assert(false, "Trying to add chunk to full wagon")
 
@@ -61,6 +63,7 @@ func remove_ore(ore_type):
 	for chunk in _chunks:
 		if chunk.visible and chunk.ore_type == ore_type:
 			chunk.visible = false
+			wagon_content_changed.emit()
 			return
 	assert(false, "Trying to remove ore type that did not exist")
 
