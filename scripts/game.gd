@@ -46,6 +46,8 @@ var show_reservation_markers := false
 
 var current_tile_marker: Line2D
 
+var destination_markers: Array[Line2D]
+
 func _process(delta: float) -> void:
 	if follow_train:
 		camera.position = follow_train.get_train_position()
@@ -220,14 +222,18 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _show_current_tile_marker(pos: Vector2i):
-	current_tile_marker.clear_points()
+	_show_marker(current_tile_marker, pos)
+
+
+func _show_marker(marker: Line2D, pos: Vector2i):
+	marker.clear_points()
 	var x = pos.x - Global.TILE_SIZE / 2
 	var y = pos.y - Global.TILE_SIZE / 2
-	current_tile_marker.add_point(Vector2(x, y))
-	current_tile_marker.add_point(Vector2(x + Global.TILE_SIZE, y))
-	current_tile_marker.add_point(Vector2(x + Global.TILE_SIZE, y + Global.TILE_SIZE))
-	current_tile_marker.add_point(Vector2(x, y + Global.TILE_SIZE))
-	current_tile_marker.add_point(Vector2(x, y))
+	marker.add_point(Vector2(x, y))
+	marker.add_point(Vector2(x + Global.TILE_SIZE, y))
+	marker.add_point(Vector2(x + Global.TILE_SIZE, y + Global.TILE_SIZE))
+	marker.add_point(Vector2(x, y + Global.TILE_SIZE))
+	marker.add_point(Vector2(x, y))
 
 
 func _restrict_camera():
@@ -560,15 +566,29 @@ func _on_train_clicked(train: Train):
 		current_tile_marker.visible = false
 		selected_station = null
 		_deselect_all_trains()
+		_show_destination_markers(train)
 		selected_train = train
 		train.select(true)
 		_update_selected_train_info()
+
+
+func _show_destination_markers(train: Train):
+	for destination in train.destinations:
+		var marker = Line2D.new()
+		marker.width = 2
+		marker.default_color = Color(1.0, 1.0, 1.0, 1.0)
+		_show_marker(marker, destination)
+		destination_markers.append(marker)
+		add_child(marker)
 
 
 func _deselect_all_trains():
 	selected_train = null
 	for train in get_tree().get_nodes_in_group("trains"):
 		train.select(false)
+	while destination_markers:
+		var destination_marker = destination_markers.pop_back()
+		destination_marker.queue_free()
 
 func _on_train_content_changed(train: Train):
 	if train == selected_train:

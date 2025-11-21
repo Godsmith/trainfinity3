@@ -35,7 +35,6 @@
 
 ## TODO
 
-- Show destinations when selecting train
 - Move follow train button to after train is selected
 - Update tile selection to use the same shader as when selecting trains
 - Complete save and load functionality
