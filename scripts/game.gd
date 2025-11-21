@@ -105,7 +105,7 @@ func _ready():
 	gui.train_button.connect("toggled", _on_trainbutton_toggled)
 	gui.light_button.connect("toggled", _on_lightbutton_toggled)
 	gui.destroy_button.connect("toggled", _on_destroybutton_toggled)
-	gui.follow_train_button.connect("toggled", _on_followtrainbutton_toggled)
+	gui.follow_train_button.connect("pressed", _on_followtrainbutton_pressed)
 	gui.save_button.connect("pressed", _on_savebutton_pressed)
 	gui.load_button.connect("pressed", _on_loadbutton_pressed)
 
@@ -406,9 +406,8 @@ func _on_destroybutton_toggled(toggled_on: bool) -> void:
 	if toggled_on:
 		_change_gui_state(Gui.State.DESTROY1)
 
-func _on_followtrainbutton_toggled(toggled_on: bool) -> void:
-	if toggled_on:
-		_change_gui_state(Gui.State.FOLLOW_TRAIN)
+func _on_followtrainbutton_pressed() -> void:
+	follow_train = selected_train
 
 func _on_savebutton_pressed() -> void:
 	_save_game()
@@ -560,9 +559,7 @@ func _mark_trains_for_destruction():
 
 
 func _on_train_clicked(train: Train):
-	if gui_state == Gui.State.FOLLOW_TRAIN:
-		follow_train = train
-	elif gui_state == Gui.State.SELECT:
+	if gui_state == Gui.State.SELECT:
 		current_tile_marker.visible = false
 		selected_station = null
 		_deselect_all_trains()
@@ -570,6 +567,7 @@ func _on_train_clicked(train: Train):
 		selected_train = train
 		train.select(true)
 		_update_selected_train_info()
+		gui.set_follow_train_button_visibility(true)
 
 
 func _show_destination_markers(train: Train):
@@ -584,6 +582,7 @@ func _show_destination_markers(train: Train):
 
 func _deselect_all_trains():
 	selected_train = null
+	gui.set_follow_train_button_visibility(false)
 	for train in get_tree().get_nodes_in_group("trains"):
 		train.select(false)
 	while destination_markers:

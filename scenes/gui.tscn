@@ -73,13 +73,6 @@ toggle_mode = true
 button_group = SubResource("ButtonGroup_lbhrr")
 text = "Destroy"
 
-[node name="FollowTrainButton" type="Button" parent="VBoxContainer/HBoxContainer"]
-layout_mode = 2
-focus_mode = 0
-toggle_mode = true
-button_group = SubResource("ButtonGroup_lbhrr")
-text = "Follow Train"
-
 [node name="VSeparator" type="VSeparator" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 
@@ -110,5 +103,11 @@ text = "Load"
 layout_mode = 2
 text = "Description
 Second line"
+
+[node name="FollowTrainButton" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+focus_mode = 0
+text = "Follow Train"
 
 [connection signal="toggled" from="VBoxContainer/HBoxContainer/UpgradesButton" to="." method="_on_upgrades_button_toggled"]

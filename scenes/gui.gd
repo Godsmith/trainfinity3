@@ -2,8 +2,9 @@ extends CanvasLayer
 
 class_name Gui
 
-enum State {NONE, SELECT, TRACK1, TRACK2, ONE_WAY_TRACK, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY1, DESTROY2, FOLLOW_TRAIN}
+enum State {NONE, SELECT, TRACK1, TRACK2, ONE_WAY_TRACK, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY1, DESTROY2}
 
+@onready var follow_train_button := $VBoxContainer/FollowTrainButton
 @onready var select_button := $VBoxContainer/HBoxContainer/SelectButton
 @onready var track_button := $VBoxContainer/HBoxContainer/TrackButton
 @onready var station_button := $VBoxContainer/HBoxContainer/StationButton
@@ -11,7 +12,6 @@ enum State {NONE, SELECT, TRACK1, TRACK2, ONE_WAY_TRACK, STATION, TRAIN1, TRAIN2
 @onready var one_way_track_button := $VBoxContainer/HBoxContainer/OneWayTrackButton
 @onready var light_button := $VBoxContainer/HBoxContainer/LightButton
 @onready var destroy_button := $VBoxContainer/HBoxContainer/DestroyButton
-@onready var follow_train_button := $VBoxContainer/HBoxContainer/FollowTrainButton
 @onready var save_button := $VBoxContainer/HBoxContainer/SaveButton
 @onready var load_button := $VBoxContainer/HBoxContainer/LoadButton
 @onready var upgrades_button := $VBoxContainer/HBoxContainer/UpgradesButton
@@ -20,6 +20,7 @@ enum State {NONE, SELECT, TRACK1, TRACK2, ONE_WAY_TRACK, STATION, TRAIN1, TRAIN2
 
 func _ready() -> void:
 	$UpgradesMenu.close_button_clicked.connect(_upgrades_close_button_clicked)
+	follow_train_button.visible = false
 
 func show_money(money: int):
 	money_label.text = "$%s" % money
@@ -35,3 +36,6 @@ func _on_upgrades_button_toggled(toggled_on: bool) -> void:
 func _upgrades_close_button_clicked() -> void:
 	$UpgradesMenu.visible = false
 	upgrades_button.set_pressed_no_signal(false)
+
+func set_follow_train_button_visibility(visible_: bool):
+	follow_train_button.visible = visible_
