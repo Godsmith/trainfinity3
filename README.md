@@ -35,7 +35,6 @@
 
 ## TODO
 
-- Update tile selection to use the same shader as when selecting trains
 - Complete save and load functionality
 - Show ghost one-way-track-arrow
 - Different industries pays differently depending on distance to resource/time since 

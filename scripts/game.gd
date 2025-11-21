@@ -116,7 +116,7 @@ func _ready():
 
 	current_tile_marker = Line2D.new()
 	current_tile_marker.width = 2
-	current_tile_marker.default_color = Color(0, 0, 0, 0.2)
+	current_tile_marker.default_color = Color(1.0, 1.0, 1.0, 1.0)
 	current_tile_marker.visible = false
 	add_child(current_tile_marker)
 
