@@ -14,7 +14,11 @@ var is_allowed := true
 
 enum Direction {BOTH, POS1_TO_POS2, POS2_TO_POS1}
 
-@onready var direction_arrow = $DirectionArrow
+@onready var traffic_light_green_west = $TrafficLightGreenWest
+@onready var traffic_light_red_west = $TrafficLightRedWest
+@onready var traffic_light_green_east = $TrafficLightGreenEast
+@onready var traffic_light_red_east = $TrafficLightRedEast
+
 var direction = Direction.BOTH
 
 static func create(p1: Vector2i, p2: Vector2i) -> Track:
@@ -83,15 +87,22 @@ func rotate_one_way_direction():
 	match direction:
 		Direction.BOTH:
 			direction = Direction.POS1_TO_POS2
-			direction_arrow.visible = true
-			direction_arrow.rotation_degrees = 0.0
+			traffic_light_green_west.visible = true
+			traffic_light_red_west.visible = false
+			traffic_light_green_east.visible = false
+			traffic_light_red_east.visible = true
 		Direction.POS1_TO_POS2:
 			direction = Direction.POS2_TO_POS1
-			direction_arrow.visible = true
-			direction_arrow.rotation_degrees = 180.0
+			traffic_light_green_west.visible = false
+			traffic_light_red_west.visible = true
+			traffic_light_green_east.visible = true
+			traffic_light_red_east.visible = false
 		Direction.POS2_TO_POS1:
 			direction = Direction.BOTH
-			direction_arrow.visible = false
+			traffic_light_green_west.visible = false
+			traffic_light_red_west.visible = false
+			traffic_light_green_east.visible = false
+			traffic_light_red_east.visible = false
 
 func set_highlight(is_highlighted: bool):
 	for canvas_group in [$CanvasGroupSleeper, $CanvasGroupRail]:

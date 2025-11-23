@@ -91,11 +91,27 @@ visible = false
 position = Vector2(16, -16)
 polygon = PackedVector2Array(-8, -5, 8, -5, 8, 5, -8, 5)
 
-[node name="DirectionArrow" type="Polygon2D" parent="."]
+[node name="TrafficLightGreenWest" type="Polygon2D" parent="."]
 visible = false
-z_index = -400
-polygon = PackedVector2Array(-2.64863, -4.0492, 5.00305, -0.223356, -2.64864, 3.60249)
-uv = PackedVector2Array(-2.89942, -0.797792, 0.30986, 1.32262, -2.84211, 3.78689)
+color = Color(0, 0.768627, 0, 1)
+polygon = PackedVector2Array(-7, -5, -5, -5, -5, -3, -7, -3)
+
+[node name="TrafficLightRedWest" type="Polygon2D" parent="."]
+visible = false
+color = Color(0.768627, 0, 0, 1)
+polygon = PackedVector2Array(-7, -5, -5, -5, -5, -3, -7, -3)
+
+[node name="TrafficLightGreenEast" type="Polygon2D" parent="."]
+visible = false
+position = Vector2(12, 8)
+color = Color(0, 0.768627, 0, 1)
+polygon = PackedVector2Array(-7, -5, -5, -5, -5, -3, -7, -3)
+
+[node name="TrafficLightRedEast" type="Polygon2D" parent="."]
+visible = false
+position = Vector2(12, 8)
+color = Color(0.768627, 0, 0, 1)
+polygon = PackedVector2Array(-7, -5, -5, -5, -5, -3, -7, -3)
 
 [connection signal="input_event" from="Area2D" to="." method="_on_input_event"]
 [connection signal="mouse_entered" from="Area2D" to="." method="_on_mouse_entered"]
