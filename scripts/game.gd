@@ -678,8 +678,6 @@ func _on_timer_timeout():
 		var adjacent_stations = _adjacent_stations(industry, stations)
 		if not adjacent_stations:
 			continue
-		if adjacent_stations.all(func(s): return s.is_at_max_capacity()):
-			continue
 
 		if industry.requires_resources_to_produce:
 			# See so that each type of required resource exists at at least one station
@@ -696,10 +694,10 @@ func _on_timer_timeout():
 				for resource_type in station_from_resource_type:
 					station_from_resource_type[resource_type].remove_resource(resource_type)
 				for resource_type in industry.produces:
-					adjacent_stations.pick_random().add_resource(resource_type, true)
+					_produce_at_first_station_with_space(resource_type, adjacent_stations)
 		else:
 			for resource_type in industry.produces:
-				adjacent_stations.pick_random().add_resource(resource_type, true)
+				_produce_at_first_station_with_space(resource_type, adjacent_stations)
 			
 ######################################################################
 
@@ -708,6 +706,12 @@ func _adjacent_stations(node: Node, stations: Array[Station]) -> Array[Station]:
 	adjacent_stations.assign(stations.filter(func(station): return Global.is_orthogonally_adjacent(
 			Vector2i(station.global_position), Vector2i(node.global_position))))
 	return adjacent_stations
+
+func _produce_at_first_station_with_space(resource_type: Global.ResourceType, stations: Array[Station]):
+	for station in stations:
+		if not station.is_at_max_capacity(resource_type):
+			station.add_resource(resource_type, true)
+			break
 
 ######################################################################
 

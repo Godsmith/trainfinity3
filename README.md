@@ -39,12 +39,9 @@
 
 ## TODO
 
-- Complete save and load functionality
-- Delivering coal to a steelworks when it cannot consume it fills the steelworks
-  station with coal, which looks funny and means it cannot produce steel once it gets
-  iron. Solution ideas:
-  1.
+- Upgrade station capacity
 - Show N/A instead of MAX_INT as price of a resource when no industry is producing it
+- Complete save and load functionality
 - more sound effects and music
 - disallow building out of bounds
 - different prices and production rate for different goods
@@ -62,6 +59,39 @@
 
 ### Issues
 
+- Delivering coal to a steelworks when it cannot consume it fills the steelworks
+  station with coal, which looks funny and means it cannot produce steel once it gets
+  iron. Acceptance criteria:
+  1. Some coal must be accepted before iron is allowed
+	 - probably infinitely much coal, in case it takes time to get iron. Ok if
+	   price decreases though. Perhaps up to half (or less?) if station full?
+  2. At least some coal should be able to be kept for some time until iron is delivered
+  Solution proposals:
+  1. Have a limited per-resource capacity
+  - Feels unrealistic
+  2. Keep accepted resources in industry instead
+  - Resources in two places feels messy
+  + More realistic, stations are not really warehouses for industries
+  - would be more reason to increase station capacity
+  2.1. infinite industry capacity
+  - feels unrealistic
+  2.2 finite industry capacity
+  - feels like something you should be able to upgrade, but can't be
+  -- would still lead to the same issue if you didn't have per-resource capacity
+  3. Do not look at station max capacity when producing stuff
+  - would make it possible to create a station and just leave it there
+  4. Resource creation speed depends on the number of resources of that type in the 
+	station
+  - feels a little bit unrealistic
+  + but not too bad, makes sense that an industry should not produced stuff that 
+	can't be moved away
+  - would make the optimal choice to create multiple stations (but could be mitigated
+	by looking at all the adjacent stations)
+  - does not solve the problem of stations getting a large number of things shipped in
+  5. Allow that a train delivers more than the maximum capacity, but destroy the excess.
+  In summary, if we don't have a resource limitation per station then we can just ship 
+  in an infinite number of resources. So there needs to be a limit. But if we have a
+  total limit, you could block one type of resource with another type of resource.
 - Looks like there might still be a problem with trains picking up mail that they
   just left at a station
 - Changing a platform length to 1 puts wagon on top of train engine

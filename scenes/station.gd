@@ -2,7 +2,7 @@ extends Node2D
 
 class_name Station
 
-const MAX_CAPACITY := 24
+const MAX_CAPACITY_PER_RESOURCE := 12
 
 @export var is_ghost := false
 
@@ -13,6 +13,8 @@ func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> voi
 		Events.station_clicked.emit(self)
 
 func add_resource(resource_type: Global.ResourceType, is_created_here: bool):
+	if is_at_max_capacity(resource_type):
+		return
 	var new_chunk := $Chunk.duplicate()
 	new_chunk.is_created_here = is_created_here
 	# Some magic position numbers to not place resources too much outside. Will probably be changed anyway.
@@ -25,11 +27,8 @@ func add_resource(resource_type: Global.ResourceType, is_created_here: bool):
 	add_child(new_chunk)
 	Events.station_content_updated.emit(self)
 
-func is_at_max_capacity():
-	return get_total_resource_count() >= MAX_CAPACITY
-
-func get_total_resource_count() -> int:
-	return len(_chunks)
+func is_at_max_capacity(resource_type: Global.ResourceType):
+	return get_resource_count(resource_type) >= MAX_CAPACITY_PER_RESOURCE
 
 func get_resource_count(resource_type: Global.ResourceType) -> int:
 	return _chunks.reduce(func(accum, chunk): return accum + 1 if chunk.resource_type == resource_type else accum, 0)
