@@ -2,7 +2,7 @@ extends Node
 
 class_name UpgradeManager
 
-enum UpgradeType {PLATFORM_LENGTH, TRAIN_MAX_SPEED, TRAIN_ACCELERATION}
+enum UpgradeType {PLATFORM_LENGTH, TRAIN_MAX_SPEED, TRAIN_ACCELERATION, STATION_CAPACITY}
 
 class Upgrade:
 	var name: String
@@ -39,6 +39,7 @@ var upgrades: Dictionary[UpgradeType, Upgrade] = {
 	UpgradeType.PLATFORM_LENGTH: Upgrade.new("Platform length", [2, 3, 4, 5], [0, 100, 500, 1000]),
 	UpgradeType.TRAIN_MAX_SPEED: Upgrade.new("Train max speed", [20, 25, 30, 35], [0, 100, 500, 1000]),
 	UpgradeType.TRAIN_ACCELERATION: Upgrade.new("Train acceleration", [5, 6, 7, 8], [0, 100, 500, 1000]),
+	UpgradeType.STATION_CAPACITY: Upgrade.new("Station capacity per resource", [12, 24, 36, 48], [0, 100, 500, 1000]),
  }
 
 func get_value(type: UpgradeType):

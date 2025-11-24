@@ -39,7 +39,6 @@
 
 ## TODO
 
-- Upgrade station capacity
 - Show N/A instead of MAX_INT as price of a resource when no industry is producing it
 - Complete save and load functionality
 - more sound effects and music

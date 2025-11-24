@@ -2,8 +2,6 @@ extends Node2D
 
 class_name Station
 
-const MAX_CAPACITY_PER_RESOURCE := 12
-
 @export var is_ghost := false
 
 var _chunks: Array[Chunk] = []
@@ -28,7 +26,7 @@ func add_resource(resource_type: Global.ResourceType, is_created_here: bool):
 	Events.station_content_updated.emit(self)
 
 func is_at_max_capacity(resource_type: Global.ResourceType):
-	return get_resource_count(resource_type) >= MAX_CAPACITY_PER_RESOURCE
+	return get_resource_count(resource_type) >= Upgrades.get_value(Upgrades.UpgradeType.STATION_CAPACITY)
 
 func get_resource_count(resource_type: Global.ResourceType) -> int:
 	return _chunks.reduce(func(accum, chunk): return accum + 1 if chunk.resource_type == resource_type else accum, 0)
