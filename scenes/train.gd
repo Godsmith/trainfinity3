@@ -301,33 +301,33 @@ func _load_and_unload():
 			reversed_wagons_at_platform.append(wagon)
 	for station in platform_tile_set.stations_connected_to_platform(train_position, _get_stations()):
 		for wagon in reversed_wagons_at_platform:
-			for ore_type in station.accepts():
-				var ore_count = wagon.get_ore_count(ore_type)
-				if ore_count > 0:
-					Global.show_popup("$%s" % ore_count, train_position, self)
+			for resource_type in station.accepts():
+				var resource_count = wagon.get_resource_count(resource_type)
+				if resource_count > 0:
+					Global.show_popup("$%s" % resource_count, train_position, self)
 					AudioManager.play(AudioManager.COIN_SPLASH, global_position)
-				GlobalBank.earn(ore_count)
-				await wagon.unload_to_station(ore_type, station)
+				GlobalBank.earn(resource_count)
+				await wagon.unload_to_station(resource_type, station)
 				if not is_instance_valid(station):
 					return
 		for wagon in reversed_wagons_at_platform:
-			for ore_type in _ores_accepted_at_other_destinations(destination_index):
-				while station.get_ore_count(ore_type) > 0 and wagon.get_total_ore_count() < wagon.max_capacity:
-					station.remove_ore(ore_type)
-					await wagon.add_ore(ore_type)
+			for resource_type in _resources_accepted_at_other_destinations(destination_index):
+				while station.get_resource_count(resource_type) > 0 and wagon.get_total_resource_count() < wagon.max_capacity:
+					station.remove_resource(resource_type)
+					await wagon.add_resource(resource_type)
 					if not is_instance_valid(station):
 						return
 
 
-func _ores_accepted_at_other_destinations(this_destination_index: int) -> Array[Ore.OreType]:
-	var ore_types_dict: Dictionary[Ore.OreType, int] = {}
+func _resources_accepted_at_other_destinations(this_destination_index: int) -> Array[Global.ResourceType]:
+	var resource_types_dict: Dictionary[Global.ResourceType, int] = {}
 	for i in len(destinations):
 		if i == this_destination_index:
 			continue
 		for station in platform_tile_set.stations_connected_to_platform(destinations[i], _get_stations()):
-			for ore_type in station.accepts():
-				ore_types_dict[ore_type] = 0
-	return ore_types_dict.keys()
+			for resource_type in station.accepts():
+				resource_types_dict[resource_type] = 0
+	return resource_types_dict.keys()
 
 
 func _get_stations() -> Array[Station]:

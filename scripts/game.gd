@@ -110,7 +110,7 @@ func _ready():
 	gui.load_button.connect("pressed", _on_loadbutton_pressed)
 
 	$Timer.connect("timeout", _on_timer_timeout)
-	# Remove ghost station from groups so that it does begin to gather ore etc
+	# Remove ghost station from groups so that it does begin to gather resources etc
 	ghost_station.remove_from_group("stations")
 	ghost_station.remove_from_group("buildings")
 
@@ -682,24 +682,24 @@ func _on_timer_timeout():
 			continue
 
 		if industry.requires_resources_to_produce:
-			# See so that each type of required ore exists at at least one station
-			var station_from_ore_type: Dictionary[Ore.OreType, Station] = {}
-			for ore_type in industry.consumes:
+			# See so that each type of required resource exists at at least one station
+			var station_from_resource_type: Dictionary[Global.ResourceType, Station] = {}
+			for resource_type in industry.consumes:
 				for station: Station in adjacent_stations:
-					if station.get_ore_not_created_here_count(ore_type) > 0:
-						station_from_ore_type[ore_type] = station
+					if station.get_resource_not_created_here_count(resource_type) > 0:
+						station_from_resource_type[resource_type] = station
 						break
 
 			# If all material is available, produce.
 			# Note that is is also true if 0 material is needed
-			if len(station_from_ore_type) == len(industry.consumes):
-				for ore_type in station_from_ore_type:
-					station_from_ore_type[ore_type].remove_ore(ore_type)
-				for ore_type in industry.produces:
-					adjacent_stations.pick_random().add_ore(ore_type, true)
+			if len(station_from_resource_type) == len(industry.consumes):
+				for resource_type in station_from_resource_type:
+					station_from_resource_type[resource_type].remove_resource(resource_type)
+				for resource_type in industry.produces:
+					adjacent_stations.pick_random().add_resource(resource_type, true)
 		else:
-			for ore_type in industry.produces:
-				adjacent_stations.pick_random().add_ore(ore_type, true)
+			for resource_type in industry.produces:
+				adjacent_stations.pick_random().add_resource(resource_type, true)
 			
 ######################################################################
 
@@ -721,10 +721,10 @@ func _on_industry_clicked(industry: Industry):
 	var description = industry.get_script().get_global_name()
 	if industry.consumes:
 		description += "\nConsumes: "
-		description += ", ".join(industry.consumes.map(Ore.get_ore_name))
+		description += ", ".join(industry.consumes.map(Global.get_resource_name))
 	if industry.produces:
 		description += "\nProduces: "
-		description += ", ".join(industry.produces.map(Ore.get_ore_name))
+		description += ", ".join(industry.produces.map(Global.get_resource_name))
 	gui.selection_description_label.text = description
 
 func _on_station_clicked(station: Station):
@@ -744,29 +744,29 @@ func _update_selected_station_info():
 	if not selected_station:
 		return
 	var description = "Station\nAccepts: "
-	description += ", ".join(selected_station.accepts().map(Ore.get_ore_name))
-	var ore_strings = []
-	for ore_type in Ore.OreType.values():
-		var count = selected_station.get_ore_count(ore_type)
+	description += ", ".join(selected_station.accepts().map(Global.get_resource_name))
+	var resource_strings = []
+	for resource_type in Global.ResourceType.values():
+		var count = selected_station.get_resource_count(resource_type)
 		if count > 0:
-			ore_strings.append("%s: %s" % [Ore.get_ore_name(ore_type), count])
-	if ore_strings:
-		description += "\nContains: " + ", ".join(ore_strings)
+			resource_strings.append("%s: %s" % [Global.get_resource_name(resource_type), count])
+	if resource_strings:
+		description += "\nContains: " + ", ".join(resource_strings)
 	gui.selection_description_label.text = description
 	
 func _update_selected_train_info():
 	if not selected_train:
 		return
 	var description = selected_train.name
-	var ore_strings = []
-	for ore_type in Ore.OreType.values():
+	var resource_strings = []
+	for resource_type in Global.ResourceType.values():
 		var count = 0
 		for wagon in selected_train.wagons:
-			count += wagon.get_ore_count(ore_type)
+			count += wagon.get_resource_count(resource_type)
 		if count > 0:
-			ore_strings.append("%s: %s" % [Ore.get_ore_name(ore_type), count])
-	if ore_strings:
-		description += "\nContains: " + ", ".join(ore_strings)
+			resource_strings.append("%s: %s" % [Global.get_resource_name(resource_type), count])
+	if resource_strings:
+		description += "\nContains: " + ", ".join(resource_strings)
 	gui.selection_description_label.text = description
 
 ######################################################################

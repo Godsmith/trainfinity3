@@ -2,5 +2,5 @@ extends Polygon2D
 
 class_name Chunk
 
-var ore_type: Ore.OreType
+var resource_type: Global.ResourceType
 var is_created_here: bool

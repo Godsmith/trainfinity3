@@ -7,6 +7,7 @@ z_index = -725
 script = ExtResource("1_bih7l")
 produces = Array[int]([2])
 consumes = Array[int]([2])
+requires_resources_to_produce = null
 
 [node name="Frame" type="Polygon2D" parent="."]
 position = Vector2(-5, 7)

@@ -14,7 +14,7 @@ func _ready():
 	GlobalBank.earn(10000)
 
 	if create_ore_and_factory:
-		var ore = Ore.create(Ore.OreType.COAL)
+		var ore = Ore.create(Global.ResourceType.COAL)
 		ore.position = Vector2i(-6 * T, 3 * T)
 		add_child(ore)
 		var steelworks = STEELWORKS.instantiate()

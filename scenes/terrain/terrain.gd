@@ -114,12 +114,12 @@ func add_chunk(chunk_x: int, chunk_y: int, chunk_type: ChunkType):
 			pass
 		ChunkType.COAL:
 			if terrain_chunk.exterior_wall_positions:
-				var ore = Ore.create(Ore.OreType.COAL)
+				var ore = Ore.create(Global.ResourceType.COAL)
 				ore.position = terrain_chunk.exterior_wall_positions.pick_random()
 				add_child(ore)
 		ChunkType.IRON:
 			if terrain_chunk.exterior_wall_positions:
-				var ore = Ore.create(Ore.OreType.IRON)
+				var ore = Ore.create(Global.ResourceType.IRON)
 				ore.position = terrain_chunk.exterior_wall_positions.pick_random()
 				add_child(ore)
 		ChunkType.FACTORY:

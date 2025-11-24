@@ -8,6 +8,19 @@ const POPUP = preload("res://scenes/popup.tscn")
 
 enum Asset {TRACK, STATION, TRAIN}
 
+enum ResourceType {COAL, IRON, MAIL, WOOD, STEEL}
+
+const RESOURCE_COLOR = {
+	ResourceType.COAL: Color(0, 0, 0, 1),
+	ResourceType.IRON: Color(0.612, 0.416, 0.416, 1.0),
+	ResourceType.MAIL: Color(0.95, 0.95, 0.7, 1.0),
+	ResourceType.WOOD: Color(0.49, 0.245, 0.223, 1.0),
+	ResourceType.STEEL: Color(0.8, 0.8, 0.8, 1.0),
+}
+
+static func get_resource_name(resource_type_: ResourceType) -> String:
+	return ResourceType.keys()[resource_type_]
+		
 
 class Vector2iOrNone:
 	var value: Vector2i
