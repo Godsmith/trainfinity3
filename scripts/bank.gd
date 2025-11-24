@@ -30,7 +30,7 @@ var _free_asset_count: Dictionary[Global.Asset, int] = {
 
 const _INCREASE_FACTOR := 1.5
 
-var money := 100
+var money := 200
 var gui: Gui
 
 func update_gui():
