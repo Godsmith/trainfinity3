@@ -2,6 +2,8 @@ extends Node
 
 class_name Global
 
+const MAX_INT = 9223372036854775807
+
 const TILE_SIZE := 16
 const TILE := Vector2(TILE_SIZE, TILE_SIZE)
 const POPUP = preload("res://scenes/popup.tscn")
@@ -16,6 +18,14 @@ const RESOURCE_COLOR = {
 	ResourceType.MAIL: Color(0.95, 0.95, 0.7, 1.0),
 	ResourceType.WOOD: Color(0.49, 0.245, 0.223, 1.0),
 	ResourceType.STEEL: Color(0.8, 0.8, 0.8, 1.0),
+}
+
+const RESOURCE_PRICE_MULTIPLIER = {
+	ResourceType.COAL: 1,
+	ResourceType.IRON: 1,
+	ResourceType.MAIL: 1,
+	ResourceType.WOOD: 1,
+	ResourceType.STEEL: 2,
 }
 
 static func get_resource_name(resource_type_: ResourceType) -> String:

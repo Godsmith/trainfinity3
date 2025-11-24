@@ -304,9 +304,10 @@ func _load_and_unload():
 			for resource_type in station.accepts():
 				var resource_count = wagon.get_resource_count(resource_type)
 				if resource_count > 0:
-					Global.show_popup("$%s" % resource_count, train_position, self)
+					var money_earned = resource_count * station.get_price(resource_type)
+					Global.show_popup("$%s" % money_earned, train_position, self)
 					AudioManager.play(AudioManager.COIN_SPLASH, global_position)
-				GlobalBank.earn(resource_count)
+					GlobalBank.earn(money_earned)
 				await wagon.unload_to_station(resource_type, station)
 				if not is_instance_valid(station):
 					return

@@ -5,10 +5,14 @@
 	- Mines produce coal or iron
 	- Forests produce wood
 	- Cities produce mail
+	- Steelworks produce steel if supplied with coal and iron
 - Stations built next to consumers will accept resources:
 	- Factories accept wood and steel
-	- Steelworks accept coal and iron and produce steel
 	- Cities accept mail
+	- Steelworks accept coal and iron
+- Industries pay for resources depending on
+  - how far the closest producer is
+  - the resource tier
 - Prices increase with the number of objects built
 - Trains can turn around when stopped at platforms but not elsewhere
 - Trains avoid oncoming trains by choosing sidetracks when available
@@ -36,11 +40,11 @@
 ## TODO
 
 - Complete save and load functionality
-- Different industries pays differently depending on distance to resource/time since 
-  last resource received?
-  - clicking an industry shows what it pays for different goods
-- costs are very harsh, money runs out quickly and rail etc is 
-  expensive. Increase pay for deliveries?
+- Delivering coal to a steelworks when it cannot consume it fills the steelworks
+  station with coal, which looks funny and means it cannot produce steel once it gets
+  iron. Solution ideas:
+  1.
+- Show N/A instead of MAX_INT as price of a resource when no industry is producing it
 - more sound effects and music
 - disallow building out of bounds
 - different prices and production rate for different goods

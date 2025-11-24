@@ -58,3 +58,10 @@ func accepts() -> Array[Global.ResourceType]:
 			for resource_type in industry.consumes:
 				accepted_resource_types_dict[resource_type] = 0
 	return accepted_resource_types_dict.keys()
+
+func get_price(resource_type: Global.ResourceType) -> int:
+	for industry in get_tree().get_nodes_in_group("industries"):
+		if industry is Industry:
+			if Global.is_orthogonally_adjacent(industry.get_global_position(), position):
+				return industry.get_price(resource_type)
+	return Global.MAX_INT

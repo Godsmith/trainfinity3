@@ -719,9 +719,11 @@ func _on_industry_clicked(industry: Industry):
 	current_tile_marker.visible = true
 	_show_current_tile_marker(industry.global_position)
 	var description = industry.get_script().get_global_name()
+	var get_resource_description = func(resource_type):
+		return "%s ($%s)" % [Global.get_resource_name(resource_type), industry.get_price(resource_type)]
 	if industry.consumes:
-		description += "\nConsumes: "
-		description += ", ".join(industry.consumes.map(Global.get_resource_name))
+		description += "\nAccepts: "
+		description += ", ".join(industry.consumes.map(get_resource_description))
 	if industry.produces:
 		description += "\nProduces: "
 		description += ", ".join(industry.produces.map(Global.get_resource_name))
@@ -744,7 +746,9 @@ func _update_selected_station_info():
 	if not selected_station:
 		return
 	var description = "Station\nAccepts: "
-	description += ", ".join(selected_station.accepts().map(Global.get_resource_name))
+	var get_resource_description = func(resource_type):
+		return "%s ($%s)" % [Global.get_resource_name(resource_type), selected_station.get_price(resource_type)]
+	description += ", ".join(selected_station.accepts().map(get_resource_description))
 	var resource_strings = []
 	for resource_type in Global.ResourceType.values():
 		var count = selected_station.get_resource_count(resource_type)
