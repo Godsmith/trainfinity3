@@ -39,18 +39,21 @@
 
 ## TODO
 
+- Train does not complain about no platform at destination if target is removed
+  when it is not the active destination
 - Show N/A instead of MAX_INT as price of a resource when no industry is producing it
+- Automatically extend platforms when upgrading maximum platform length
+- Make factory produce goods and cities accept goods
 - Complete save and load functionality
 - more sound effects and music
 - disallow building out of bounds
 - different prices and production rate for different goods
-- cities consume only OTHER cities' mail
+- cities consume only OTHER cities' mail, and mail is priced accordingly
 - help menu showing the controls
 - train should mark the tile it wants to go to when it cannot find path
   - either when you select the train, or it can create a red line to the taget
 - change graphics for end of platform, so it can't look like two stations are one
   large platform
-- producers/consumers of the same resource not less apart than the longest station length (5 tiles?)
 - show ghost platforms when building station
 - show ghost platforms when building track
 - heavier trains should have slower acceleration
@@ -118,6 +121,10 @@
 ### Thinking about it
 
 - signals
+- New production chain Forest -> (WOOD) -> Paper Mill -> (PAPER) -> Printing Works -> (GOODS) -> City
+- New production chain Farm -> (GRAIN) -> Windmill -> (FLOUR) -> Bakery -> (FOOD) -> City
+- New production chain Farm -> (LIVESTOCK) -> Butcher -> (MEAT) or (FOOD) -> City?
+- New production chain Forest -> (LOGS) -> Sawmill -> (TIMBER/PLANKS) -> 
 
 ### Discarded ideas
 
