@@ -150,13 +150,6 @@ func _is_in_sharp_corner():
 	return vehicle_rotation_differences.max() > PI / 8 * 3
 
 
-## Adds the next point in a path to the current curve.
-## [br] the first point of [train_point_path] shall be at the train engine.
-## [br] assumes that [wagon_positions] has been previously populated.
-func add_next_point_to_curve(train_point_path: PackedVector2Array):
-	if len(train_point_path) > 1:
-		curve.add_point(train_point_path[1])
-
 func get_train_position() -> Vector2:
 	return path_follow.global_position
 
@@ -203,7 +196,9 @@ func _on_train_reaches_end_of_curve():
 	# Must check if the train has been deleted while we waited
 	if not is_instance_valid(self):
 		return
-	add_next_point_to_curve(point_path)
+	# I don't think condition is needed in the current code
+	#if len(point_path) > 1:
+	curve.add_point(point_path[1])
 	is_stopped = false
 	target_speed = max_speed
 
@@ -288,9 +283,10 @@ func set_new_curve_from_platform(point_path: PackedVector2Array, platform_tile_p
 		# Example: wagon 0 starts at distance 2 on the curve, since the curve
 		# starts one ahead of the train
 		wagon.path_follow.progress = path_follow.progress - (i + 1) * Global.TILE_SIZE
-	var new_point_path = point_path.slice(len(platform_tile_positions) - 1)
-	add_next_point_to_curve(new_point_path)
-	return new_point_path
+	# The below code seems to be unnecesary?
+	# var new_point_path = point_path.slice(len(platform_tile_positions) - 1)
+	# add_next_point_to_curve(new_point_path)
+	# return new_point_path
 
 
 func _adjust_reservations_to_where_train_is():
