@@ -18,7 +18,6 @@ var max_speed := 20.0
 @export var absolute_speed := 0.0
 @export var acceleration := 6.0
 @export var wagons: Array = []
-@export var is_stopped = false
 
 var on_rails := true
 # TODO: consider changing to "starting wagon count"
@@ -108,16 +107,11 @@ func _process(delta):
 	if not on_rails:
 		return
 
-	if is_stopped:
-		return
+	var is_in_sharp_corner = _is_in_sharp_corner()
+	var allowed_target_speed = min(target_speed, 5.0) if is_in_sharp_corner else target_speed
+	absolute_speed = min(absolute_speed, 5.0) if is_in_sharp_corner else absolute_speed
 
-	if _is_in_sharp_corner():
-		target_speed = 5.0
-		absolute_speed = target_speed
-	else:
-		target_speed = max_speed
-
-	if absolute_speed < target_speed:
+	if absolute_speed < allowed_target_speed:
 		absolute_speed += acceleration * delta
 
 	path_follow.progress += delta * absolute_speed
@@ -199,7 +193,6 @@ func _on_train_reaches_end_of_curve():
 	# I don't think condition is needed in the current code
 	#if len(point_path) > 1:
 	curve.add_point(point_path[1])
-	is_stopped = false
 	target_speed = max_speed
 
 
@@ -223,7 +216,6 @@ func _furthest_in_at_platform(tile: Vector2i) -> Vector2i:
 func _stop_at_platform(current_tile: Vector2i):
 	target_speed = 0.0
 	absolute_speed = 0.0
-	is_stopped = true
 	await _load_and_unload()
 	destination_index += 1
 	destination_index %= len(destinations)
@@ -238,7 +230,6 @@ func _stop_at_platform(current_tile: Vector2i):
 func _start_from_platform(current_tile: Vector2i, point_path: PackedVector2Array):
 	var platform_tile_positions = platform_tile_set.connected_ordered_platform_tile_positions(current_tile, current_tile)
 	set_new_curve_from_platform(point_path, platform_tile_positions)
-	is_stopped = false
 	target_speed = max_speed
 
 
@@ -248,7 +239,6 @@ func _ensure_target_tile_has_platform(target_tile: Vector2i, current_tile: Vecto
 		no_route_timer.start()
 		target_speed = 0.0
 		absolute_speed = 0.0
-		is_stopped = true
 		await no_route_timer.timeout
 
 
@@ -362,7 +352,6 @@ func _get_shortest_unblocked_path(target_position: Vector2i, is_at_station: bool
 			_adjust_reservations_to_where_train_is()
 			target_speed = 0.0
 			absolute_speed = 0.0
-			is_stopped = true
 			var train_emitting_signal = await Events.track_reservations_updated
 			if train_emitting_signal == self:
 				return PackedVector2Array()
