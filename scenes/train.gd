@@ -150,41 +150,6 @@ func _is_in_sharp_corner():
 	return vehicle_rotation_differences.max() > PI / 8 * 3
 
 
-## Sets a new path from the station, possibly turning train around
-## [br][point_path] is a path that goes from either end of the platform.
-## [br][platform_tile_positions] is always ordered and starting at the train position
-## [br]Returns the chopped-off point_path, so it can be used for other purposes
-func set_new_curve_from_platform(point_path: PackedVector2Array, platform_tile_positions: Array[Vector2i]):
-	# Two cases: either the next stop lies forward, or the next stop lies backwards.
-	var vector2i_point_path = Array(point_path).map(func(x): return Vector2i(x))
-	var path_indices = [vector2i_point_path.find(platform_tile_positions[0]),
-						vector2i_point_path.find(platform_tile_positions[-1])]
-	path_indices.sort()
-	# Next stop lies forward
-	if path_indices[0] == -1:
-		platform_tile_positions.reverse()
-		point_path = PackedVector2Array(platform_tile_positions) + point_path.slice(1)
-	# Next stop lies backwards
-	# do nothing, we have entire path already
-
-	curve = Curve2D.new()
-	for pos in point_path:
-		if Vector2i(pos) in platform_tile_positions:
-			curve.add_point(pos)
-
-	path_follow.progress = (len(platform_tile_positions) - 1) * Global.TILE_SIZE
-	for i in len(wagons):
-		var wagon = wagons[i]
-		wagon.curve = curve
-		# Set the progress for each wagon so that it is a number of tiles after 
-		# the train equal to the number of wagons
-		# Example: wagon 0 starts at distance 2 on the curve, since the curve
-		# starts one ahead of the train
-		wagon.path_follow.progress = path_follow.progress - (i + 1) * Global.TILE_SIZE
-	var new_point_path = point_path.slice(len(platform_tile_positions) - 1)
-	add_next_point_to_curve(new_point_path)
-	return new_point_path
-
 ## Adds the next point in a path to the current curve.
 ## [br] the first point of [train_point_path] shall be at the train engine.
 ## [br] assumes that [wagon_positions] has been previously populated.
@@ -227,37 +192,13 @@ func _on_train_reaches_end_of_curve():
 	#_adjust_reservations_to_where_train_is()
 	var destination_tile = destinations[destination_index]
 	var current_tile = Vector2i(get_train_position().snapped(Global.TILE))
-
-	var target_tile
-	if current_tile in platform_tile_set.connected_platform_tile_positions(destination_tile):
-		target_tile = _furthest_in_at_platform(destination_tile)
-		if current_tile == target_tile:
-			target_speed = 0.0
-			absolute_speed = 0.0
-			is_stopped = true
-			# Store this into a variable now in case platform is removed when waiting
-			var platform_tile_positions = platform_tile_set.connected_ordered_platform_tile_positions(current_tile, current_tile)
-			await _load_and_unload()
-			destination_index += 1
-			destination_index %= len(destinations)
-			target_tile = destinations[destination_index]
-			var point_path = await _get_shortest_unblocked_path(target_tile, true)
-			# Must check if the train has been deleted while we waited
-			if is_instance_valid(self):
-				set_new_curve_from_platform(point_path, platform_tile_positions)
-				is_stopped = false
-				target_speed = max_speed
-			return
-	else:
-		target_tile = destination_tile
-
-	while not platform_tile_set.has_platform(target_tile):
-		Global.show_popup("No platform at destination!", current_tile, self)
-		no_route_timer.start()
-		target_speed = 0.0
-		absolute_speed = 0.0
-		is_stopped = true
-		await no_route_timer.timeout
+	var target_tile = (
+		_furthest_in_at_platform(destination_tile)
+		if current_tile in platform_tile_set.connected_platform_tile_positions(destination_tile)
+		else destination_tile)
+	if current_tile == target_tile:
+		return await _stop_at_platform(current_tile)
+	await _ensure_target_tile_has_platform(target_tile, current_tile)
 	var point_path = await _get_shortest_unblocked_path(target_tile, false)
 	# Must check if the train has been deleted while we waited
 	if not is_instance_valid(self):
@@ -265,14 +206,6 @@ func _on_train_reaches_end_of_curve():
 	add_next_point_to_curve(point_path)
 	is_stopped = false
 	target_speed = max_speed
-
-
-func _adjust_reservations_to_where_train_is():
-	var positions_to_reserve: Array[Vector2i] = [Vector2i(get_train_position().snapped(Global.TILE))]
-	for pos in _get_wagon_positions():
-		positions_to_reserve.append(pos)
-	positions_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
-	track_reservations.reserve_train_positions(positions_to_reserve, self)
 
 
 func _furthest_in_at_platform(tile: Vector2i) -> Vector2i:
@@ -290,6 +223,82 @@ func _furthest_in_at_platform(tile: Vector2i) -> Vector2i:
 		_:
 			assert(false, "strange amount of degrees")
 	return Vector2i() # never hit
+
+
+func _stop_at_platform(current_tile: Vector2i):
+	target_speed = 0.0
+	absolute_speed = 0.0
+	is_stopped = true
+	await _load_and_unload()
+	destination_index += 1
+	destination_index %= len(destinations)
+	var target_tile = destinations[destination_index]
+	var point_path = await _get_shortest_unblocked_path(target_tile, true)
+	# Must check if the train has been deleted while we waited
+	if not is_instance_valid(self):
+		return
+	_start_from_platform(current_tile, point_path)
+
+
+func _start_from_platform(current_tile: Vector2i, point_path: PackedVector2Array):
+	var platform_tile_positions = platform_tile_set.connected_ordered_platform_tile_positions(current_tile, current_tile)
+	set_new_curve_from_platform(point_path, platform_tile_positions)
+	is_stopped = false
+	target_speed = max_speed
+
+
+func _ensure_target_tile_has_platform(target_tile: Vector2i, current_tile: Vector2i):
+	while not platform_tile_set.has_platform(target_tile):
+		Global.show_popup("No platform at destination!", current_tile, self)
+		no_route_timer.start()
+		target_speed = 0.0
+		absolute_speed = 0.0
+		is_stopped = true
+		await no_route_timer.timeout
+
+
+## Sets a new path from the station, possibly turning train around
+## [br][point_path] is a path that goes from either end of the platform.
+## [br][platform_tile_positions] is always ordered and starting at the train position
+## [br]Returns the chopped-off point_path, so it can be used for other purposes
+func set_new_curve_from_platform(point_path: PackedVector2Array, platform_tile_positions: Array[Vector2i]):
+	# Two cases: either the next stop lies forward, or the next stop lies backwards.
+	var vector2i_point_path = Array(point_path).map(func(x): return Vector2i(x))
+	var path_indices = [vector2i_point_path.find(platform_tile_positions[0]),
+						vector2i_point_path.find(platform_tile_positions[-1])]
+	path_indices.sort()
+	# Next stop lies forward
+	if path_indices[0] == -1:
+		platform_tile_positions.reverse()
+		point_path = PackedVector2Array(platform_tile_positions) + point_path.slice(1)
+	# Next stop lies backwards
+	# do nothing, we have entire path already
+
+	curve = Curve2D.new()
+	for pos in point_path:
+		if Vector2i(pos) in platform_tile_positions:
+			curve.add_point(pos)
+
+	path_follow.progress = (len(platform_tile_positions) - 1) * Global.TILE_SIZE
+	for i in len(wagons):
+		var wagon = wagons[i]
+		wagon.curve = curve
+		# Set the progress for each wagon so that it is a number of tiles after
+		# the train equal to the number of wagons
+		# Example: wagon 0 starts at distance 2 on the curve, since the curve
+		# starts one ahead of the train
+		wagon.path_follow.progress = path_follow.progress - (i + 1) * Global.TILE_SIZE
+	var new_point_path = point_path.slice(len(platform_tile_positions) - 1)
+	add_next_point_to_curve(new_point_path)
+	return new_point_path
+
+
+func _adjust_reservations_to_where_train_is():
+	var positions_to_reserve: Array[Vector2i] = [Vector2i(get_train_position().snapped(Global.TILE))]
+	for pos in _get_wagon_positions():
+		positions_to_reserve.append(pos)
+	positions_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
+	track_reservations.reserve_train_positions(positions_to_reserve, self)
 
 
 func _load_and_unload():
