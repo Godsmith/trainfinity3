@@ -339,11 +339,11 @@ func _get_shortest_unblocked_path(target_position: Vector2i, is_at_station: bool
 	var new_astar = astar.clone()
 	# Set wagon positions to disabled to prevent turnaround.
 	var is_turnaround_allowed = is_at_station
-	if not is_turnaround_allowed:
-		for wagon_position in _get_wagon_positions():
-			new_astar.set_position_disabled(wagon_position)
 	var is_reservation_successful = true
 	while true:
+		if not is_turnaround_allowed:
+			for wagon_position in _get_wagon_positions():
+				new_astar.set_position_disabled(wagon_position)
 		var point_path = new_astar.get_point_path(current_position, target_position)
 		# If either there is no path, or there is a path but reservation was
 		# unsuccesful, pause until track reservations are updated, after which we try to

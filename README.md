@@ -61,6 +61,7 @@
 
 ### Issues
 
+- Train starting from length 1 station going to length 2 station crashes
 - Delivering coal to a steelworks when it cannot consume it fills the steelworks
   station with coal, which looks funny and means it cannot produce steel once it gets
   iron. Acceptance criteria:
