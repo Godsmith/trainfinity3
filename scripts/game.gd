@@ -306,7 +306,7 @@ func _show_ghost_track(positions: Array[Vector2i]):
 func _illegal_track_positions(positions: Array[Vector2i]) -> Array[Vector2i]:
 	var out: Array[Vector2i] = []
 	for pos in positions:
-		if pos in terrain.obstacle_position_set:
+		if pos not in terrain.buildable_positions:
 			out.append(pos)
 	for node in get_tree().get_nodes_in_group("buildings"):
 		if Vector2i(node.position) in positions:
@@ -461,7 +461,7 @@ func _is_legal_station_position(station_position: Vector2i):
 	for node in get_tree().get_nodes_in_group("buildings"):
 		if Vector2i(node.position) == station_position:
 			return false
-	if station_position in terrain.obstacle_position_set:
+	if station_position not in terrain.buildable_positions:
 		return false
 	if track_set.has_track(station_position):
 		return false

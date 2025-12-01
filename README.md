@@ -39,14 +39,14 @@
 
 ## TODO
 
+- Complete save and load functionality
+- Main menu
 - Train does not complain about no platform at destination if target is removed
   when it is not the active destination
 - Show N/A instead of MAX_INT as price of a resource when no industry is producing it
 - Automatically extend platforms when upgrading maximum platform length
 - Make factory produce goods and cities accept goods
-- Complete save and load functionality
 - more sound effects and music
-- disallow building out of bounds
 - different prices and production rate for different goods
 - cities consume only OTHER cities' mail, and mail is priced accordingly
 - help menu showing the controls
