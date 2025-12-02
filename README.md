@@ -53,7 +53,6 @@
 - Automatically extend platforms when upgrading maximum platform length
 - Make factory produce goods and cities accept goods
 - more sound effects and music
-- disallow building out of bounds
 - different prices and production rate for different goods
 - cities consume only OTHER cities' mail, and mail is priced accordingly
 - help menu showing the controls

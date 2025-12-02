@@ -19,13 +19,11 @@ const CITY = preload("res://scenes/industry/city.tscn")
 @export_range(-1.0, 1.0) var sand_level: float = -0.1
 @export_range(-1.0, 1.0) var mountain_level: float = 0.3
 
-# When creating terrain, walls and water positions are recorded here,
+# When creating terrain, grass and sand positions are recorded here,
 # so that when building things later we can check this set to see
-# where we cannot build. Using a Dictionary as a set, since there is
+# where we can build. Using a Dictionary as a set, since there is
 # no set in Godot.
-# Untyped, since the keys are multiple types of classes and Godot does not
-# have union types.
-var obstacle_position_set: Dictionary = {}
+var buildable_positions: Dictionary[Vector2i, Node] = {}
 
 var _chunk_positions: Array[Vector2i] = []
 var _button_from_chunk_position: Dictionary[Vector2i, ExpandButton] = {}
@@ -41,6 +39,7 @@ var _button_from_chunk_position: Dictionary[Vector2i, ExpandButton] = {}
 @onready var forest_node = Node.new()
 @onready var city_node = Node.new()
 
+# Current minimum and maximum edges, used for restricting the camera
 var boundaries = Rect2i()
 
 class TerrainChunk:
@@ -137,7 +136,7 @@ func add_chunk(chunk_x: int, chunk_y: int, chunk_type: ChunkType):
 		ChunkType.CITY:
 			var possible_city_positions: Array[Vector2i] = []
 			for pos in grid_positions:
-				if pos not in obstacle_position_set:
+				if pos in buildable_positions:
 					possible_city_positions.append(pos)
 			var city_position = possible_city_positions.pick_random()
 			possible_city_positions.erase(city_position)
@@ -153,7 +152,7 @@ func add_chunk(chunk_x: int, chunk_y: int, chunk_type: ChunkType):
 			while current_size < target_size and possible_new_city_positions:
 				var new_city_position = possible_new_city_positions.pick_random()
 				possible_new_city_positions.erase(new_city_position)
-				if new_city_position not in obstacle_position_set and new_city_position not in handled_city_positions and new_city_position in grid_positions:
+				if new_city_position in buildable_positions and new_city_position not in handled_city_positions and new_city_position in grid_positions:
 					current_size += 1
 					handled_city_positions.append(new_city_position)
 					possible_new_city_positions.append_array(Global.orthogonally_adjacent(new_city_position))
@@ -197,9 +196,8 @@ func _expand_button_clicked(button: ExpandButton, chunk_x: int, chunk_y: int, ch
 func _create_terrain(grid_positions: Array[Vector2i], noise_from_position: Dictionary[Vector2i, float]) -> TerrainChunk:
 	# TODO: split into generating the terrain and actually creating the objects
 	# to be able to load terrain from save game
-	# TODO: consider just using obstacle_position_set instead of buildable_positions
 	var terrain_chunk = TerrainChunk.new()
-	var wall_positions: Array[Vector2i] = []
+	var wall_from_position: Dictionary[Vector2i, Wall] = {}
 	for pos in grid_positions:
 		var new_position = Vector2i(min(boundaries.position.x, pos.x),
 									min(boundaries.position.y, pos.y))
@@ -211,13 +209,12 @@ func _create_terrain(grid_positions: Array[Vector2i], noise_from_position: Dicti
 		var noise_level = noise_from_position[pos]
 		if noise_level < water_level:
 			var water = WATER.instantiate()
-			var water_position = pos
-			water.position = water_position
-			obstacle_position_set[water_position] = water
+			water.position = pos
 			water_node.add_child(water)
 		elif noise_level < sand_level:
 			var sand = SAND.instantiate()
 			sand.position = pos
+			buildable_positions[pos] = sand
 			sand_node.add_child(sand)
 		elif noise_level > mountain_level:
 			# Show grass under mountain
@@ -226,39 +223,30 @@ func _create_terrain(grid_positions: Array[Vector2i], noise_from_position: Dicti
 			grass_node.add_child(grass)
 
 			var wall = WALL.instantiate()
-			var wall_position = pos
-			wall.position = wall_position
-			obstacle_position_set[wall_position] = wall
+			wall.position = pos
 			wall_node.add_child(wall)
-			wall_positions.append(pos)
+			wall_from_position[pos] = wall
 		else:
-			terrain_chunk.buildable_positions.append(pos)
 			var grass = GRASS.instantiate()
 			grass.position = pos
 			grass_node.add_child(grass)
+			terrain_chunk.buildable_positions.append(pos)
+			buildable_positions[pos] = grass
 
 	# Make walls look nicer 
-	for pos in wall_positions:
-		var wall = obstacle_position_set[pos]
-		
-		var is_no_wall_to_the_west = not _west_of(pos) in obstacle_position_set or obstacle_position_set[_west_of(pos)] is not Wall
-		var is_no_wall_to_the_east = not _east_of(pos) in obstacle_position_set or obstacle_position_set[_east_of(pos)] is not Wall
-		var is_no_wall_to_the_north = not _north_of(pos) in obstacle_position_set or obstacle_position_set[_north_of(pos)] is not Wall
-		var is_no_wall_to_the_south = not _south_of(pos) in obstacle_position_set or obstacle_position_set[_south_of(pos)] is not Wall
+	for pos in wall_from_position:
+		var wall = wall_from_position[pos]
 
-		if is_no_wall_to_the_west:
+		if not _west_of(pos) in wall_from_position:
 			wall.get_node("West").visible = false
-		if is_no_wall_to_the_east:
+		if not _east_of(pos) in wall_from_position:
 			wall.get_node("East").visible = false
-		if is_no_wall_to_the_north:
+		if not _north_of(pos) in wall_from_position:
 			wall.get_node("North").visible = false
-		if is_no_wall_to_the_south:
+		if not _south_of(pos) in wall_from_position:
 			wall.get_node("South").visible = false
 
-		if (_west_of(pos) in terrain_chunk.buildable_positions or
-			_east_of(pos) in terrain_chunk.buildable_positions or
-			_north_of(pos) in terrain_chunk.buildable_positions or
-			_south_of(pos) in terrain_chunk.buildable_positions):
+		if [_west_of(pos), _east_of(pos), _north_of(pos), _south_of(pos)].any(func(pos1): return pos1 in buildable_positions):
 			terrain_chunk.exterior_wall_positions.append(pos)
 
 	return terrain_chunk
