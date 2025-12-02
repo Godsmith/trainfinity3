@@ -41,6 +41,12 @@
 
 - Complete save and load functionality
 - Main menu
+- Missions
+  	- Deliver first of each cargo
+  	- Something that requires actually working production lines:
+  	  	- Deliver 100 of each cargo
+  		- Deliver X of each cargo in Y minutes 
+  	- Missions should give a large chunk of money, or an upgrade point
 - Train does not complain about no platform at destination if target is removed
   when it is not the active destination
 - Show N/A instead of MAX_INT as price of a resource when no industry is producing it
@@ -125,7 +131,18 @@
 - New production chain Forest -> (WOOD) -> Paper Mill -> (PAPER) -> Printing Works -> (GOODS) -> City
 - New production chain Farm -> (GRAIN) -> Windmill -> (FLOUR) -> Bakery -> (FOOD) -> City
 - New production chain Farm -> (LIVESTOCK) -> Butcher -> (MEAT) or (FOOD) -> City?
-- New production chain Forest -> (LOGS) -> Sawmill -> (TIMBER/PLANKS) -> 
+- New production chain Forest -> (LOGS) -> Sawmill -> (TIMBER/PLANKS)
+- (STEEL) + (COAL) -> Smithy -> (NAILS)
+- (NAILS) + (PLANKS) -> ?
+- Move from upgrades costing money to upgrades costing upgrade points gained from achievements?
+  	- The issues with having them cost money is that you could just let everything run to earn
+  	  an infinite amount of money.
+    - Upgrades should probably cost one point for the first one, two for the second etc, since that
+      is an established pattern.
+- Production rates for individual industries could vary a bit, to encourage exploration
+- Production rates for individual industries could vary over time, either based on usage
+  or randomly
+- Temporary surges in production (X produces at a +100% rate for 30(?) minutes!)
 
 ### Discarded ideas
 
