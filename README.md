@@ -41,6 +41,12 @@
 
 - Complete save and load functionality
 - Main menu
+- New way of laying track
+  - remove drag and drop
+  - click each node
+  - pathfind between
+  - click previous node to revert
+  - click latest node again to confirm and build? or just build immediately?
 - Missions
   	- Deliver first of each cargo
   	- Something that requires actually working production lines:
