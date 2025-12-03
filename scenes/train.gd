@@ -364,11 +364,17 @@ func _get_shortest_unblocked_path(target_position: Vector2i, is_at_station: bool
 			continue
 
 
+		# point_path goes from the position of the train engine, but we want to start
+		# reserving at the position ahead of the train.
 		var reservation_point_path = point_path.slice(1)
 		# When starting from a platform, the point_path goes from the end of the platform,
-		# so we have to skip all the platform tiles before we can start reserving tiles
+		# so we have to skip all the platform tiles before we can start reserving tiles.
+		# However (and this might be a bug) this was triggered when the train was
+		# just created, and crashing since the path was just until the end of the current
+		# station. So to avoid this, do not skip the platform tiles if the path does
+		# not extend beyond the platform tiles.
 		if is_at_station:
-			while platform_tile_set.has_platform(reservation_point_path[0]):
+			while len(reservation_point_path) > 1 and platform_tile_set.has_platform(reservation_point_path[0]):
 				reservation_point_path = reservation_point_path.slice(1)
 
 		var upcoming_positions_until_next_non_intersection := _get_positions_until_next_non_intersection(reservation_point_path)
