@@ -220,7 +220,16 @@ func _get_price_at_adjacent_stations(resource_type: Global.ResourceType, train_p
 	return 0
 
 func get_train_position() -> Vector2:
-	return path_follow.global_position
+	# If the curve only has one point (for example when a train without wagons has just
+	# been created at a one-platform station), the PathFollow2D will not be at that location,
+	# but instead at (0, 0) instead, which will cause issues. To combat this, set the
+	# position to the curve position instead.
+	# This is a bit hacky, but since we might disallow trains without wagons later 
+	# anyway, there is no point in spending much time on this.
+	# This at least avoids the crash.
+	# However, this does not solve the problem completely, since a single-length train
+	# that just spawned but cannot move will be invisible.
+	return path_follow.global_position if curve.point_count > 1 else curve.get_point_position(0)
 
 
 func _get_wagon_positions() -> Array[Vector2i]:
@@ -252,6 +261,7 @@ func is_train_or_wagon_at_position(pos: Vector2i):
 func _get_new_state_at_end_of_curve() -> State:
 	var destination_tile = destinations[destination_index]
 	var current_tile = Vector2i(get_train_position().snapped(Global.TILE))
+	print_debug(current_tile)
 	var target_tile = (
 		_furthest_in_at_platform(destination_tile)
 		if current_tile in platform_tile_set.connected_platform_tile_positions(destination_tile)
@@ -304,6 +314,7 @@ func set_new_curve_from_platform(point_path: PackedVector2Array, platform_tile_p
 			curve.add_point(pos)
 
 	path_follow.progress = (len(platform_tile_positions) - 1) * Global.TILE_SIZE
+	print_debug(get_train_position())
 	for i in len(wagons):
 		var wagon = wagons[i]
 		wagon.curve = curve
