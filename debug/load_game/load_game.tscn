@@ -1,0 +1,49 @@
+[gd_scene load_steps=8 format=3 uid="uid://dfj2nfpnuipn5"]
+
+[ext_resource type="Script" uid="uid://vbrt2h3y7xje" path="res://debug/load_game/load_game.gd" id="1_bvdq7"]
+[ext_resource type="Script" uid="uid://cwmantbfhcamv" path="res://debug/load_game/terrain_with_no_chunks.gd" id="2_26bbp"]
+[ext_resource type="Script" uid="uid://d070mqp5unjky" path="res://scripts/camera_2d.gd" id="3_3jy2v"]
+[ext_resource type="PackedScene" uid="uid://vyo6h6rte1xu" path="res://scenes/gui.tscn" id="4_jlvhq"]
+[ext_resource type="PackedScene" uid="uid://rq8dlyspro46" path="res://scenes/track.tscn" id="5_5dw0i"]
+[ext_resource type="PackedScene" uid="uid://b1064yqqmy7mf" path="res://scenes/station.tscn" id="6_17o25"]
+[ext_resource type="PackedScene" uid="uid://cxgimf5dgovcu" path="res://scenes/light.tscn" id="7_ekmuy"]
+
+[node name="LoadGame" type="Node2D"]
+script = ExtResource("1_bvdq7")
+
+[node name="Terrain" type="Node2D" parent="."]
+script = ExtResource("2_26bbp")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(38, 20)
+zoom = Vector2(3, 3)
+script = ExtResource("3_3jy2v")
+
+[node name="Gui" parent="." instance=ExtResource("4_jlvhq")]
+
+[node name="Background" type="Polygon2D" parent="."]
+z_index = -900
+position = Vector2(-16, 0)
+color = Color(0.337255, 0.490196, 0.27451, 1)
+polygon = PackedVector2Array(-1008, -1024, -1008, 959.32, -1008, 1024, 1040, 1024, 1040, -1024)
+
+[node name="GhostTrack" parent="." instance=ExtResource("5_5dw0i")]
+visible = false
+modulate = Color(1, 1, 1, 0.501961)
+z_index = -200
+position = Vector2(-88, 104)
+
+[node name="GhostStation" parent="." instance=ExtResource("6_17o25")]
+visible = false
+modulate = Color(1, 1, 1, 0.501961)
+z_index = -200
+position = Vector2(-96, 56)
+is_ghost = true
+
+[node name="GhostLight" parent="." instance=ExtResource("7_ekmuy")]
+visible = false
+z_index = -200
+position = Vector2(-96, -64)
+
+[node name="Timer" type="Timer" parent="."]
+autostart = true

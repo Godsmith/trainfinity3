@@ -42,6 +42,9 @@ var _button_from_chunk_position: Dictionary[Vector2i, ExpandButton] = {}
 # Current minimum and maximum edges, used for restricting the camera
 var boundaries = Rect2i()
 
+# Used when saving the game
+var chunks: Dictionary[Vector2i, ChunkType] = {}
+
 class TerrainChunk:
 	var buildable_positions: Array[Vector2i] = []
 	var exterior_wall_positions: Array[Vector2i] = []
@@ -74,13 +77,11 @@ func _ready() -> void:
 	add_child(forest_node)
 	add_child(city_node)
 
-	_add_starting_chunks()
-
 	GlobalBank.money_changed.connect(_on_money_changed)
 	# Disable buttons
 	_on_money_changed()
 
-func _add_starting_chunks():
+func add_starting_chunks():
 	# CITY  FOREST      COAL
 	# COAL  STEELWORKS  FACTORY
 	# IRON  FOREST
@@ -97,6 +98,10 @@ func _add_starting_chunks():
 	add_chunk(1, 1, ChunkType.CITY)
 
 
+func add_random_chunk(chunk_x: int, chunk_y: int):
+	add_chunk(chunk_x, chunk_y, ChunkType.values().pick_random())
+
+
 func add_chunk(chunk_x: int, chunk_y: int, chunk_type: ChunkType):
 	update_buttons(chunk_x, chunk_y)
 	var grid_positions: Array[Vector2i] = []
@@ -107,6 +112,7 @@ func add_chunk(chunk_x: int, chunk_y: int, chunk_type: ChunkType):
 			grid_positions.append(grid_position)
 			noise_from_position[grid_position] = noise.get_noise_2d(x, y)
 	var terrain_chunk = _create_terrain(grid_positions, noise_from_position)
+	chunks[Vector2i(chunk_x, chunk_y)] = chunk_type
 
 	match chunk_type:
 		ChunkType.EMPTY:
@@ -183,14 +189,14 @@ func update_buttons(chunk_x: int, chunk_y: int):
 		var button = ExpandButton.new(2 ** (abs(chunk_x) + abs(chunk_y)) * 100)
 		button.scale = Vector2(0.4, 0.4)
 		button.position = button_position
-		var chunk_type = ChunkType.values().pick_random()
-		button.pressed.connect(_expand_button_clicked.bind(button, new_button_chunk_position.x, new_button_chunk_position.y, chunk_type))
+		button.pressed.connect(_expand_button_clicked.bind(button, new_button_chunk_position.x, new_button_chunk_position.y))
 		_button_from_chunk_position[new_button_chunk_position] = button
 		add_child(button)
 
-func _expand_button_clicked(button: ExpandButton, chunk_x: int, chunk_y: int, chunk_type: ChunkType):
+
+func _expand_button_clicked(button: ExpandButton, chunk_x: int, chunk_y: int):
 	GlobalBank.spend_money(button.cost, button.global_position)
-	add_chunk(chunk_x, chunk_y, chunk_type)
+	add_random_chunk(chunk_x, chunk_y)
 
 
 func _create_terrain(grid_positions: Array[Vector2i], noise_from_position: Dictionary[Vector2i, float]) -> TerrainChunk:

@@ -10,10 +10,12 @@ const LIGHT = preload("res://scenes/light.tscn")
 const DESTROY_MARKER = preload("res://scenes/destroy_marker.tscn")
 const DEBUG_COORDINATES = preload("res://debug/debug_coordinates.tscn")
 
-@onready var terrain = $Terrain
-@onready var ghost_track = $GhostTrack
-@onready var ghost_station = $GhostStation
-@onready var ghost_light = $GhostLight
+@onready var terrain := $Terrain
+@onready var ghost_track := $GhostTrack
+@onready var ghost_station := $GhostStation
+@onready var ghost_light := $GhostLight
+
+var randomizer_seed = randi()
 
 var gui_state := Gui.State.NONE
 var is_right_mouse_button_held_down := false
@@ -96,7 +98,10 @@ func _positions_between(start: Vector2i, stop: Vector2i) -> Array[Vector2i]:
 func _ready():
 	GlobalBank.gui = gui
 	GlobalBank.update_gui()
-	# TODO: do not expose Gui innards this way
+
+	seed(randomizer_seed)
+	terrain.noise.seed = randomizer_seed
+	terrain.add_starting_chunks()
 
 	gui.select_button.connect("toggled", _on_selectbutton_toggled)
 	gui.track_button.connect("toggled", _on_trackbutton_toggled)
@@ -796,9 +801,12 @@ func _on_mouse_exits_track(track: Track):
 func _save_game():
 	# Currently only saving tracks
 	var data = {}
+	data["randomizer_seed"] = randomizer_seed
 	data["tracks"] = track_set._tracks.values().map(func(t): return {"pos1": t.pos1, "pos2": t.pos2})
 	data["stations"] = _get_stations().map(func(s): return {"position": s.position})
 	data["trains"] = get_tree().get_nodes_in_group("trains").map(func(t): return {"destinations": t.destinations})
+	data["chunks"] = terrain.chunks
+	data["money"] = GlobalBank.money
 
 	# get_datetime_string_from_system gives strings on the form "2025-11-14 20:51:33"
 	var timestamp = Time.get_datetime_string_from_system(true, true).replace(" ", "_").replace(":", "-")
@@ -813,6 +821,12 @@ func _load_game(file_path: String):
 	#var file_path = "res://savegames/2025-11-16_19-35-32.save"
 	var save_file = FileAccess.open(file_path, FileAccess.READ)
 	var data = save_file.get_var()
+	randomizer_seed = data.randomizer_seed
+	seed(randomizer_seed)
+	terrain.noise.seed = randomizer_seed
+	# Remember that water, sand and mountain level also have to be the same
+	for pos in data.chunks:
+		terrain.add_chunk(pos.x, pos.y, data.chunks[pos])
 	for track_dict in data.tracks:
 		_show_ghost_track([track_dict["pos1"], track_dict["pos2"]])
 		_try_create_tracks()
@@ -822,3 +836,4 @@ func _load_game(file_path: String):
 		var platform1 = platform_tile_set.get_platform_tile_at(train_dict.destinations[0])
 		var platform2 = platform_tile_set.get_platform_tile_at(train_dict.destinations[1])
 		_try_create_train(platform1, platform2)
+	GlobalBank.set_money(data.money)

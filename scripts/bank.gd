@@ -74,7 +74,10 @@ func _update_prices():
 	gui.update_prices(_current_price)
 
 func earn(amount: int):
-	self.money += amount
+	set_money(money + amount)
+
+func set_money(amount: int):
+	self.money = amount
 	gui.show_money(money)
 	money_changed.emit()
 
