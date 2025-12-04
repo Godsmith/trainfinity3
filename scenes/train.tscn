@@ -114,8 +114,10 @@ uv = PackedVector2Array(-351, -160.5, 241, -161.5, 382, -32.5, 263, 110.5, -358,
 
 [node name="OreTimer" type="Timer" parent="."]
 wait_time = 0.1
+one_shot = true
 
 [node name="NoRouteTimer" type="Timer" parent="."]
 wait_time = 5.0
+one_shot = true
 
 [connection signal="input_event" from="RigidBody2D" to="." method="_on_input_event"]

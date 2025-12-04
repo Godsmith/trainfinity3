@@ -9,7 +9,6 @@ signal wagon_content_changed
 @onready var max_capacity := len(_chunks)
 @onready var path_follow := $PathFollow2D
 @onready var red_marker := $PathFollow2D/RedMarker
-@onready var resource_timer := $OreTimer
 @onready var canvas_group := $PathFollow2D/CanvasGroup
 
 # Called when the node enters the scene tree for the first time.
@@ -22,8 +21,6 @@ func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> voi
 		wagon_clicked.emit()
 
 func add_resource(type: Global.ResourceType):
-	resource_timer.start()
-	await resource_timer.timeout
 	var reversed_chunks = _chunks.duplicate()
 	reversed_chunks.reverse()
 	for chunk in reversed_chunks:
@@ -53,13 +50,12 @@ func get_resource_count(resource_type: Global.ResourceType) -> int:
 	return count
 
 func unload_to_station(resource_type: Global.ResourceType, station: Station):
-	while get_resource_count(resource_type) > 0:
-		await remove_resource(resource_type)
-		station.add_resource(resource_type, false)
+	if get_resource_count(resource_type) == 0:
+		assert(false, "Trying to remove ore type that did not exist")
+	station.add_resource(resource_type, false)
+	remove_resource(resource_type)
 
 func remove_resource(resource_type):
-	resource_timer.start()
-	await resource_timer.timeout
 	for chunk in _chunks:
 		if chunk.visible and chunk.resource_type == resource_type:
 			chunk.visible = false

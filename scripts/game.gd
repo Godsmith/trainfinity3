@@ -342,7 +342,9 @@ func _try_create_tracks():
 		astar.connect_positions(ghost_track_tile_positions[i - 1], ghost_track_tile_positions[i])
 	GlobalBank.buy(Global.Asset.TRACK, new_track_count, ghost_tracks[-1].global_position)
 	platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(ghost_track_tile_positions, _get_stations(), _create_platform_tile)
-	Events.track_reservations_updated.emit()
+	# Makes trains waiting for reservations to change find new paths
+	# TODO: Find a more elegant way to do this, or at least better naming.
+	track_reservations.reservation_number += 1
 	ghost_tracks.clear()
 
 func _reset_ghost_tracks():
@@ -361,7 +363,9 @@ func _destroy_track(positions: Array[Vector2i]):
 			track_set.erase(track)
 	# Might not work, since we have already removed the tracks?
 	platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(track_positions.keys(), _get_stations(), _create_platform_tile)
-	Events.track_reservations_updated.emit()
+	# Makes trains waiting for reservations to change find new paths
+	# TODO: Find a more elegant way to do this, or at least better naming.
+	track_reservations.reservation_number += 1
 
 ##################################################################
 
@@ -376,7 +380,9 @@ func _on_track_clicked(track: Track):
 				astar.connect_positions(track.pos1, track.pos2, false)
 			track.Direction.POS2_TO_POS1:
 				astar.connect_positions(track.pos2, track.pos1, false)
-		Events.track_reservations_updated.emit()
+		# Makes trains waiting for reservations to change find new paths
+		# TODO: Find a more elegant way to do this, or at least better naming.
+		track_reservations.reservation_number += 1
 
 ##################################################################
 
@@ -538,9 +544,7 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 	train.train_content_changed.connect(_on_train_content_changed)
 	add_child(train)
 
-
 	train.set_new_curve_from_platform(point_path, platform_tile_set.connected_ordered_platform_tile_positions(point_path[0], point_path[0]))
-	train._on_train_reaches_end_of_curve()
 
 	# Need to do this after curve has been set, or it will be in the wrong position
 	GlobalBank.buy(Global.Asset.TRAIN, 1, train.get_train_position())

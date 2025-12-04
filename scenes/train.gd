@@ -8,6 +8,10 @@ const WAGON = preload("res://scenes/wagon.tscn")
 signal train_clicked(train: Train)
 signal train_content_changed(train: Train)
 
+enum State {RUNNING, LOADING, WAITING_FOR_TRACK_RESERVATION_CHANGE, WAITING_FOR_MISSING_PLATFORM, STARTING_FROM_PLATFORM}
+
+var state: State = State.RUNNING
+var last_known_reservation_number = 0
 var platform_tile_set: PlatformTileSet
 var track_set: TrackSet
 var track_reservations: TrackReservations
@@ -31,6 +35,7 @@ var last_delta = 0.0
 @onready var no_route_timer := $NoRouteTimer
 @onready var red_marker := $RigidBody2D/RedMarker
 @onready var canvas_group := $RigidBody2D/CanvasGroup
+@onready var ore_timer := $OreTimer
 
 var destinations: Array[Vector2i] = []
 var destination_index := 0
@@ -118,16 +123,37 @@ func _process(delta):
 	for wagon in wagons:
 		wagon.path_follow.progress += delta * absolute_speed
 
-	# Check if we are reaching the end of curve the NEXT frame, in order to not get
-	# stop-start behavior. This makes the train jump forward slightly though, so it is
-	# still not ideal.
-	if path_follow.progress + delta * absolute_speed >= curve.get_baked_length():
-		_on_train_reaches_end_of_curve()
-	# print("=after==========")
-	# print(wagons[0].path_follow.position)
-	# print(wagons[0].rigid_body.position)
-	# print(wagons[1].path_follow.position)
-	# print(wagons[1].rigid_body.position)
+	match state:
+		State.RUNNING:
+			# Check if we are reaching the end of curve the NEXT frame, in order to not get
+			# stop-start behavior. This makes the train jump forward slightly though, so it is
+			# still not ideal.
+			if path_follow.progress + delta * absolute_speed >= curve.get_baked_length():
+				var new_state = _get_new_state_at_end_of_curve()
+				if new_state != State.RUNNING:
+					_change_state(new_state)
+		State.WAITING_FOR_MISSING_PLATFORM:
+			if no_route_timer.is_stopped():
+				var target_tile = destinations[destination_index]
+				if platform_tile_set.has_platform(target_tile):
+					_change_state(State.RUNNING)
+				else:
+					_change_state(State.WAITING_FOR_MISSING_PLATFORM)
+		State.LOADING:
+			if not ore_timer.is_stopped():
+				return
+			var has_loaded_or_unloaded = _load_and_unload()
+			if has_loaded_or_unloaded:
+				ore_timer.start()
+			else:
+				destination_index += 1
+				destination_index %= len(destinations)
+				_change_state(_try_set_new_curve_and_return_new_state(destinations[destination_index], true))
+		State.WAITING_FOR_TRACK_RESERVATION_CHANGE:
+			if track_reservations.reservation_number > last_known_reservation_number:
+				last_known_reservation_number = track_reservations.reservation_number
+				_change_state(_try_set_new_curve_and_return_new_state(destinations[destination_index], false))
+
 
 func _is_in_sharp_corner():
 	if len(wagons) == 0:
@@ -144,8 +170,58 @@ func _is_in_sharp_corner():
 	return vehicle_rotation_differences.max() > PI / 8 * 3
 
 
+func _change_state(new_state: State):
+	print("%s %s" % [name, State.keys()[state]])
+	match new_state:
+		State.RUNNING:
+			target_speed = max_speed
+		State.LOADING:
+			target_speed = 0.0
+			absolute_speed = 0.0
+			_get_money_for_cargo()
+		State.WAITING_FOR_MISSING_PLATFORM:
+			var current_tile = Vector2i(get_train_position().snapped(Global.TILE))
+			Global.show_popup("No platform at destination!", current_tile, self)
+			no_route_timer.start()
+			target_speed = 0.0
+			absolute_speed = 0.0
+		State.WAITING_FOR_TRACK_RESERVATION_CHANGE:
+			if state != State.WAITING_FOR_TRACK_RESERVATION_CHANGE:
+				_adjust_reservations_to_where_train_is()
+				target_speed = 0.0
+				absolute_speed = 0.0
+				last_known_reservation_number = track_reservations.reservation_number
+	state = new_state
+
+
+func _get_money_for_cargo():
+	var resource_counts: Dictionary[Global.ResourceType, int] = {}
+	for resource_type in Global.ResourceType.values():
+		for wagon in wagons:
+			var resource_count = wagon.get_resource_count(resource_type)
+			if resource_count > 0:
+				if resource_type not in resource_counts:
+					resource_counts[resource_type] = 0
+				resource_counts[resource_type] += resource_count
+	var train_position = get_train_position().snapped(Global.TILE)
+	var money_earned = 0
+	for resource_type in resource_counts:
+		money_earned += resource_counts[resource_type] * _get_price_at_adjacent_stations(resource_type, train_position)
+	if money_earned > 0:
+		Global.show_popup("$%s" % money_earned, train_position, self)
+		AudioManager.play(AudioManager.COIN_SPLASH, global_position)
+		GlobalBank.earn(money_earned)
+
+
+func _get_price_at_adjacent_stations(resource_type: Global.ResourceType, train_position: Vector2i) -> int:
+	for station in platform_tile_set.stations_connected_to_platform(train_position, _get_stations()):
+		if resource_type in station.accepts():
+			return station.get_price(resource_type)
+	return 0
+
 func get_train_position() -> Vector2:
 	return path_follow.global_position
+
 
 func _get_wagon_positions() -> Array[Vector2i]:
 	return Array(wagons.map(func(w): return Vector2i(w.path_follow.global_position.snapped(Global.TILE))), TYPE_VECTOR2I, "", null)
@@ -173,10 +249,7 @@ func is_train_or_wagon_at_position(pos: Vector2i):
 	return false
 
 
-func _on_train_reaches_end_of_curve():
-	# Enabling this row creates deadlock. Not sure why this was here in the first place
-	# but commenting out this instead of removing it in case I was missing something.
-	#_adjust_reservations_to_where_train_is()
+func _get_new_state_at_end_of_curve() -> State:
 	var destination_tile = destinations[destination_index]
 	var current_tile = Vector2i(get_train_position().snapped(Global.TILE))
 	var target_tile = (
@@ -184,16 +257,11 @@ func _on_train_reaches_end_of_curve():
 		if current_tile in platform_tile_set.connected_platform_tile_positions(destination_tile)
 		else destination_tile)
 	if current_tile == target_tile:
-		return await _stop_at_platform(current_tile)
-	await _ensure_target_tile_has_platform(target_tile, current_tile)
-	var point_path = await _get_shortest_unblocked_path(target_tile, false)
-	# Must check if the train has been deleted while we waited
-	if not is_instance_valid(self):
-		return
-	# I don't think condition is needed in the current code
-	#if len(point_path) > 1:
-	curve.add_point(point_path[1])
-	target_speed = max_speed
+		return State.LOADING
+	elif not platform_tile_set.has_platform(target_tile):
+		return State.WAITING_FOR_MISSING_PLATFORM
+	else:
+		return _try_set_new_curve_and_return_new_state(target_tile, false)
 
 
 func _furthest_in_at_platform(tile: Vector2i) -> Vector2i:
@@ -211,35 +279,6 @@ func _furthest_in_at_platform(tile: Vector2i) -> Vector2i:
 		_:
 			assert(false, "strange amount of degrees")
 	return Vector2i() # never hit
-
-
-func _stop_at_platform(current_tile: Vector2i):
-	target_speed = 0.0
-	absolute_speed = 0.0
-	await _load_and_unload()
-	destination_index += 1
-	destination_index %= len(destinations)
-	var target_tile = destinations[destination_index]
-	var point_path = await _get_shortest_unblocked_path(target_tile, true)
-	# Must check if the train has been deleted while we waited
-	if not is_instance_valid(self):
-		return
-	_start_from_platform(current_tile, point_path)
-
-
-func _start_from_platform(current_tile: Vector2i, point_path: PackedVector2Array):
-	var platform_tile_positions = platform_tile_set.connected_ordered_platform_tile_positions(current_tile, current_tile)
-	set_new_curve_from_platform(point_path, platform_tile_positions)
-	target_speed = max_speed
-
-
-func _ensure_target_tile_has_platform(target_tile: Vector2i, current_tile: Vector2i):
-	while not platform_tile_set.has_platform(target_tile):
-		Global.show_popup("No platform at destination!", current_tile, self)
-		no_route_timer.start()
-		target_speed = 0.0
-		absolute_speed = 0.0
-		await no_route_timer.timeout
 
 
 ## Sets a new path from the station, possibly turning train around
@@ -287,7 +326,7 @@ func _adjust_reservations_to_where_train_is():
 	track_reservations.reserve_train_positions(positions_to_reserve, self)
 
 
-func _load_and_unload():
+func _load_and_unload() -> bool:
 	var train_position = get_train_position().snapped(Global.TILE)
 	var reversed_wagons_at_platform: Array[Wagon] = []
 	for i in wagon_count:
@@ -299,20 +338,15 @@ func _load_and_unload():
 			for resource_type in station.accepts():
 				var resource_count = wagon.get_resource_count(resource_type)
 				if resource_count > 0:
-					var money_earned = resource_count * station.get_price(resource_type)
-					Global.show_popup("$%s" % money_earned, train_position, self)
-					AudioManager.play(AudioManager.COIN_SPLASH, global_position)
-					GlobalBank.earn(money_earned)
-				await wagon.unload_to_station(resource_type, station)
-				if not is_instance_valid(station):
-					return
+					wagon.unload_to_station(resource_type, station)
+					return true
 		for wagon in reversed_wagons_at_platform:
 			for resource_type in _resources_accepted_at_other_destinations(destination_index):
-				while station.get_resource_count(resource_type) > 0 and wagon.get_total_resource_count() < wagon.max_capacity:
+				if station.get_resource_count(resource_type) > 0 and wagon.get_total_resource_count() < wagon.max_capacity:
 					station.remove_resource(resource_type)
-					await wagon.add_resource(resource_type)
-					if not is_instance_valid(station):
-						return
+					wagon.add_resource(resource_type)
+					return true
+	return false
 
 
 func _resources_accepted_at_other_destinations(this_destination_index: int) -> Array[Global.ResourceType]:
@@ -334,35 +368,20 @@ func _get_stations() -> Array[Station]:
 	return stations
 
 
-func _get_shortest_unblocked_path(target_position: Vector2i, is_at_station: bool) -> PackedVector2Array:
+func _try_set_new_curve_and_return_new_state(target_position: Vector2i, is_at_station: bool) -> State:
 	var current_position = Vector2i(get_train_position().snapped(Global.TILE))
 	var new_astar = astar.clone()
 	# Set wagon positions to disabled to prevent turnaround.
 	var is_turnaround_allowed = is_at_station
-	var is_reservation_successful = true
 	while true:
 		if not is_turnaround_allowed:
 			for wagon_position in _get_wagon_positions():
 				new_astar.set_position_disabled(wagon_position)
-		var point_path = new_astar.get_point_path(current_position, target_position)
-		# If either there is no path, or there is a path but reservation was
-		# unsuccesful, pause until track reservations are updated, after which we try to
-		# reserve again
-		if not point_path or not is_reservation_successful:
-			_adjust_reservations_to_where_train_is()
-			target_speed = 0.0
-			absolute_speed = 0.0
-			var train_emitting_signal = await Events.track_reservations_updated
-			if train_emitting_signal == self:
-				return PackedVector2Array()
-			# Must check if the train has been deleted while we waited
-			if not is_instance_valid(self):
-				return PackedVector2Array()
-			# clone astar anew, removing all blocks
-			new_astar = astar.clone()
-			is_reservation_successful = true
-			continue
 
+		var point_path = new_astar.get_point_path(current_position, target_position)
+
+		if not point_path:
+			return State.WAITING_FOR_TRACK_RESERVATION_CHANGE
 
 		# point_path goes from the position of the train engine, but we want to start
 		# reserving at the position ahead of the train.
@@ -382,15 +401,22 @@ func _get_shortest_unblocked_path(target_position: Vector2i, is_at_station: bool
 		if pos_reserved_by_other_train_or_none.has_value:
 			# Current shortest route is blocked by another train, go back and try to find another route
 			new_astar.set_position_disabled(pos_reserved_by_other_train_or_none.value)
+			continue
+		# No intersections or reserved track directly ahead, reserve and continue
+		var position_that_could_not_be_reserved_or_none = _reserve_forward_positions(upcoming_positions_until_next_non_intersection)
+		if not position_that_could_not_be_reserved_or_none.has_value:
+			if is_at_station:
+				var platform_tile_positions = platform_tile_set.connected_ordered_platform_tile_positions(current_position, current_position)
+				set_new_curve_from_platform(point_path, platform_tile_positions)
+			else:
+				curve.add_point(point_path[1])
+			return State.RUNNING
 		else:
-			# No intersections or reserved track directly ahead, reserve and continue
-			var position_that_could_not_be_reserved_or_none = _reserve_forward_positions(upcoming_positions_until_next_non_intersection)
-			if not position_that_could_not_be_reserved_or_none.has_value:
-				return point_path
-			is_reservation_successful = false
-			
-	# Just to appease syntax checker; this is never hit
-	return PackedVector2Array()
+			# I think: the train is before an intersection and the next position after intersection is reserved by a train
+			# TODO: if this is true, it can probably be made clearer.
+			return State.WAITING_FOR_TRACK_RESERVATION_CHANGE
+	# Just to appease the type checker
+	return State.RUNNING
 
 
 func _get_positions_until_next_non_intersection(positions: PackedVector2Array) -> Array[Vector2i]:
