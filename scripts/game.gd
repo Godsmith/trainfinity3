@@ -101,7 +101,6 @@ func _ready():
 
 	seed(randomizer_seed)
 	terrain.noise.seed = randomizer_seed
-	terrain.add_starting_chunks()
 
 	gui.select_button.connect("toggled", _on_selectbutton_toggled)
 	gui.track_button.connect("toggled", _on_trackbutton_toggled)
@@ -427,7 +426,7 @@ func _on_savebutton_pressed() -> void:
 
 func _on_loadbutton_pressed() -> void:
 	# Does nothing right now
-	#_load_game()
+	#_load_game_from_path()
 	pass
 
 func _change_gui_state(new_state: Gui.State):
@@ -799,7 +798,24 @@ func _on_mouse_exits_track(track: Track):
 ######################################################################
 
 func _save_game():
-	# Currently only saving tracks
+	var file_path = "user://trainfinity.save"
+	var save_file = FileAccess.open(file_path, FileAccess.WRITE)
+	save_file.store_var(_get_save_data())
+	save_file.close()
+	print("Saved game to %s" % file_path)
+
+
+func _save_game_to_project_dir():
+	# get_datetime_string_from_system gives strings on the form "2025-11-14 20:51:33"
+	var timestamp = Time.get_datetime_string_from_system(true, true).replace(" ", "_").replace(":", "-")
+	var file_path = "res://savegames/" + timestamp + ".save"
+	var save_file = FileAccess.open(file_path, FileAccess.WRITE)
+	save_file.store_var(_get_save_data())
+	save_file.close()
+	print("Saved game to %s" % file_path)
+
+
+func _get_save_data() -> Dictionary:
 	var data = {}
 	data["randomizer_seed"] = randomizer_seed
 	data["tracks"] = track_set._tracks.values().map(func(t): return {"pos1": t.pos1, "pos2": t.pos2})
@@ -807,16 +823,14 @@ func _save_game():
 	data["trains"] = get_tree().get_nodes_in_group("trains").map(func(t): return {"destinations": t.destinations})
 	data["chunks"] = terrain.chunks
 	data["money"] = GlobalBank.money
+	return data
 
-	# get_datetime_string_from_system gives strings on the form "2025-11-14 20:51:33"
-	var timestamp = Time.get_datetime_string_from_system(true, true).replace(" ", "_").replace(":", "-")
-	var file_path = "res://savegames/" + timestamp + ".save"
-	var save_file = FileAccess.open(file_path, FileAccess.WRITE)
-	save_file.store_var(data)
-	save_file.close()
-	print("Saved game to %s" % file_path)
 
-func _load_game(file_path: String):
+func load_game():
+	_load_game_from_path("user://trainfinity.save")
+
+
+func _load_game_from_path(file_path: String):
 	# file_path is typically on the form"res://savegames/foo.save"
 	#var file_path = "res://savegames/2025-11-16_19-35-32.save"
 	var save_file = FileAccess.open(file_path, FileAccess.READ)

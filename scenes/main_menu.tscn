@@ -1,4 +1,6 @@
-[gd_scene format=3 uid="uid://b4se1re7wa6d0"]
+[gd_scene load_steps=2 format=3 uid="uid://b4se1re7wa6d0"]
+
+[ext_resource type="Script" uid="uid://bl6mjvwbi3qio" path="res://scenes/main_menu.gd" id="1_l6cm7"]
 
 [node name="MainMenu" type="MarginContainer"]
 anchors_preset = 15
@@ -10,6 +12,7 @@ theme_override_constants/margin_left = 120
 theme_override_constants/margin_top = 80
 theme_override_constants/margin_right = 120
 theme_override_constants/margin_bottom = 80
+script = ExtResource("1_l6cm7")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 2
@@ -57,3 +60,6 @@ text = "🚂🚆
 fit_content = true
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[connection signal="pressed" from="HBoxContainer/VBoxContainer/VBoxContainer/Continue" to="." method="_on_continue_pressed"]
+[connection signal="pressed" from="HBoxContainer/VBoxContainer/VBoxContainer/NewGame" to="." method="_on_new_game_pressed"]

@@ -9,4 +9,4 @@ func _ready():
 
 	GlobalBank.earn(10000)
 
-	_load_game("res://debug/three_trains_blocking/three_trains_blocking.save")
+	_load_game_from_path("res://debug/three_trains_blocking/three_trains_blocking.save")

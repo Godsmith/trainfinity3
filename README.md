@@ -39,8 +39,15 @@
 
 ## TODO
 
+- Description label is visible at startup, shown "Description\nSecond line"
 - Complete save and load functionality
+  - Ask if you want to overwrite when starting new game if existing game
+  - Disable continue button if no saved game
+  - Remove load button
+  - Visual feedback after clicking save game button
 - Main menu
+- HTML5 version crashes when playing audio
+- Support two-finger panning and zooming
 - New way of laying track
   - remove drag and drop
   - click each node
