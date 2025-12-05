@@ -99,9 +99,6 @@ func _ready():
 	GlobalBank.gui = gui
 	GlobalBank.update_gui()
 
-	seed(randomizer_seed)
-	terrain.noise.seed = randomizer_seed
-
 	gui.select_button.connect("toggled", _on_selectbutton_toggled)
 	gui.track_button.connect("toggled", _on_trackbutton_toggled)
 	gui.one_way_track_button.connect("toggled", _on_onewaytrackbutton_toggled)
