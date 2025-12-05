@@ -1,6 +1,11 @@
 extends MarginContainer
 
 
+func _ready() -> void:
+	if not FileAccess.file_exists(Global.SAVE_PATH):
+		$HBoxContainer/VBoxContainer/VBoxContainer/Continue.disabled = true
+
+
 func _on_continue_pressed() -> void:
 	var game = _start_game()
 	game.load_game()

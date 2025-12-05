@@ -40,7 +40,6 @@
 ## TODO
 
 - Complete save and load functionality
-  - Disable continue button if no saved game
   - Remove load button
   - Visual feedback after clicking save game button
 - Main menu
