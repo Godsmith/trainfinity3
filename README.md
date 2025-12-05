@@ -39,9 +39,6 @@
 
 ## TODO
 
-- Complete save and load functionality
-  - Visual feedback after clicking save game button
-- Main menu
 - HTML5 version crashes when playing audio
 - Support two-finger panning and zooming
 - New way of laying track

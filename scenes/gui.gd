@@ -39,3 +39,12 @@ func _upgrades_close_button_clicked() -> void:
 
 func set_follow_train_button_visibility(visible_: bool):
 	follow_train_button.visible = visible_
+
+func show_saved_visual_feedback():
+	var original_text = save_button.text
+	save_button.text = "Saved!"
+	save_button.disabled = true
+	get_tree().create_timer(1.0).timeout.connect(func():
+		save_button.text = original_text
+		save_button.disabled = false
+	)

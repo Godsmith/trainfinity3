@@ -420,6 +420,7 @@ func _on_followtrainbutton_pressed() -> void:
 	follow_train = selected_train
 
 func _on_savebutton_pressed() -> void:
+	gui.show_saved_visual_feedback()
 	_save_game()
 
 func _change_gui_state(new_state: Gui.State):
