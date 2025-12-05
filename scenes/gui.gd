@@ -20,6 +20,7 @@ enum State {NONE, SELECT, TRACK1, TRACK2, ONE_WAY_TRACK, STATION, TRAIN1, TRAIN2
 
 func _ready() -> void:
 	$UpgradesMenu.close_button_clicked.connect(_upgrades_close_button_clicked)
+	selection_description_label.text = ""
 	follow_train_button.visible = false
 
 func show_money(money: int):
