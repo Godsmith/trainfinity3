@@ -261,7 +261,6 @@ func is_train_or_wagon_at_position(pos: Vector2i):
 func _get_new_state_at_end_of_curve() -> State:
 	var destination_tile = destinations[destination_index]
 	var current_tile = Vector2i(get_train_position().snapped(Global.TILE))
-	print_debug(current_tile)
 	var target_tile = (
 		_furthest_in_at_platform(destination_tile)
 		if current_tile in platform_tile_set.connected_platform_tile_positions(destination_tile)
@@ -314,7 +313,6 @@ func set_new_curve_from_platform(point_path: PackedVector2Array, platform_tile_p
 			curve.add_point(pos)
 
 	path_follow.progress = (len(platform_tile_positions) - 1) * Global.TILE_SIZE
-	print_debug(get_train_position())
 	for i in len(wagons):
 		var wagon = wagons[i]
 		wagon.curve = curve
