@@ -1,7 +1,7 @@
 extends Node
 
 var num_players = 8
-var bus = "master"
+var bus = "Master"
 
 var available: Array[AudioStreamPlayer2D] = [] # The available players.
 var queue: Array[_PlayTask] = [] # The queue of sounds to play.
