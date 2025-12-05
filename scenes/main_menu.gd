@@ -28,8 +28,7 @@ func _on_ok_pressed(): _start_new_game()
 
 
 func _start_new_game():
-	var game = _start_game()
-	game.terrain.add_starting_chunks()
+	_start_game().start_new_game()
 
 
 func _start_game() -> Game:

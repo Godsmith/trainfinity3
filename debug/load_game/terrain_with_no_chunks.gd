@@ -1,4 +1,4 @@
 extends Terrain
 
-func add_starting_chunks():
+func set_seed_and_add_starting_chunks(randomizer_seed: int):
 	pass

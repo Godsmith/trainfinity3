@@ -96,6 +96,8 @@ func _positions_between(start: Vector2i, stop: Vector2i) -> Array[Vector2i]:
 
 
 func _ready():
+	seed(randomizer_seed)
+
 	GlobalBank.gui = gui
 	GlobalBank.update_gui()
 
@@ -794,6 +796,10 @@ func _on_mouse_exits_track(track: Track):
 
 ######################################################################
 
+func start_new_game():
+	terrain.set_seed_and_add_starting_chunks(randomizer_seed)
+
+
 func _save_game():
 	var save_file = FileAccess.open(Global.SAVE_PATH, FileAccess.WRITE)
 	save_file.store_var(_get_save_data())
@@ -833,10 +839,8 @@ func _load_game_from_path(file_path: String):
 	var data = save_file.get_var()
 	randomizer_seed = data.randomizer_seed
 	seed(randomizer_seed)
-	terrain.noise.seed = randomizer_seed
 	# Remember that water, sand and mountain level also have to be the same
-	for pos in data.chunks:
-		terrain.add_chunk(pos.x, pos.y, data.chunks[pos])
+	terrain.set_seed_and_add_chunks(randomizer_seed, data.chunks)
 	for track_dict in data.tracks:
 		_show_ghost_track([track_dict["pos1"], track_dict["pos2"]])
 		_try_create_tracks()

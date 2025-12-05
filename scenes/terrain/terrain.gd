@@ -28,7 +28,7 @@ var buildable_positions: Dictionary[Vector2i, Node] = {}
 var _chunk_positions: Array[Vector2i] = []
 var _button_from_chunk_position: Dictionary[Vector2i, ExpandButton] = {}
 
-@onready var noise := FastNoiseLite.new()
+@onready var _noise := FastNoiseLite.new()
 	
 # Store every type of node under a separate node, since the Godot editor
 # is very slow when it has to show all nodes at ones in the tree view
@@ -66,9 +66,8 @@ func _ready() -> void:
 	# - either no mountains or water around them, or not too much, or unbroken path
 	#   from them to a corresponding consumer/producer
 	print("Starting terrain generation")
-	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
-	noise.seed = randi() # random terrain each run
-	noise.frequency = 0.05
+	_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
+	_noise.frequency = 0.05
 
 	add_child(grass_node)
 	add_child(water_node)
@@ -81,28 +80,36 @@ func _ready() -> void:
 	# Disable buttons
 	_on_money_changed()
 
-func add_starting_chunks():
+
+func set_seed_and_add_chunks(randomizer_seed: int, chunks_: Dictionary[Vector2i, ChunkType]):
+	_noise.seed = randomizer_seed
+	for pos in chunks_:
+		_add_chunk(pos.x, pos.y, chunks_[pos])
+
+
+func set_seed_and_add_starting_chunks(randomizer_seed: int):
+	_noise.seed = randomizer_seed
 	# CITY  FOREST      COAL
 	# COAL  STEELWORKS  FACTORY
-	# IRON  FOREST
-	add_chunk(-1, -1, ChunkType.CITY)
-	add_chunk(0, -1, ChunkType.FOREST)
-	add_chunk(1, -1, ChunkType.COAL)
-	add_chunk(-1, 0, ChunkType.COAL)
+	# IRON  FOREST		CITY
+	_add_chunk(-1, -1, ChunkType.CITY)
+	_add_chunk(0, -1, ChunkType.FOREST)
+	_add_chunk(1, -1, ChunkType.COAL)
+	_add_chunk(-1, 0, ChunkType.COAL)
 
-	add_chunk(0, 0, ChunkType.STEELWORKS)
+	_add_chunk(0, 0, ChunkType.STEELWORKS)
 
-	add_chunk(1, 0, ChunkType.FACTORY)
-	add_chunk(-1, 1, ChunkType.IRON)
-	add_chunk(0, 1, ChunkType.FOREST)
-	add_chunk(1, 1, ChunkType.CITY)
+	_add_chunk(1, 0, ChunkType.FACTORY)
+	_add_chunk(-1, 1, ChunkType.IRON)
+	_add_chunk(0, 1, ChunkType.FOREST)
+	_add_chunk(1, 1, ChunkType.CITY)
 
 
 func add_random_chunk(chunk_x: int, chunk_y: int):
-	add_chunk(chunk_x, chunk_y, ChunkType.values().pick_random())
+	_add_chunk(chunk_x, chunk_y, ChunkType.values().pick_random())
 
 
-func add_chunk(chunk_x: int, chunk_y: int, chunk_type: ChunkType):
+func _add_chunk(chunk_x: int, chunk_y: int, chunk_type: ChunkType):
 	update_buttons(chunk_x, chunk_y)
 	var grid_positions: Array[Vector2i] = []
 	var noise_from_position: Dictionary[Vector2i, float] = {}
@@ -110,7 +117,7 @@ func add_chunk(chunk_x: int, chunk_y: int, chunk_type: ChunkType):
 		for y in range(chunk_y * CHUNK_WIDTH - (CHUNK_WIDTH - 1) / 2, chunk_y * CHUNK_WIDTH + (CHUNK_WIDTH - 1) / 2 + 1):
 			var grid_position = Vector2i(x, y) * Global.TILE_SIZE
 			grid_positions.append(grid_position)
-			noise_from_position[grid_position] = noise.get_noise_2d(x, y)
+			noise_from_position[grid_position] = _noise.get_noise_2d(x, y)
 	var terrain_chunk = _create_terrain(grid_positions, noise_from_position)
 	chunks[Vector2i(chunk_x, chunk_y)] = chunk_type
 
