@@ -13,7 +13,6 @@ enum State {NONE, SELECT, TRACK1, TRACK2, ONE_WAY_TRACK, STATION, TRAIN1, TRAIN2
 @onready var light_button := $VBoxContainer/HBoxContainer/LightButton
 @onready var destroy_button := $VBoxContainer/HBoxContainer/DestroyButton
 @onready var save_button := $VBoxContainer/HBoxContainer/SaveButton
-@onready var load_button := $VBoxContainer/HBoxContainer/LoadButton
 @onready var upgrades_button := $VBoxContainer/HBoxContainer/UpgradesButton
 @onready var money_label := $VBoxContainer/HBoxContainer/Money
 @onready var selection_description_label := $VBoxContainer/SelectionDescription

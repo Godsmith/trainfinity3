@@ -40,7 +40,6 @@
 ## TODO
 
 - Complete save and load functionality
-  - Remove load button
   - Visual feedback after clicking save game button
 - Main menu
 - HTML5 version crashes when playing audio

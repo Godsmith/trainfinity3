@@ -110,7 +110,6 @@ func _ready():
 	gui.destroy_button.connect("toggled", _on_destroybutton_toggled)
 	gui.follow_train_button.connect("pressed", _on_followtrainbutton_pressed)
 	gui.save_button.connect("pressed", _on_savebutton_pressed)
-	gui.load_button.connect("pressed", _on_loadbutton_pressed)
 
 	$Timer.connect("timeout", _on_timer_timeout)
 	# Remove ghost station from groups so that it does begin to gather resources etc
@@ -422,11 +421,6 @@ func _on_followtrainbutton_pressed() -> void:
 
 func _on_savebutton_pressed() -> void:
 	_save_game()
-
-func _on_loadbutton_pressed() -> void:
-	# Does nothing right now
-	#_load_game_from_path()
-	pass
 
 func _change_gui_state(new_state: Gui.State):
 	ghost_track.visible = false
