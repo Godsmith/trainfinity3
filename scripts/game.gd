@@ -795,11 +795,10 @@ func _on_mouse_exits_track(track: Track):
 ######################################################################
 
 func _save_game():
-	var file_path = "user://trainfinity.save"
-	var save_file = FileAccess.open(file_path, FileAccess.WRITE)
+	var save_file = FileAccess.open(Global.SAVE_PATH, FileAccess.WRITE)
 	save_file.store_var(_get_save_data())
 	save_file.close()
-	print("Saved game to %s" % file_path)
+	print("Saved game to %s" % Global.SAVE_PATH)
 
 
 func _save_game_to_project_dir():
@@ -824,7 +823,7 @@ func _get_save_data() -> Dictionary:
 
 
 func load_game():
-	_load_game_from_path("user://trainfinity.save")
+	_load_game_from_path(Global.SAVE_PATH)
 
 
 func _load_game_from_path(file_path: String):

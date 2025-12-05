@@ -7,6 +7,7 @@ const MAX_INT = 9223372036854775807
 const TILE_SIZE := 16
 const TILE := Vector2(TILE_SIZE, TILE_SIZE)
 const POPUP = preload("res://scenes/popup.tscn")
+const SAVE_PATH := "user://trainfinity.save"
 
 enum Asset {TRACK, STATION, TRAIN}
 

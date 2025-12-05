@@ -41,7 +41,6 @@
 
 - Description label is visible at startup, shown "Description\nSecond line"
 - Complete save and load functionality
-  - Ask if you want to overwrite when starting new game if existing game
   - Disable continue button if no saved game
   - Remove load button
   - Visual feedback after clicking save game button
