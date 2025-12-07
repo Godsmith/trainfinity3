@@ -32,11 +32,11 @@ const _INCREASE_FACTOR := 1.5
 
 var money := 200
 var gui: Gui
+var is_loading_game := false
 
 func update_gui():
 	gui.update_prices(_current_price)
 	gui.show_money(money)
-
 
 func cost(asset: Global.Asset, amount := 1) -> int:
 	return amount * floori(_current_price[asset])
@@ -47,20 +47,27 @@ func can_afford(asset: Global.Asset, amount := 1) -> bool:
 ## If buying an asset, use [buy] instead
 func spend_money(cost_: int, pos: Vector2):
 	money -= cost_
-	AudioManager.play(AudioManager.COIN_SPLASH, pos)
-	_show_buy_popup(cost_, pos)
+	_show_popup_and_play_sound(cost_, pos)
 	gui.show_money(money)
 	money_changed.emit()
 
 func buy(asset: Global.Asset, amount: int, pos: Vector2):
 	var cost_ = cost(asset, amount)
 	money -= cost_
-	_show_buy_popup(cost_, pos)
-	AudioManager.play(AudioManager.COIN_SPLASH, pos)
+	_show_popup_and_play_sound(cost_, pos)
 	_asset_count[asset] += amount
 	self._update_prices()
 	gui.show_money(money)
 	money_changed.emit()
+
+func _show_popup_and_play_sound(cost_: int, pos: Vector2):
+	if is_loading_game:
+		# If the game is loading, we just want everything to be restored
+		# silently, without any popups
+		return
+	AudioManager.play(AudioManager.COIN_SPLASH, pos)
+	_show_buy_popup(cost_, pos)
+
 
 func _update_prices():
 	for asset in Global.Asset.values():

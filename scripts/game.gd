@@ -837,7 +837,9 @@ func _load_game_from_path(file_path: String):
 	# Remember that water, sand and mountain level also have to be the same
 	terrain.set_seed_and_add_chunks(randomizer_seed, data.chunks)
 
-	# Ensure that the bank has enough money to recreate everything
+	# Disable popups and sound effect when buying, and
+	# ensure that the bank has enough money to recreate everything
+	GlobalBank.is_loading_game = true
 	GlobalBank.set_money(Global.MAX_INT)
 	for track_dict in data.tracks:
 		_show_ghost_track([track_dict["pos1"], track_dict["pos2"]])
@@ -849,3 +851,4 @@ func _load_game_from_path(file_path: String):
 		var platform2 = platform_tile_set.get_platform_tile_at(train_dict.destinations[1])
 		_try_create_train(platform1, platform2)
 	GlobalBank.set_money(data.money)
+	GlobalBank.is_loading_game = false
