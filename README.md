@@ -76,8 +76,7 @@
 
 ### Issues
 
-- Loading large network did not work at all, stations and trains were skipped.
-  Perhaps because not enough money to recreate.
+- Do not pop up cost or play sound when buying stuff when loading game.
 - Trains cannot transport mail; just unloads it immediately again
 - Mail is always worth $1; not worth transporting
 - Train that is shorter than platform turning around at platform jumps to end of station.

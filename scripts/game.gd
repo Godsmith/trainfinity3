@@ -836,6 +836,9 @@ func _load_game_from_path(file_path: String):
 	seed(randomizer_seed)
 	# Remember that water, sand and mountain level also have to be the same
 	terrain.set_seed_and_add_chunks(randomizer_seed, data.chunks)
+
+	# Ensure that the bank has enough money to recreate everything
+	GlobalBank.set_money(Global.MAX_INT)
 	for track_dict in data.tracks:
 		_show_ghost_track([track_dict["pos1"], track_dict["pos2"]])
 		_try_create_tracks()
