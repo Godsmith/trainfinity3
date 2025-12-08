@@ -20,12 +20,13 @@ func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> voi
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		wagon_clicked.emit()
 
-func add_resource(type: Global.ResourceType):
+func add_resource(type: Global.ResourceType, station_position: Vector2i):
 	var reversed_chunks = _chunks.duplicate()
 	reversed_chunks.reverse()
 	for chunk in reversed_chunks:
 		if not chunk.visible:
 			chunk.resource_type = type
+			chunk.from_station_at = station_position
 			chunk.color = Global.RESOURCE_COLOR[type]
 			chunk.visible = true
 			wagon_content_changed.emit()
@@ -43,15 +44,17 @@ func get_total_resource_count() -> int:
 	return count
 
 func get_resource_count(resource_type: Global.ResourceType) -> int:
+	# A spot where there is guaranteed to be no stations
+	return get_resource_count_not_picked_up_from(resource_type, Vector2i(Global.MAX_INT, Global.MAX_INT))
+
+func get_resource_count_not_picked_up_from(resource_type: Global.ResourceType, station_position: Vector2i) -> int:
 	var count := 0
 	for chunk in _chunks:
-		if chunk.visible and chunk.resource_type == resource_type:
+		if chunk.visible and chunk.resource_type == resource_type and chunk.from_station_at != station_position:
 			count += 1
 	return count
 
 func unload_to_station(resource_type: Global.ResourceType, station: Station):
-	if get_resource_count(resource_type) == 0:
-		assert(false, "Trying to remove ore type that did not exist")
 	station.add_resource(resource_type, false)
 	remove_resource(resource_type)
 

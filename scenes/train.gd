@@ -195,29 +195,19 @@ func _change_state(new_state: State):
 
 
 func _get_money_for_cargo():
-	var resource_counts: Dictionary[Global.ResourceType, int] = {}
-	for resource_type in Global.ResourceType.values():
-		for wagon in wagons:
-			var resource_count = wagon.get_resource_count(resource_type)
-			if resource_count > 0:
-				if resource_type not in resource_counts:
-					resource_counts[resource_type] = 0
-				resource_counts[resource_type] += resource_count
+	# TODO: this will give double the money if two stations adjacent to the platform
+	# accepts the same goods.
 	var train_position = get_train_position().snapped(Global.TILE)
 	var money_earned = 0
-	for resource_type in resource_counts:
-		money_earned += resource_counts[resource_type] * _get_price_at_adjacent_stations(resource_type, train_position)
+	for station in platform_tile_set.stations_connected_to_platform(train_position, _get_stations()):
+		for resource_type in station.accepts():
+			for wagon in wagons:
+				var resource_count = wagon.get_resource_count_not_picked_up_from(resource_type, Vector2i(station.position))
+				money_earned += station.get_price(resource_type) * resource_count
 	if money_earned > 0:
 		Global.show_popup("$%s" % money_earned, train_position, self)
 		AudioManager.play(AudioManager.COIN_SPLASH, global_position)
 		GlobalBank.earn(money_earned)
-
-
-func _get_price_at_adjacent_stations(resource_type: Global.ResourceType, train_position: Vector2i) -> int:
-	for station in platform_tile_set.stations_connected_to_platform(train_position, _get_stations()):
-		if resource_type in station.accepts():
-			return station.get_price(resource_type)
-	return 0
 
 func get_train_position() -> Vector2:
 	# If the curve only has one point (for example when a train without wagons has just
@@ -345,7 +335,7 @@ func _load_and_unload() -> bool:
 	for station in platform_tile_set.stations_connected_to_platform(train_position, _get_stations()):
 		for wagon in reversed_wagons_at_platform:
 			for resource_type in station.accepts():
-				var resource_count = wagon.get_resource_count(resource_type)
+				var resource_count = wagon.get_resource_count_not_picked_up_from(resource_type, Vector2i(station.position))
 				if resource_count > 0:
 					wagon.unload_to_station(resource_type, station)
 					return true
@@ -353,7 +343,7 @@ func _load_and_unload() -> bool:
 			for resource_type in _resources_accepted_at_other_destinations(destination_index):
 				if station.get_resource_count(resource_type) > 0 and wagon.get_total_resource_count() < wagon.max_capacity:
 					station.remove_resource(resource_type)
-					wagon.add_resource(resource_type)
+					wagon.add_resource(resource_type, Vector2i(station.position))
 					return true
 	return false
 

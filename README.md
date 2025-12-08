@@ -76,7 +76,9 @@
 
 ### Issues
 
-- Trains cannot transport mail; just unloads it immediately again
+- If there are multiple stations accepting the same thing adjacent to a platform, the
+  train will be paid twice
+- Description window prevents you from buying the first upgrade
 - Mail is always worth $1; not worth transporting
 - Train that is shorter than platform turning around at platform jumps to end of station.
   Have it turn around in place instead.
