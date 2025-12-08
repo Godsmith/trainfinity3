@@ -88,7 +88,6 @@
 - Changing a platform length to 1 puts wagon on top of train engine
   - Test also reducing platform length to less than train length to confirm that this
 	has the same effect
-- Wagons fill from the wrong way around again
 - How to prevent the situation when, if a mine and the factory aligns, just create one
   long station that connects them both?
 	1. In map generation, make sure that related resources aren't spawning less than X

@@ -324,9 +324,13 @@ func _adjust_reservations_to_where_train_is():
 	positions_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
 	track_reservations.reserve_train_positions(positions_to_reserve, self)
 
-
+## Only load and unload from wagons that are actually at the platform
 func _load_and_unload() -> bool:
 	var train_position = get_train_position().snapped(Global.TILE)
+	var wagons_at_platform: Array[Wagon] = []
+	for wagon in wagons:
+		if Vector2i(wagon.get_wagon_position().snapped(Global.TILE)) in platform_tile_set.connected_platform_tile_positions(train_position):
+			wagons_at_platform.append(wagon)
 	var reversed_wagons_at_platform: Array[Wagon] = []
 	for i in wagon_count:
 		var wagon = wagons[-i - 1]
@@ -339,7 +343,7 @@ func _load_and_unload() -> bool:
 				if resource_count > 0:
 					wagon.unload_to_station(resource_type, station)
 					return true
-		for wagon in reversed_wagons_at_platform:
+		for wagon in wagons_at_platform:
 			for resource_type in _resources_accepted_at_other_destinations(destination_index):
 				if station.get_resource_count(resource_type) > 0 and wagon.get_total_resource_count() < wagon.max_capacity:
 					station.remove_resource(resource_type)
