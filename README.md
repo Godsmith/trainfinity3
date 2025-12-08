@@ -39,6 +39,7 @@
 
 ## TODO
 
+- Save one way track
 - Start game in GUI state Select
 - Show train state in description when selected
 - Support two-finger panning and zooming
@@ -75,6 +76,7 @@
 
 ### Issues
 
+- Test the case where removal of a bit of train track makes two stations become one
 - If there are multiple stations accepting the same thing adjacent to a platform, the
   train will be paid twice
 - Description window prevents you from buying the first upgrade
