@@ -820,6 +820,7 @@ func _get_save_data() -> Dictionary:
 	data["trains"] = get_tree().get_nodes_in_group("trains").map(func(t): return {"destinations": t.destinations})
 	data["chunks"] = terrain.chunks
 	data["money"] = GlobalBank.money
+	data["upgrades"] = Upgrades.save()
 	return data
 
 
@@ -837,6 +838,9 @@ func _load_game_from_path(file_path: String):
 	# Remember that water, sand and mountain level also have to be the same
 	terrain.set_seed_and_add_chunks(randomizer_seed, data.chunks)
 
+	# This must be loaded before creating tracks etc, or platforms
+	# will not be created correctly
+	Upgrades.load(data.upgrades)
 	# Disable popups and sound effect when buying, and
 	# ensure that the bank has enough money to recreate everything
 	GlobalBank.is_loading_game = true

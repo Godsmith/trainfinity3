@@ -42,5 +42,18 @@ var upgrades: Dictionary[UpgradeType, Upgrade] = {
 	UpgradeType.STATION_CAPACITY: Upgrade.new("Station capacity per resource", [12, 24, 36, 48], [0, 100, 500, 1000]),
  }
 
+
 func get_value(type: UpgradeType):
 	return upgrades[type].get_current_value()
+
+
+func save() -> Dictionary[String, int]:
+	var save_data: Dictionary[String, int] = {}
+	for upgrade in upgrades.values():
+		save_data[upgrade.name] = upgrade.current_level
+	return save_data
+
+
+func load(save_data: Dictionary[String, int]) -> void:
+	for upgrade in upgrades.values():
+		upgrade.current_level = save_data[upgrade.name]
