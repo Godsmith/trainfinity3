@@ -81,8 +81,6 @@
   train will be paid twice
 - Description window prevents you from buying the first upgrade
 - Mail is always worth $1; not worth transporting
-- Train that is shorter than platform turning around at platform jumps to end of station.
-  Have it turn around in place instead.
 - Music does not loop seamlessly
 - When an industry is selected and a new chunk is bought, any changed prices will
   not be reflected in the description label until industry is reselected

@@ -542,7 +542,7 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 	train.train_content_changed.connect(_on_train_content_changed)
 	add_child(train)
 
-	train.set_new_curve_from_platform(point_path, point_path[0])
+	train.set_initial_curve(point_path)
 
 	# Need to do this after curve has been set, or it will be in the wrong position
 	GlobalBank.buy(Global.Asset.TRAIN, 1, train.get_train_position())

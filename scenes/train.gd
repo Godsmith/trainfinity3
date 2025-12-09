@@ -280,19 +280,40 @@ func _furthest_in_at_platform(tile: Vector2i) -> Vector2i:
 	return Vector2i() # never hit
 
 
+func set_initial_curve(point_path: PackedVector2Array):
+	# point_path:              - - - - - - - >
+	# Train, platform, track: [T W W . .] . . .
+	# curve:                   < - -
+	var path_covering_train = point_path.slice(0, len(wagons) + 1)
+	path_covering_train.reverse()
+	curve = Curve2D.new()
+	for pos in path_covering_train:
+		curve.add_point(pos)
+	_set_progress_from_platform()
+
 ## Sets a new path from the station, possibly turning train around
 ## [br][point_path] is a path that goes from either end of the platform to the next destination.
 ## [br][train_position] is the current train engine position
-func set_new_curve_from_platform(point_path: PackedVector2Array, train_position: Vector2i):
+func _set_new_curve_from_platform(point_path: PackedVector2Array, train_position: Vector2i):
+	# point_path:              - - - - - - - >
+	# Train, platform, track: [T W W . .] . . .
+	# curve:                   - - >
 	var platform_tile_positions = platform_tile_set.connected_ordered_platform_tile_positions(train_position, train_position)
-	point_path = _get_new_point_path_from_platform(point_path, platform_tile_positions)
+	var vector2i_point_path: Array[Vector2i] = []
+	for pos in _get_new_point_path_from_platform(point_path, platform_tile_positions):
+		vector2i_point_path.append(Vector2i(pos))
 
+	# Make the initial curve as long as the train
 	curve = Curve2D.new()
-	for pos in point_path:
-		if Vector2i(pos) in platform_tile_positions:
+	for pos: Vector2i in vector2i_point_path:
+		if pos in platform_tile_positions and pos.distance_to(train_position) <= len(wagons) * Global.TILE_SIZE:
 			curve.add_point(pos)
+	_set_progress_from_platform()
 
-	path_follow.progress = (len(platform_tile_positions) - 1) * Global.TILE_SIZE
+
+func _set_progress_from_platform():
+	# Set the initial position of the train so far forward so that the wagons fit
+	path_follow.progress = len(wagons) * Global.TILE_SIZE
 	for i in len(wagons):
 		var wagon = wagons[i]
 		wagon.curve = curve
@@ -415,7 +436,7 @@ func _try_set_new_curve_and_return_new_state(target_position: Vector2i, is_at_st
 		var position_that_could_not_be_reserved_or_none = _reserve_forward_positions(upcoming_positions_until_next_non_intersection)
 		if not position_that_could_not_be_reserved_or_none.has_value:
 			if is_at_station:
-				set_new_curve_from_platform(point_path, train_position)
+				_set_new_curve_from_platform(point_path, train_position)
 			else:
 				curve.add_point(point_path[1])
 			return State.RUNNING
