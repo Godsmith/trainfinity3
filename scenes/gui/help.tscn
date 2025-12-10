@@ -1,0 +1,57 @@
+[gd_scene load_steps=2 format=3 uid="uid://dax2setb5yc3n"]
+
+[ext_resource type="Script" uid="uid://diku74mpwyv4o" path="res://scenes/gui/help.gd" id="1_nilsc"]
+
+[node name="Help" type="MarginContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_nilsc")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 0
+mouse_force_pass_scroll_events = false
+
+[node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+bbcode_enabled = true
+text = "[center]Welcome to [b]Trainfinity[/b]![/center]
+
+[center][b]Tutorial[/b][/center]
+
+1. Click [b]Station[/b] in the toolbar.
+2. Build a station next to an industry like a mine or forest, and another one adjacent to a factory or steelworks.
+[b]Tip[/b]: you can see what an industry produces and accepts by clicking on it in [b]Select[/b] mode.
+3. Click [b]Track[/b] in the toolbar
+4. Build a section of track adjacent to the station, either vertically or horizontally. If you have done it right, the ground under the track have been colored grey.
+5. Click [b]Train[/b] in the toolbar, then one of the platforms, then the other.
+6. ... (yes, you can literally wait)
+7. Profit!
+
+"
+fit_content = true
+
+[node name="CloseButton" type="Button" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+text = "Close"
+
+[connection signal="pressed" from="MarginContainer/VBoxContainer/CloseButton" to="." method="_on_close_button_pressed"]

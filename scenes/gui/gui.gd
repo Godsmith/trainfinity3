@@ -14,11 +14,13 @@ enum State {NONE, SELECT, TRACK1, TRACK2, ONE_WAY_TRACK, STATION, TRAIN1, TRAIN2
 @onready var destroy_button := $VBoxContainer/HBoxContainer/DestroyButton
 @onready var save_button := $VBoxContainer/HBoxContainer/SaveButton
 @onready var upgrades_button := $VBoxContainer/HBoxContainer/UpgradesButton
+@onready var help_button := $VBoxContainer/HBoxContainer/HelpButton
 @onready var money_label := $VBoxContainer/HBoxContainer/Money
 @onready var selection_description_label := $VBoxContainer/SelectionDescription
 
 func _ready() -> void:
 	$UpgradesMenu.close_button_clicked.connect(_upgrades_close_button_clicked)
+	$Help.close_button_clicked.connect(_help_close_button_clicked)
 	selection_description_label.text = ""
 	follow_train_button.visible = false
 
@@ -36,6 +38,13 @@ func _on_upgrades_button_toggled(toggled_on: bool) -> void:
 func _upgrades_close_button_clicked() -> void:
 	$UpgradesMenu.visible = false
 	upgrades_button.set_pressed_no_signal(false)
+
+func _on_help_button_toggled(toggled_on: bool) -> void:
+	$Help.visible = toggled_on
+
+func _help_close_button_clicked() -> void:
+	$Help.visible = false
+	help_button.set_pressed_no_signal(false)
 
 func set_follow_train_button_visibility(visible_: bool):
 	follow_train_button.visible = visible_

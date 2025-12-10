@@ -803,6 +803,7 @@ func _on_mouse_exits_track(track: Track):
 
 func start_new_game():
 	terrain.set_seed_and_add_starting_chunks(randomizer_seed)
+	$Gui/Help.visible = true
 
 
 func _save_game():
