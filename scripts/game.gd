@@ -17,7 +17,7 @@ const DEBUG_COORDINATES = preload("res://debug/debug_coordinates.tscn")
 
 var randomizer_seed = randi()
 
-var gui_state := Gui.State.NONE
+var gui_state := Gui.State.SELECT
 var is_right_mouse_button_held_down := false
 
 var mouse_down_position := Vector2i()

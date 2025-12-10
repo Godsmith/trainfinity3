@@ -39,7 +39,6 @@
 
 ## TODO
 
-- Start game in GUI state Select
 - Show train state in description when selected
 - Support two-finger panning and zooming
 - New way of laying track
@@ -84,9 +83,6 @@
 - When an industry is selected and a new chunk is bought, any changed prices will
   not be reflected in the description label until industry is reselected
 - Newly created trains without wagons will be invisible until they start moving
-- Changing a platform length to 1 puts wagon on top of train engine
-  - Test also reducing platform length to less than train length to confirm that this
-	has the same effect
 - How to prevent the situation when, if a mine and the factory aligns, just create one
   long station that connects them both?
 	1. In map generation, make sure that related resources aren't spawning less than X
