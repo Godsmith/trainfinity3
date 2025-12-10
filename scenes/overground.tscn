@@ -1,7 +1,7 @@
 [gd_scene load_steps=9 format=3 uid="uid://ceoib4xplu3v4"]
 
 [ext_resource type="Script" uid="uid://cqw467o78e8bf" path="res://scenes/overground.gd" id="1_u5idq"]
-[ext_resource type="PackedScene" uid="uid://vyo6h6rte1xu" path="res://scenes/gui.tscn" id="2_lgfhw"]
+[ext_resource type="PackedScene" uid="uid://vyo6h6rte1xu" path="res://scenes/gui/gui.tscn" id="2_lgfhw"]
 [ext_resource type="Script" uid="uid://b0hwy8lp74v6y" path="res://scenes/terrain/terrain.gd" id="2_xra4t"]
 [ext_resource type="Script" uid="uid://d070mqp5unjky" path="res://scripts/camera_2d.gd" id="3_mg5ko"]
 [ext_resource type="PackedScene" uid="uid://rq8dlyspro46" path="res://scenes/track.tscn" id="4_tl2kb"]

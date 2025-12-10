@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cy1ncg05prhjg"]
 
-[ext_resource type="Script" uid="uid://d1pwk035t8f7t" path="res://scripts/upgrades_menu.gd" id="1_w5joc"]
+[ext_resource type="Script" uid="uid://d1pwk035t8f7t" path="res://scripts/upgrades_menu.gd" id="1_kvh6k"]
 
 [node name="UpgradesMenu" type="MarginContainer"]
 anchors_preset = 15
@@ -10,7 +10,7 @@ offset_right = -625.0
 offset_bottom = -461.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_w5joc")
+script = ExtResource("1_kvh6k")
 
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 2

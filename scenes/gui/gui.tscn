@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://vyo6h6rte1xu"]
 
-[ext_resource type="Script" uid="uid://dwohiu6xowsay" path="res://scenes/gui.gd" id="1_efmwq"]
-[ext_resource type="PackedScene" uid="uid://cy1ncg05prhjg" path="res://scenes/upgrades_menu.tscn" id="2_mfius"]
+[ext_resource type="Script" uid="uid://dwohiu6xowsay" path="res://scenes/gui/gui.gd" id="1_efmwq"]
+[ext_resource type="PackedScene" uid="uid://cy1ncg05prhjg" path="res://scenes/gui/upgrades_menu.tscn" id="2_mfius"]
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_lbhrr"]
 resource_local_to_scene = false

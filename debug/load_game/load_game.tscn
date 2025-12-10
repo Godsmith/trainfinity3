@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://vbrt2h3y7xje" path="res://debug/load_game/load_game.gd" id="1_bvdq7"]
 [ext_resource type="Script" uid="uid://cwmantbfhcamv" path="res://debug/load_game/terrain_with_no_chunks.gd" id="2_26bbp"]
 [ext_resource type="Script" uid="uid://d070mqp5unjky" path="res://scripts/camera_2d.gd" id="3_3jy2v"]
-[ext_resource type="PackedScene" uid="uid://vyo6h6rte1xu" path="res://scenes/gui.tscn" id="4_jlvhq"]
+[ext_resource type="PackedScene" uid="uid://vyo6h6rte1xu" path="res://scenes/gui/gui.tscn" id="4_jlvhq"]
 [ext_resource type="PackedScene" uid="uid://rq8dlyspro46" path="res://scenes/track.tscn" id="5_5dw0i"]
 [ext_resource type="PackedScene" uid="uid://b1064yqqmy7mf" path="res://scenes/station.tscn" id="6_17o25"]
 [ext_resource type="PackedScene" uid="uid://cxgimf5dgovcu" path="res://scenes/light.tscn" id="7_ekmuy"]
