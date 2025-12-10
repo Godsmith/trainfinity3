@@ -19,7 +19,7 @@ func add(track: Track):
 func exists(track: Track):
 	return track.position_rotation() in _tracks
 
-func get_all_tracks():
+func get_all_tracks() -> Array[Track]:
 	return _tracks.values()
 
 func get_track_count(position: Vector2i) -> int:

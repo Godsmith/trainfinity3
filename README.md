@@ -39,7 +39,6 @@
 
 ## TODO
 
-- Save one way track
 - Start game in GUI state Select
 - Show train state in description when selected
 - Support two-finger panning and zooming

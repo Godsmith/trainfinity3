@@ -373,18 +373,22 @@ func _destroy_track(positions: Array[Vector2i]):
 
 func _on_track_clicked(track: Track):
 	if gui_state == Gui.State.ONE_WAY_TRACK:
-		track.rotate_one_way_direction()
-		astar.disconnect_positions(track.pos1, track.pos2)
-		match track.direction:
-			track.Direction.BOTH:
-				astar.connect_positions(track.pos1, track.pos2)
-			track.Direction.POS1_TO_POS2:
-				astar.connect_positions(track.pos1, track.pos2, false)
-			track.Direction.POS2_TO_POS1:
-				astar.connect_positions(track.pos2, track.pos1, false)
-		# Makes trains waiting for reservations to change find new paths
-		# TODO: Find a more elegant way to do this, or at least better naming.
-		track_reservations.reservation_number += 1
+		_rotate_one_way_direction(track)
+
+
+func _rotate_one_way_direction(track: Track):
+	track.rotate_one_way_direction()
+	astar.disconnect_positions(track.pos1, track.pos2)
+	match track.direction:
+		track.Direction.BOTH:
+			astar.connect_positions(track.pos1, track.pos2)
+		track.Direction.POS1_TO_POS2:
+			astar.connect_positions(track.pos1, track.pos2, false)
+		track.Direction.POS2_TO_POS1:
+			astar.connect_positions(track.pos2, track.pos1, false)
+	# Makes trains waiting for reservations to change find new paths
+	# TODO: Find a more elegant way to do this, or at least better naming.
+	track_reservations.reservation_number += 1
 
 ##################################################################
 
@@ -815,7 +819,7 @@ func _save_game_to_project_dir():
 func _get_save_data() -> Dictionary:
 	var data = {}
 	data["randomizer_seed"] = randomizer_seed
-	data["tracks"] = track_set._tracks.values().map(func(t): return {"pos1": t.pos1, "pos2": t.pos2})
+	data["tracks"] = track_set._tracks.values().map(func(t): return {"pos1": t.pos1, "pos2": t.pos2, "direction": t.direction})
 	data["stations"] = _get_stations().map(func(s): return {"position": s.position})
 	data["trains"] = get_tree().get_nodes_in_group("trains").map(func(t): return {"destinations": t.destinations})
 	data["chunks"] = terrain.chunks
@@ -848,6 +852,12 @@ func _load_game_from_path(file_path: String):
 	for track_dict in data.tracks:
 		_show_ghost_track([track_dict["pos1"], track_dict["pos2"]])
 		_try_create_tracks()
+	var direction_from_track_positions: Dictionary[String, Track.Direction] = {}
+	for track_dict in data.tracks:
+		direction_from_track_positions[str(track_dict["pos1"]) + "," + str(track_dict["pos2"])] = track_dict["direction"]
+	for track in track_set.get_all_tracks():
+		for _i in direction_from_track_positions[str(track.pos1) + "," + str(track.pos2)]:
+			_rotate_one_way_direction(track)
 	for station_dict in data.stations:
 		_try_create_station(station_dict["position"])
 	for train_dict in data.trains:
