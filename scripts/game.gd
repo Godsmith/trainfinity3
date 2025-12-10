@@ -772,6 +772,7 @@ func _update_selected_train_info():
 	if not selected_train:
 		return
 	var description = selected_train.name
+	description += "\n%s" % Train.State.keys()[selected_train.state].capitalize()
 	var resource_strings = []
 	for resource_type in Global.ResourceType.values():
 		var count = 0

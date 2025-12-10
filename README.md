@@ -39,7 +39,7 @@
 
 ## TODO
 
-- Show train state in description when selected
+- Train status in description is not updated immediately
 - Support two-finger panning and zooming
 - New way of laying track
   - remove drag and drop
@@ -74,6 +74,9 @@
 
 ### Issues
 
+- If train is waiting for track reservation change at a station,
+  or if it has just loaded/unloaded, it will never leave that state even
+  when reservations change
 - Test the case where removal of a bit of train track makes two stations become one
 - If there are multiple stations accepting the same thing adjacent to a platform, the
   train will be paid twice
