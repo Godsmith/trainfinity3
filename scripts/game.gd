@@ -544,6 +544,7 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 
 	train.train_clicked.connect(_on_train_clicked)
 	train.train_content_changed.connect(_on_train_content_changed)
+	train.train_state_changed.connect(_on_train_state_changed)
 	add_child(train)
 
 	train.set_initial_curve(point_path)
@@ -598,6 +599,10 @@ func _deselect_all_trains():
 		destination_marker.queue_free()
 
 func _on_train_content_changed(train: Train):
+	if train == selected_train:
+		_update_selected_train_info()
+
+func _on_train_state_changed(train: Train):
 	if train == selected_train:
 		_update_selected_train_info()
 

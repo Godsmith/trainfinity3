@@ -39,7 +39,6 @@
 
 ## TODO
 
-- Train status in description is not updated immediately
 - Support two-finger panning and zooming
 - New way of laying track
   - remove drag and drop

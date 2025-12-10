@@ -7,6 +7,7 @@ const WAGON = preload("res://scenes/wagon.tscn")
 
 signal train_clicked(train: Train)
 signal train_content_changed(train: Train)
+signal train_state_changed(train: Train)
 
 enum State {RUNNING, LOADING, WAITING_FOR_TRACK_RESERVATION_CHANGE, WAITING_FOR_MISSING_PLATFORM, STARTING_FROM_PLATFORM}
 
@@ -171,7 +172,6 @@ func _is_in_sharp_corner():
 
 
 func _change_state(new_state: State):
-	print("%s %s" % [name, State.keys()[state]])
 	match new_state:
 		State.RUNNING:
 			target_speed = max_speed
@@ -192,6 +192,8 @@ func _change_state(new_state: State):
 				absolute_speed = 0.0
 				last_known_reservation_number = track_reservations.reservation_number
 	state = new_state
+	print("%s %s" % [name, State.keys()[state]])
+	train_state_changed.emit(self)
 
 
 func _get_money_for_cargo():
