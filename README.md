@@ -53,8 +53,6 @@
   	  	- Deliver 100 of each cargo
   		- Deliver X of each cargo in Y minutes 
   	- Missions should give a large chunk of money, or an upgrade point
-- Train does not complain about no platform at destination if target is removed
-  when it is not the active destination, and does not resume after station is recreated
 - Show N/A instead of MAX_INT as price of a resource when no industry is producing it
 - Automatically extend platforms when upgrading maximum platform length
 - Make factory produce goods and cities accept goods
@@ -72,9 +70,6 @@
 
 ### Issues
 
-- If train is waiting for track reservation change at a station,
-  or if it has just loaded/unloaded, it will never leave that state even
-  when reservations change
 - Test the case where removal of a bit of train track makes two stations become one
 - If there are multiple stations accepting the same thing adjacent to a platform, the
   train will be paid twice
