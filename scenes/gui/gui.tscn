@@ -10,25 +10,6 @@ resource_local_to_scene = false
 [node name="Gui" type="CanvasLayer"]
 script = ExtResource("1_efmwq")
 
-[node name="UpgradesMenu" parent="." instance=ExtResource("2_mfius")]
-visible = false
-offset_left = 86.0
-offset_top = 61.0
-offset_right = -76.0
-offset_bottom = -165.0
-
-[node name="Help" parent="." instance=ExtResource("3_0jpgx")]
-visible = false
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -213.0
-offset_top = -297.0
-offset_right = 225.0
-offset_bottom = 193.0
-
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 offset_right = 40.0
 offset_bottom = 40.0
@@ -124,6 +105,25 @@ layout_mode = 2
 size_flags_horizontal = 0
 focus_mode = 0
 text = "Follow Train"
+
+[node name="Help" parent="." instance=ExtResource("3_0jpgx")]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -213.0
+offset_top = -297.0
+offset_right = 225.0
+offset_bottom = 193.0
+
+[node name="UpgradesMenu" parent="." instance=ExtResource("2_mfius")]
+visible = false
+offset_left = 86.0
+offset_top = 61.0
+offset_right = -76.0
+offset_bottom = -165.0
 
 [connection signal="toggled" from="VBoxContainer/HBoxContainer/UpgradesButton" to="." method="_on_upgrades_button_toggled"]
 [connection signal="toggled" from="VBoxContainer/HBoxContainer/HelpButton" to="." method="_on_help_button_toggled"]
