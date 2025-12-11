@@ -11,7 +11,7 @@ const SAVE_PATH := "user://trainfinity.save"
 
 enum Asset {TRACK, STATION, TRAIN}
 
-enum ResourceType {COAL, IRON, MAIL, WOOD, STEEL}
+enum ResourceType {COAL, IRON, MAIL, WOOD, STEEL, GOODS}
 
 const RESOURCE_COLOR = {
 	ResourceType.COAL: Color(0, 0, 0, 1),
@@ -19,6 +19,7 @@ const RESOURCE_COLOR = {
 	ResourceType.MAIL: Color(0.95, 0.95, 0.7, 1.0),
 	ResourceType.WOOD: Color(0.49, 0.245, 0.223, 1.0),
 	ResourceType.STEEL: Color(0.8, 0.8, 0.8, 1.0),
+	ResourceType.GOODS: Color(0.63, 0.49, 0.05, 1.0),
 }
 
 const RESOURCE_PRICE_MULTIPLIER = {
@@ -27,6 +28,7 @@ const RESOURCE_PRICE_MULTIPLIER = {
 	ResourceType.MAIL: 1,
 	ResourceType.WOOD: 1,
 	ResourceType.STEEL: 2,
+	ResourceType.GOODS: 3,
 }
 
 static func get_resource_name(resource_type_: ResourceType) -> String:
