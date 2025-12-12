@@ -55,9 +55,9 @@ func set_allowed(is_allowed_: bool):
 
 func _set_color():
 	var r = 1.0
-	var g = 1.0 if is_allowed else 0.5
-	var b = 1.0 if is_allowed else 0.5
-	var a = 0.5 if is_ghostly else 1.0
+	var g = 1.0 if is_allowed else 0.6
+	var b = 1.0 if is_allowed else 0.6
+	var a = 0.8 if is_ghostly else 1.0
 	modulate = Color(r, g, b, a)
 		
 func position_rotation() -> Vector3i:
