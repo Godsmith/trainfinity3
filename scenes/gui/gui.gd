@@ -2,7 +2,7 @@ extends CanvasLayer
 
 class_name Gui
 
-enum State {NONE, SELECT, TRACK1, TRACK2, ONE_WAY_TRACK, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY1, DESTROY2}
+enum State {NONE, SELECT, TRACK, ONE_WAY_TRACK, STATION, TRAIN1, TRAIN2, LIGHT, DESTROY1, DESTROY2}
 
 @onready var follow_train_button := $VBoxContainer/FollowTrainButton
 @onready var select_button := $VBoxContainer/HBoxContainer/SelectButton
@@ -17,6 +17,15 @@ enum State {NONE, SELECT, TRACK1, TRACK2, ONE_WAY_TRACK, STATION, TRAIN1, TRAIN2
 @onready var help_button := $VBoxContainer/HBoxContainer/HelpButton
 @onready var money_label := $VBoxContainer/HBoxContainer/Money
 @onready var selection_description_label := $VBoxContainer/SelectionDescription
+
+@onready var BUTTON_FROM_STATE: Dictionary[State, Button] = {
+	State.SELECT: select_button,
+	State.TRACK: track_button,
+	State.STATION: station_button,
+	State.ONE_WAY_TRACK: one_way_track_button,
+	State.TRAIN1: train_button,
+	State.DESTROY1: destroy_button
+	}
 
 func _ready() -> void:
 	$UpgradesMenu.close_button_clicked.connect(_upgrades_close_button_clicked)
@@ -57,3 +66,9 @@ func show_saved_visual_feedback():
 		save_button.text = original_text
 		save_button.disabled = false
 	)
+
+func set_pressed_no_signal(state: State):
+	if state in BUTTON_FROM_STATE:
+		for button in BUTTON_FROM_STATE.values():
+			button.set_pressed_no_signal(false)
+		BUTTON_FROM_STATE[state].set_pressed_no_signal(true)

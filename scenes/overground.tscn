@@ -1,10 +1,9 @@
-[gd_scene load_steps=9 format=3 uid="uid://ceoib4xplu3v4"]
+[gd_scene load_steps=8 format=3 uid="uid://ceoib4xplu3v4"]
 
 [ext_resource type="Script" uid="uid://cqw467o78e8bf" path="res://scenes/overground.gd" id="1_u5idq"]
 [ext_resource type="PackedScene" uid="uid://vyo6h6rte1xu" path="res://scenes/gui/gui.tscn" id="2_lgfhw"]
 [ext_resource type="Script" uid="uid://b0hwy8lp74v6y" path="res://scenes/terrain/terrain.gd" id="2_xra4t"]
 [ext_resource type="Script" uid="uid://d070mqp5unjky" path="res://scripts/camera_2d.gd" id="3_mg5ko"]
-[ext_resource type="PackedScene" uid="uid://rq8dlyspro46" path="res://scenes/track.tscn" id="4_tl2kb"]
 [ext_resource type="PackedScene" uid="uid://b1064yqqmy7mf" path="res://scenes/station.tscn" id="5_ilnf8"]
 [ext_resource type="PackedScene" uid="uid://cxgimf5dgovcu" path="res://scenes/light.tscn" id="6_6dr8u"]
 [ext_resource type="AudioStream" uid="uid://7grbhnkm6paa" path="res://audio/Next to You.mp3" id="8_8f2bg"]
@@ -24,15 +23,9 @@ script = ExtResource("3_mg5ko")
 
 [node name="Background" type="Polygon2D" parent="."]
 z_index = -900
-position = Vector2(-16, 0)
+position = Vector2(-16, 3)
 color = Color(0.103744, 0.103744, 0.103744, 1)
 polygon = PackedVector2Array(-1008, -1024, -1008, 959.32, -1008, 1024, 1040, 1024, 1040, -1024)
-
-[node name="GhostTrack" parent="." instance=ExtResource("4_tl2kb")]
-visible = false
-modulate = Color(1, 1, 1, 0.501961)
-z_index = -200
-position = Vector2(-88, 104)
 
 [node name="GhostStation" parent="." instance=ExtResource("5_ilnf8")]
 visible = false
@@ -52,3 +45,11 @@ autostart = true
 [node name="NextToYou" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("8_8f2bg")
 autoplay = true
+
+[node name="TrackMarkerConfirm" type="Polygon2D" parent="."]
+z_index = -200
+z_as_relative = false
+position = Vector2(-8, 8)
+color = Color(0.673799, 1, 0.672065, 1)
+offset = Vector2(-8, 8)
+polygon = PackedVector2Array(1, -7, 10, -5, 15, -15, 12, -1)

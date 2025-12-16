@@ -2,7 +2,7 @@ extends Node
 
 class_name Global
 
-const MAX_INT = 9223372036854775807
+const MAX_INT = 2147483647
 
 const TILE_SIZE := 16
 const TILE := Vector2(TILE_SIZE, TILE_SIZE)

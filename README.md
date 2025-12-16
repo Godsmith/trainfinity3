@@ -18,14 +18,16 @@
 - Trains avoid oncoming trains by choosing sidetracks when available
 
 ## Controls
-- To build track, select Track and either click start and then end positions, or drag from start
-  position to end position
+- To build track, select Track and click start and then waypoint positions.
+	- Click on the same position twice to build,
+	- click a previous position to revert,
+	- or click the starting position to abort.
 - Select Station and click an empty location (preferrably next to a resource) to build a station
 - Platforms are automatically built on track next to stations
 - Select Train and click two platforms in succession to create a train and a route.
   - Train length is equal to the shortest platform length
 - Select Destroy and either click on a location or drag to select an area to destroy
-- Modes can also be selected with the number keys (1 to build track etc)
+- Modes can also be selected with the number keys, or Escape for Select mode
 
 ## Credits
 
@@ -45,13 +47,8 @@
 - Do not show track tile marker immediately when goin to track mode, show it when moving
   the mouse
 - Support two-finger panning and zooming
-- New way of laying track
-  - remove drag and drop
-  - click each node
-  - pathfind between
-  - click previous node to revert
-  - click latest node again to confirm and build? or just build immediately?
-  - if first node is clicked again, cancel
+- cancel button when laying track
+- pathfind between nodes when laying track
 - Missions
   	- Deliver first of each cargo
   	- Something that requires actually working production lines:

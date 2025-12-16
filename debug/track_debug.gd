@@ -45,11 +45,11 @@ func _ready():
 			track_positions.append(Vector2i(x, T))
 
 	_show_ghost_track(track_positions)
-	_try_create_tracks()
+	_create_tracks_from_ghost_tracks()
 
 	if extra_track_after_first_station:
 		_show_ghost_track([Vector2i(-4 * T, T), Vector2i(-4 * T, 0)])
-		_try_create_tracks()
+		_create_tracks_from_ghost_tracks()
 
 	_try_create_station(Vector2i(-6 * T, 2 * T))
 	_try_create_station(Vector2i(6 * T, 2 * T))

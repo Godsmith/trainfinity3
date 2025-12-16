@@ -132,7 +132,7 @@ func create_platforms_orthogonally_linked_to(positions: Array[Vector2i], all_sta
 
 func _positions_orthogonally_linked_to(positions: Array[Vector2i]) -> Dictionary[Vector2i, int]:
 	var collected_positions: Dictionary[Vector2i, int] = {}
-	var positions_to_evaluate := positions
+	var positions_to_evaluate := positions.duplicate()
 	while positions_to_evaluate:
 		var position = positions_to_evaluate.pop_back()
 		collected_positions[position] = 0
