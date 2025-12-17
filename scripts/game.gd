@@ -800,7 +800,6 @@ func _load_game_from_path(file_path: String):
 	GlobalBank.is_loading_game = true
 	GlobalBank.set_money(Global.MAX_INT)
 	for track_dict in data.tracks:
-		track_creator.placed_ghost_track_tile_positions = [track_dict.pos1, track_dict.pos2] as Array[Vector2i]
 		track_creator.show_ghost_track([track_dict.pos1, track_dict.pos2])
 		track_creator.create_tracks()
 	var direction_from_track_positions: Dictionary[String, Track.Direction] = {}
