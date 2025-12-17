@@ -21,11 +21,6 @@ var is_right_mouse_button_held_down := false
 
 var mouse_down_position := Vector2i()
 
-# TODO: consider if we can go down to two variables placed_ghost_tracks and candidate_ghost_tracks here.
-var candidate_ghost_track_tile_positions: Array[Vector2i] = []
-var placed_ghost_track_tile_positions: Array[Vector2i] = []
-var ghost_tracks: Array[Track] = []
-
 var destroy_markers: Array[Polygon2D] = []
 var trains_marked_for_destruction_set: Dictionary[Train, int] = {}
 
@@ -37,6 +32,7 @@ var astar = Astar.new()
 @onready var track_set = TrackSet.new()
 @onready var platform_tile_set = PlatformTileSet.new(track_set)
 @onready var track_reservations = TrackReservations.new()
+@onready var track_creator = TrackCreator.new(_create_tracks_from_ghost_tracks, $".".add_child, _illegal_track_positions)
 
 var selected_platform_tile: PlatformTile = null
 var selected_station: Station = null
@@ -80,23 +76,6 @@ func _show_reservations(delta):
 				add_child(marker)
 
 
-func _positions_between(start: Vector2i, stop: Vector2i) -> Array[Vector2i]:
-	# start and stop must be on the grid.
-	var out: Array[Vector2i] = []
-	var x = start.x
-	var y = start.y
-	var dx_sign = signi(stop.x - start.x)
-	var dy_sign = signi(stop.y - start.y)
-	out.append(start)
-	while x != stop.x or y != stop.y:
-		if x != stop.x:
-			x += Global.TILE_SIZE * dx_sign
-		if y != stop.y:
-			y += Global.TILE_SIZE * dy_sign
-		out.append(Vector2i(x, y))
-	return out
-
-
 func _ready():
 	seed(randomizer_seed)
 
@@ -138,39 +117,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 			match gui_state:
 				Gui.State.TRACK:
-					if not placed_ghost_track_tile_positions:
-						# Start track building mode
-						placed_ghost_track_tile_positions = [snapped_mouse_position]
-					elif placed_ghost_track_tile_positions and snapped_mouse_position == placed_ghost_track_tile_positions[-1]:
-						# Click last position again: build
-						if not GlobalBank.can_afford(Global.Asset.TRACK, len(ghost_tracks)):
-							Global.show_popup("Cannot afford!", snapped_mouse_position, self)
-						else:
-							_create_tracks_from_ghost_tracks()
-							placed_ghost_track_tile_positions.clear()
-							candidate_ghost_track_tile_positions.clear()
-					elif placed_ghost_track_tile_positions and snapped_mouse_position in placed_ghost_track_tile_positions:
-						# If clicking placed ghost track, revert to that position
-						for i in len(placed_ghost_track_tile_positions):
-							if snapped_mouse_position == placed_ghost_track_tile_positions[i]:
-								placed_ghost_track_tile_positions = placed_ghost_track_tile_positions.slice(0, i + 1)
-								break
-						if len(placed_ghost_track_tile_positions) == 1:
-							# If we are back at the starting position, abort track laying mode
-							placed_ghost_track_tile_positions.clear()
-							candidate_ghost_track_tile_positions.clear()
-							_reset_ghost_tracks()
-					else:
-						# Click other position: move candidate ghost track to placed ghost track
-						if not GlobalBank.can_afford(Global.Asset.TRACK, len(ghost_tracks)):
-							Global.show_popup("Cannot afford!", snapped_mouse_position, self)
-						elif ghost_tracks.all(func(x): return x.is_allowed):
-							placed_ghost_track_tile_positions.append_array(candidate_ghost_track_tile_positions)
-
-					# Show or hide TrackMarkerConfirm
-					if len(placed_ghost_track_tile_positions) >= 2:
+					var track_marker_confirm_position = track_creator.click(snapped_mouse_position)
+					if track_marker_confirm_position != Vector2i.MAX:
 						track_marker_confirm.visible = true
-						track_marker_confirm.position = placed_ghost_track_tile_positions[-1]
+						track_marker_confirm.position = track_marker_confirm_position
 					else:
 						track_marker_confirm.visible = false
 				Gui.State.DESTROY1:
@@ -206,26 +156,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 		if gui_state == Gui.State.TRACK:
 			_show_current_tile_marker(snapped_mouse_position)
-		if placed_ghost_track_tile_positions:
-			candidate_ghost_track_tile_positions = _positions_between(placed_ghost_track_tile_positions[-1], snapped_mouse_position)
-			if placed_ghost_track_tile_positions and snapped_mouse_position == placed_ghost_track_tile_positions[-1]:
-				# If at current end position, just show the placed ghost track
-				_show_ghost_track(placed_ghost_track_tile_positions)
-			elif snapped_mouse_position in placed_ghost_track_tile_positions:
-				# If somewhere else among placed ghost track, show them as red from
-				# end back to that position, to show that they will be deleted on click
-				_show_ghost_track(placed_ghost_track_tile_positions)
-				var reverse_ghost_tracks = ghost_tracks.duplicate()
-				reverse_ghost_tracks.reverse()
-				for track in reverse_ghost_tracks:
-					track.set_allowed(false)
-					if snapped_mouse_position in [track.pos1, track.pos2]:
-						break
-			else:
-				# Else, show placed and candidate ghost track
-				_show_ghost_track(placed_ghost_track_tile_positions + candidate_ghost_track_tile_positions)
-
-
+			track_creator.mouse_move(snapped_mouse_position)
 		if gui_state == Gui.State.STATION:
 			ghost_station.set_color(true, _is_legal_station_position(snapped_mouse_position))
 		if gui_state == Gui.State.DESTROY1:
@@ -327,25 +258,6 @@ func _get_snapped_mouse_position(event: InputEventMouse) -> Vector2i:
 
 #######################################################################
 
-func _show_ghost_track(ghost_track_tile_positions: Array[Vector2i]):
-	for track in ghost_tracks:
-		track.queue_free()
-	ghost_tracks.clear()
-	var illegal_positions = _illegal_track_positions(ghost_track_tile_positions)
-	for i in len(ghost_track_tile_positions) - 1:
-		var pos1 = ghost_track_tile_positions[i]
-		var pos2 = ghost_track_tile_positions[i + 1]
-		if pos1 == pos2:
-			continue
-		var track := Track.create(pos1, pos2)
-		var is_allowed = (pos1 not in illegal_positions and
-						  pos2 not in illegal_positions)
-		track.set_allowed(is_allowed)
-		track.set_ghostly(true)
-		var midway_position = Vector2(pos1).lerp(pos2, 0.5)
-		track.position = midway_position
-		ghost_tracks.append(track)
-		$".".add_child(track)
 
 func _illegal_track_positions(positions: Array[Vector2i]) -> Array[Vector2i]:
 	var out: Array[Vector2i] = []
@@ -357,15 +269,17 @@ func _illegal_track_positions(positions: Array[Vector2i]) -> Array[Vector2i]:
 			out.append(Vector2i(node.position))
 	return out
 
-## Creates new track.[br]
-## This method needs both [placed_ghost_track_tile_positions] and [ghost_tracks]
-## to be defined in order to work.
-func _create_tracks_from_ghost_tracks():
-	if len(placed_ghost_track_tile_positions) < 2:
+func _create_tracks_from_ghost_tracks(ghost_tracks: Array[Track]):
+	if len(ghost_tracks) == 0:
 		# Creating 0 tracks can have some strange consequences, for example an
 		# astar point will be created at the position, and the position will be
 		# evaluated for platforms, etc.
 		return
+	var positions_dict: Dictionary[Vector2i, int] = {}
+	for track in ghost_tracks:
+		positions_dict[track.pos1] = 0
+		positions_dict[track.pos2] = 0
+	var positions = positions_dict.keys()
 	
 	var new_track_count = 0
 	for track in ghost_tracks:
@@ -375,22 +289,15 @@ func _create_tracks_from_ghost_tracks():
 			track_set.add(track)
 			track.set_ghostly(false)
 			new_track_count += 1
+			astar.add_position(track.pos1)
+			astar.add_position(track.pos2)
+			astar.connect_positions(track.pos1, track.pos2)
 		track.track_clicked.connect(_on_track_clicked)
-	for ghost_track_position in placed_ghost_track_tile_positions:
-		astar.add_position(ghost_track_position)
-	for i in range(1, len(placed_ghost_track_tile_positions)):
-		astar.connect_positions(placed_ghost_track_tile_positions[i - 1], placed_ghost_track_tile_positions[i])
 	GlobalBank.buy(Global.Asset.TRACK, new_track_count, ghost_tracks[-1].global_position)
-	platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(placed_ghost_track_tile_positions, _get_stations(), _create_platform_tile)
+	platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(positions, _get_stations(), _create_platform_tile)
 	# Makes trains waiting for reservations to change find new paths
 	# TODO: Find a more elegant way to do this, or at least better naming.
 	track_reservations.reservation_number += 1
-	ghost_tracks.clear()
-
-func _reset_ghost_tracks():
-	for track in ghost_tracks:
-		track.queue_free()
-	ghost_tracks.clear()
 
 func _destroy_track(positions: Array[Vector2i]):
 	var track_positions: Dictionary[Vector2i, int] = {}
@@ -468,8 +375,8 @@ func _on_savebutton_pressed() -> void:
 func _change_gui_state(new_state: Gui.State):
 	ghost_station.visible = false
 	ghost_light.visible = false
-	placed_ghost_track_tile_positions.clear()
-	candidate_ghost_track_tile_positions.clear()
+	track_creator.reset_ghost_tracks()
+	track_marker_confirm.visible = false
 	current_tile_marker.visible = false
 	gui.selection_description_label.text = ""
 	selected_station = null
@@ -493,8 +400,6 @@ func _change_gui_state(new_state: Gui.State):
 	elif new_state == Gui.State.LIGHT:
 		ghost_light.visible = true
 
-	if new_state != Gui.State.TRACK:
-		_reset_ghost_tracks()
 	if new_state != Gui.State.DESTROY1:
 		_hide_destroy_markers()
 
@@ -895,9 +800,9 @@ func _load_game_from_path(file_path: String):
 	GlobalBank.is_loading_game = true
 	GlobalBank.set_money(Global.MAX_INT)
 	for track_dict in data.tracks:
-		placed_ghost_track_tile_positions = [track_dict.pos1, track_dict.pos2]
-		_show_ghost_track([track_dict.pos1, track_dict.pos2])
-		_create_tracks_from_ghost_tracks()
+		track_creator.placed_ghost_track_tile_positions = [track_dict.pos1, track_dict.pos2] as Array[Vector2i]
+		track_creator.show_ghost_track([track_dict.pos1, track_dict.pos2])
+		track_creator.create_tracks()
 	var direction_from_track_positions: Dictionary[String, Track.Direction] = {}
 	for track_dict in data.tracks:
 		direction_from_track_positions[str(track_dict["pos1"]) + "," + str(track_dict["pos2"])] = track_dict["direction"]
