@@ -39,7 +39,8 @@ var _button_from_chunk_position: Dictionary[Vector2i, ExpandButton] = {}
 @onready var forest_node = Node.new()
 @onready var city_node = Node.new()
 
-# Current minimum and maximum edges, used for restricting the camera
+## Current minimum and maximum edges, used for restricting the camera
+## and for pathfinding when building track
 var boundaries = Rect2i()
 
 # Used when saving the game

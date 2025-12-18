@@ -117,7 +117,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 			match gui_state:
 				Gui.State.TRACK:
-					var track_marker_confirm_position = track_creator.click(snapped_mouse_position)
+					var track_marker_confirm_position = track_creator.click(snapped_mouse_position, terrain.boundaries)
 					if track_marker_confirm_position != Vector2i.MAX:
 						track_marker_confirm.visible = true
 						track_marker_confirm.position = track_marker_confirm_position
