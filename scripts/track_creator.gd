@@ -61,7 +61,7 @@ func show_ghost_track(ghost_track_tile_positions: Array[Vector2i]):
 
 ## Returns where to show the confirm marker, or Vector2i.MAX otherwise
 func click(snapped_mouse_position: Vector2i) -> Vector2i:
-	if not _placed_ghost_track_tile_positions:
+	if not _placed_ghost_track_tile_positions and not _illegal_track_positions_method.call([snapped_mouse_position] as Array[Vector2i]):
 		# Start track building mode
 		_placed_ghost_track_tile_positions = [snapped_mouse_position] as Array[Vector2i]
 	elif _placed_ghost_track_tile_positions and snapped_mouse_position == _placed_ghost_track_tile_positions[-1]:
