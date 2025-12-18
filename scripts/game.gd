@@ -108,6 +108,7 @@ func _ready():
 	Events.station_content_updated.connect(_on_station_content_updated)
 	Events.mouse_enters_track.connect(_on_mouse_enters_track)
 	Events.mouse_exits_track.connect(_on_mouse_exits_track)
+	Events.expand_button_clicked.connect(_on_expand_button_clicked)
 
 	track_marker_confirm.visible = false
 
@@ -741,6 +742,13 @@ func _on_mouse_enters_track(track: Track):
 
 func _on_mouse_exits_track(track: Track):
 	track.set_highlight(false)
+
+######################################################################
+
+func _on_expand_button_clicked():
+	# The main purpose of this is to exit Track state,
+	# since boundaries will need to be recalculated
+	_change_gui_state(Gui.State.SELECT)
 
 ######################################################################
 

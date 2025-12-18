@@ -205,6 +205,7 @@ func update_buttons(chunk_x: int, chunk_y: int):
 func _expand_button_clicked(button: ExpandButton, chunk_x: int, chunk_y: int):
 	GlobalBank.spend_money(button.cost, button.global_position)
 	add_random_chunk(chunk_x, chunk_y)
+	Events.expand_button_clicked.emit()
 
 
 func _create_terrain(grid_positions: Array[Vector2i], noise_from_position: Dictionary[Vector2i, float]) -> TerrainChunk:

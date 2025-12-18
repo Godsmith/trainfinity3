@@ -22,3 +22,7 @@ signal mouse_enters_track(track: Track)
 
 # Emitted when mouse exits track
 signal mouse_exits_track(track: Track)
+
+
+# Expand button clicked
+signal expand_button_clicked

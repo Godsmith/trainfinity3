@@ -41,7 +41,6 @@
 
 ## TODO
 
-- Change state to select when buying new area
 - Add goods production chain to README
 - Make the train destinations stations, not single tiles.
 - Show "cannot afford" when trying to place station when out of money
