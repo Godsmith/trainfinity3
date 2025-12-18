@@ -41,7 +41,6 @@
 
 ## TODO
 
-- Add goods production chain to README
 - Make the train destinations stations, not single tiles.
 - Support two-finger panning and zooming
 - cancel button when laying track
