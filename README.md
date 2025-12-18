@@ -43,7 +43,6 @@
 
 - Add goods production chain to README
 - Make the train destinations stations, not single tiles.
-- Show "cannot afford" when trying to place station when out of money
 - Do not show track tile marker immediately when goin to track mode, show it when moving
   the mouse
 - Support two-finger panning and zooming

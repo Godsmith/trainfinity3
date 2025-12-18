@@ -423,6 +423,7 @@ func _try_create_station(station_position: Vector2i):
 	if not _is_legal_station_position(station_position):
 		return
 	if not GlobalBank.can_afford(Global.Asset.STATION):
+		Global.show_popup("Cannot afford!", station_position, self)
 		return
 	var station = STATION.instantiate()
 	station.position = station_position
