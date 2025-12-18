@@ -156,6 +156,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		ghost_light.position = snapped_mouse_position
 
 		if gui_state == Gui.State.TRACK:
+			current_tile_marker.visible = true
 			_show_current_tile_marker(snapped_mouse_position)
 			track_creator.mouse_move(snapped_mouse_position)
 		if gui_state == Gui.State.STATION:
@@ -394,9 +395,7 @@ func _change_gui_state(new_state: Gui.State):
 		for platform: PlatformTile in get_tree().get_nodes_in_group("platforms"):
 			platform.modulate = Color(1, 1, 1, 1)
 		
-	if new_state == Gui.State.TRACK:
-		current_tile_marker.visible = true
-	elif new_state == Gui.State.STATION:
+	if new_state == Gui.State.STATION:
 		ghost_station.visible = true
 	elif new_state == Gui.State.LIGHT:
 		ghost_light.visible = true
