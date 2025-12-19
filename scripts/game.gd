@@ -296,7 +296,7 @@ func _create_tracks_from_ghost_tracks(ghost_tracks: Array[Track]):
 			astar.connect_positions(track.pos1, track.pos2)
 		track.track_clicked.connect(_on_track_clicked)
 	GlobalBank.buy(Global.Asset.TRACK, new_track_count, ghost_tracks[-1].global_position)
-	platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(positions, _get_stations(), _create_platform_tile)
+	platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(positions, _get_stations(), _add_platform_tile_to_tree)
 	# Makes trains waiting for reservations to change find new paths
 	# TODO: Find a more elegant way to do this, or at least better naming.
 	track_reservations.reservation_number += 1
@@ -311,7 +311,7 @@ func _destroy_track(positions: Array[Vector2i]):
 			track_positions[track.pos2] = 0
 			track_set.erase(track)
 	# Might not work, since we have already removed the tracks?
-	platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(track_positions.keys(), _get_stations(), _create_platform_tile)
+	platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(track_positions.keys(), _get_stations(), _add_platform_tile_to_tree)
 	# Makes trains waiting for reservations to change find new paths
 	# TODO: Find a more elegant way to do this, or at least better naming.
 	track_reservations.reservation_number += 1
@@ -428,7 +428,7 @@ func _try_create_station(station_position: Vector2i):
 	station.position = station_position
 	add_child(station)
 	GlobalBank.buy(Global.Asset.STATION, 1, station.global_position)
-	platform_tile_set.create_platform_tiles([station], _create_platform_tile)
+	platform_tile_set.create_platform_tiles([station], _add_platform_tile_to_tree)
 
 func _destroy_stations(positions: Array[Vector2i]):
 	var stations: Array[Station] = _get_stations()
@@ -438,7 +438,7 @@ func _destroy_stations(positions: Array[Vector2i]):
 				if not track_set.has_track(adjacent_position):
 					continue
 				platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(
-					[adjacent_position], stations, _create_platform_tile)
+					[adjacent_position], stations, _add_platform_tile_to_tree)
 			station.queue_free()
 			GlobalBank.destroy(Global.Asset.STATION)
 
@@ -568,7 +568,7 @@ func _get_point_path_between_platforms(platform_pos1: Vector2i,
 ######################################################################
 
 # Called by PlatformTileSet
-func _create_platform_tile(platform_tile: PlatformTile):
+func _add_platform_tile_to_tree(platform_tile: PlatformTile):
 	platform_tile.platform_tile_clicked.connect(_platform_tile_clicked)
 	add_child(platform_tile)
 

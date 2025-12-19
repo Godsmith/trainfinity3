@@ -11,7 +11,7 @@ var track_set: TrackSet
 func _init(track_set_: TrackSet):
 	track_set = track_set_
 
-func create_platform_tiles(stations: Array[Station], create_platform_tile: Callable):
+func create_platform_tiles(stations: Array[Station], add_platform_tile_to_tree: Callable):
 	var positions_with_track_suitable_for_platform_tiles = _get_positions_with_track_suitable_for_platform_tiles()
 	var evaluated_platform_tile_positions = []
 	for station in stations:
@@ -33,7 +33,7 @@ func create_platform_tiles(stations: Array[Station], create_platform_tile: Calla
 			var platform_tile = PLATFORM_TILE.instantiate()
 			platform_tile.position = pos
 			platform_tile.rotation = _get_platform_rotation(pos)
-			create_platform_tile.call(platform_tile)
+			add_platform_tile_to_tree.call(platform_tile)
 			_platform_tiles[pos] = platform_tile
 
 func _would_platform_here_exceed_maximum_platform_size(pos: Vector2i):
@@ -114,7 +114,7 @@ func platform_endpoints(pos: Vector2i) -> Array[Vector2i]:
 	platform_tile_positions.sort_custom(func(a: Vector2i, b: Vector2i): return a.x < b.x if a.y == b.y else a.y < b.y)
 	return [platform_tile_positions[0], platform_tile_positions[-1]]
 
-func destroy_and_recreate_platform_tiles_orthogonally_linked_to(positions: Array[Vector2i], all_stations: Array[Station], create_platform_tile: Callable):
+func destroy_and_recreate_platform_tiles_orthogonally_linked_to(positions: Array[Vector2i], all_stations: Array[Station], add_platform_tile_to_tree: Callable):
 	var all_positions = _positions_orthogonally_linked_to(positions)
 	for pos in all_positions:
 		if pos not in _platform_tiles:
@@ -122,7 +122,7 @@ func destroy_and_recreate_platform_tiles_orthogonally_linked_to(positions: Array
 		_platform_tiles[pos].queue_free()
 		_platform_tiles.erase(pos)
 	var stations = _stations_adjacent_to(all_positions, all_stations)
-	create_platform_tiles(stations, create_platform_tile)
+	create_platform_tiles(stations, add_platform_tile_to_tree)
 
 func _positions_orthogonally_linked_to(positions: Array[Vector2i]) -> Dictionary[Vector2i, int]:
 	var collected_positions: Dictionary[Vector2i, int] = {}
