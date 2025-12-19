@@ -124,12 +124,6 @@ func destroy_and_recreate_platform_tiles_orthogonally_linked_to(positions: Array
 	var stations = _stations_adjacent_to(all_positions, all_stations)
 	create_platform_tiles(stations, create_platform_tile)
 
-func create_platforms_orthogonally_linked_to(positions: Array[Vector2i], all_stations: Array[Station], create_platform_tile: Callable):
-	var all_positions = _positions_orthogonally_linked_to(positions)
-	var stations = _stations_adjacent_to(all_positions, all_stations)
-	create_platform_tiles(stations, create_platform_tile)
-
-
 func _positions_orthogonally_linked_to(positions: Array[Vector2i]) -> Dictionary[Vector2i, int]:
 	var collected_positions: Dictionary[Vector2i, int] = {}
 	var positions_to_evaluate := positions.duplicate()
