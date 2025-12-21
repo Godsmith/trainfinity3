@@ -21,10 +21,13 @@ enum Direction {BOTH, POS1_TO_POS2, POS2_TO_POS1}
 
 var direction = Direction.BOTH
 
+## Create a new instance of Track. pos1 and pos2 will always be sorted.
 static func create(p1: Vector2i, p2: Vector2i) -> Track:
 	var track: Track = TRACK.instantiate()
-	track.pos1 = p1
-	track.pos2 = p2
+	var positions = [p1, p2]
+	positions.sort()
+	track.pos1 = positions[0]
+	track.pos2 = positions[1]
 	track.rotation = atan2(p2.y - p1.y, p2.x - p1.x)
 	# If diagonal, extend length
 	if is_equal_approx(fposmod(track.rotation, PI / 2), PI / 4):
@@ -32,6 +35,9 @@ static func create(p1: Vector2i, p2: Vector2i) -> Track:
 	else:
 		track._set_length_normal()
 	return track
+
+func _to_string() -> String:
+	return "Track(%s, %s)" % [pos1, pos2]
 
 func _set_length_normal():
 	$CanvasGroupSleeper/Sleeper1/Sleeper5.visible = false
@@ -60,10 +66,6 @@ func _set_color():
 	var a = 0.8 if is_ghostly else 1.0
 	modulate = Color(r, g, b, a)
 		
-func position_rotation() -> Vector3i:
-	# makes a direction of 45 degrees equal to a direction of 225 degrees
-	return Vector3i(roundi(position.x), roundi(position.y), roundi(rotation_degrees) % 180)
-	
 func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 		track_clicked.emit(self)

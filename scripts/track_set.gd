@@ -3,12 +3,12 @@ extends Node
 
 class_name TrackSet
 
-# The keys are provided by Track.position_rotation()
-var _tracks: Dictionary[Vector3i, Track] = {}
+# The keys are provided by str(track)
+var _tracks: Dictionary[String, Track] = {}
 var _tracks_from_position: Dictionary[Vector2i, Array] = {}
 
 func add(track: Track):
-	_tracks[track.position_rotation()] = track
+	_tracks[str(track)] = track
 	if not track.pos1 in _tracks_from_position:
 		_tracks_from_position[track.pos1] = []
 	if not track.pos2 in _tracks_from_position:
@@ -17,7 +17,7 @@ func add(track: Track):
 	_tracks_from_position[track.pos2].append(track)
 
 func exists(track: Track):
-	return track.position_rotation() in _tracks
+	return str(track) in _tracks
 
 func get_all_tracks() -> Array[Track]:
 	return _tracks.values()
@@ -56,7 +56,7 @@ func tracks_at_position(position: Vector2i) -> Array:
 	return _tracks_from_position[position]
 
 func erase(track: Track):
-	_tracks.erase(track.position_rotation())
+	_tracks.erase(str(track))
 	_tracks_from_position[track.pos1].erase(track)
 	_tracks_from_position[track.pos2].erase(track)
 	track.queue_free()
