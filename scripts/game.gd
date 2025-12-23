@@ -32,7 +32,7 @@ var astar = Astar.new()
 @onready var track_set = TrackSet.new()
 @onready var platform_tile_set = PlatformTileSet.new()
 @onready var track_reservations = TrackReservations.new()
-@onready var track_creator = TrackCreator.new(_create_tracks_from_ghost_tracks, $".".add_child, _illegal_track_positions)
+@onready var track_creator = TrackCreator.new(_create_tracks_from_ghost_tracks, _illegal_track_positions)
 
 var train_start_position: Vector2i
 var selected_station: Station = null
@@ -175,6 +175,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				for track in track_set.get_all_tracks():
 					all_track_set.add(track)
 				for track in ghost_tracks:
+					add_child(track)
 					all_track_set.add(track)
 				_recreate_platform_tiles(all_track_set)
 			Gui.State.STATION:
@@ -822,7 +823,9 @@ func _load_game_from_path(file_path: String):
 	GlobalBank.is_loading_game = true
 	GlobalBank.set_money(Global.MAX_INT)
 	for track_dict in data.tracks:
-		track_creator.show_ghost_track([track_dict.pos1, track_dict.pos2])
+		var tracks = track_creator.create_ghost_track([track_dict.pos1, track_dict.pos2])
+		for track in tracks:
+			add_child(track)
 		track_creator.create_tracks()
 	var direction_from_track_positions: Dictionary[String, Track.Direction] = {}
 	for track_dict in data.tracks:

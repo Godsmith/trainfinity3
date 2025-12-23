@@ -6,28 +6,25 @@ var _candidate_ghost_track_tile_positions: Array[Vector2i] = []
 var _placed_ghost_track_tile_positions: Array[Vector2i] = []
 var _ghost_tracks: Array[Track] = []
 var _create_tracks_method: Callable
-var _add_child_method: Callable
 var _illegal_track_positions_method: Callable
 var astar_grid: AStarGrid2D
 
 
-func _init(create_tracks_method: Callable, add_child_method: Callable, illegal_track_positions_method: Callable) -> void:
+func _init(create_tracks_method: Callable, illegal_track_positions_method: Callable) -> void:
 	_create_tracks_method = create_tracks_method
-	_add_child_method = add_child_method
 	_illegal_track_positions_method = illegal_track_positions_method
 
 
 func mouse_move(snapped_mouse_position: Vector2i) -> Array[Track]:
-	# TODO: this breaks command-query separation
 	if _placed_ghost_track_tile_positions:
 		_candidate_ghost_track_tile_positions.assign(Array(astar_grid.get_point_path(_placed_ghost_track_tile_positions[-1] / Global.TILE_SIZE, snapped_mouse_position / Global.TILE_SIZE)).map(func(v): return Vector2i(v)))
 		if _placed_ghost_track_tile_positions and snapped_mouse_position == _placed_ghost_track_tile_positions[-1]:
 			# If at current end position, just show the placed ghost track
-			return show_ghost_track(_placed_ghost_track_tile_positions)
+			return create_ghost_track(_placed_ghost_track_tile_positions)
 		elif snapped_mouse_position in _placed_ghost_track_tile_positions:
 			# If somewhere else among placed ghost track, show them as red from
 			# end back to that position, to show that they will be deleted on click
-			var ghost_tracks := show_ghost_track(_placed_ghost_track_tile_positions)
+			var ghost_tracks := create_ghost_track(_placed_ghost_track_tile_positions)
 			var reverse_ghost_tracks = _ghost_tracks.duplicate()
 			reverse_ghost_tracks.reverse()
 			for track in reverse_ghost_tracks:
@@ -37,13 +34,12 @@ func mouse_move(snapped_mouse_position: Vector2i) -> Array[Track]:
 			return ghost_tracks
 		else:
 			# Else, show placed and candidate ghost track
-			return show_ghost_track(
+			return create_ghost_track(
 					_placed_ghost_track_tile_positions + _candidate_ghost_track_tile_positions)
 	return [] as Array[Track]
 
 
-func show_ghost_track(ghost_track_tile_positions: Array[Vector2i]) -> Array[Track]:
-	# TODO: this breaks command-query separation
+func create_ghost_track(ghost_track_tile_positions: Array[Vector2i]) -> Array[Track]:
 	var illegal_positions = _illegal_track_positions_method.call(ghost_track_tile_positions)
 	for track in _ghost_tracks:
 		track.queue_free()
@@ -61,7 +57,6 @@ func show_ghost_track(ghost_track_tile_positions: Array[Vector2i]) -> Array[Trac
 		var midway_position = Vector2(pos1).lerp(pos2, 0.5)
 		track.position = midway_position
 		_ghost_tracks.append(track)
-		_add_child_method.call(track)
 	return _ghost_tracks
 
 
