@@ -17,29 +17,33 @@ func _init(create_tracks_method: Callable, add_child_method: Callable, illegal_t
 	_illegal_track_positions_method = illegal_track_positions_method
 
 
-func mouse_move(snapped_mouse_position: Vector2i):
+func mouse_move(snapped_mouse_position: Vector2i) -> Array[Track]:
+	# TODO: this breaks command-query separation
 	if _placed_ghost_track_tile_positions:
 		_candidate_ghost_track_tile_positions.assign(Array(astar_grid.get_point_path(_placed_ghost_track_tile_positions[-1] / Global.TILE_SIZE, snapped_mouse_position / Global.TILE_SIZE)).map(func(v): return Vector2i(v)))
 		if _placed_ghost_track_tile_positions and snapped_mouse_position == _placed_ghost_track_tile_positions[-1]:
 			# If at current end position, just show the placed ghost track
-			show_ghost_track(_placed_ghost_track_tile_positions)
+			return show_ghost_track(_placed_ghost_track_tile_positions)
 		elif snapped_mouse_position in _placed_ghost_track_tile_positions:
 			# If somewhere else among placed ghost track, show them as red from
 			# end back to that position, to show that they will be deleted on click
-			show_ghost_track(_placed_ghost_track_tile_positions)
+			var ghost_tracks := show_ghost_track(_placed_ghost_track_tile_positions)
 			var reverse_ghost_tracks = _ghost_tracks.duplicate()
 			reverse_ghost_tracks.reverse()
 			for track in reverse_ghost_tracks:
 				track.set_allowed(false)
 				if snapped_mouse_position in [track.pos1, track.pos2]:
 					break
+			return ghost_tracks
 		else:
 			# Else, show placed and candidate ghost track
-			show_ghost_track(
+			return show_ghost_track(
 					_placed_ghost_track_tile_positions + _candidate_ghost_track_tile_positions)
+	return [] as Array[Track]
 
 
-func show_ghost_track(ghost_track_tile_positions: Array[Vector2i]):
+func show_ghost_track(ghost_track_tile_positions: Array[Vector2i]) -> Array[Track]:
+	# TODO: this breaks command-query separation
 	var illegal_positions = _illegal_track_positions_method.call(ghost_track_tile_positions)
 	for track in _ghost_tracks:
 		track.queue_free()
@@ -58,6 +62,7 @@ func show_ghost_track(ghost_track_tile_positions: Array[Vector2i]):
 		track.position = midway_position
 		_ghost_tracks.append(track)
 		_add_child_method.call(track)
+	return _ghost_tracks
 
 
 ## Returns where to show the confirm marker, or Vector2i.MAX otherwise

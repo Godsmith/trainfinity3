@@ -61,8 +61,6 @@
   - either when you select the train, or it can create a red line to the taget
 - change graphics for end of platform, so it can't look like two stations are one
   large platform
-- show ghost platforms when building station
-- show ghost platforms when building track
 - heavier trains should have slower acceleration
 - change train paths when changing length of starting or ending station
 

@@ -206,7 +206,7 @@ func _get_money_for_cargo():
 	# accepts the same goods.
 	var train_position = get_train_position().snapped(Global.TILE)
 	var money_earned = 0
-	for station in platform_tile_set.stations_connected_to_platform(train_position, _get_stations()):
+	for station in platform_tile_set.stations_connected_to_platform(train_position, _get_stations(), track_set):
 		for resource_type in station.accepts():
 			for wagon in wagons:
 				var resource_count = wagon.get_resource_count_not_picked_up_from(resource_type, Vector2i(station.position))
@@ -260,7 +260,7 @@ func _get_new_state_at_end_of_curve() -> State:
 	var current_tile = Vector2i(get_train_position().snapped(Global.TILE))
 	var target_tile = (
 		_furthest_in_at_platform(destination_tile)
-		if current_tile in platform_tile_set.connected_platform_tile_positions(destination_tile)
+		if current_tile in platform_tile_set.connected_platform_tile_positions(destination_tile, track_set)
 		else destination_tile)
 	if current_tile == target_tile:
 		return State.LOADING
@@ -271,7 +271,7 @@ func _get_new_state_at_end_of_curve() -> State:
 
 
 func _furthest_in_at_platform(tile: Vector2i) -> Vector2i:
-	var endpoints = platform_tile_set.platform_endpoints(tile)
+	var endpoints = platform_tile_set.platform_endpoints(tile, track_set)
 	var degrees = posmod(path_follow.rotation_degrees, 360)
 	match degrees:
 		0:
@@ -305,7 +305,7 @@ func _set_new_curve_from_platform(point_path: PackedVector2Array, train_position
 	# point_path:              - - - - - - - >
 	# Train, platform, track: [T W W . .] . . .
 	# curve:                   - - >
-	var platform_tile_positions = platform_tile_set.connected_ordered_platform_tile_positions(train_position, train_position)
+	var platform_tile_positions = platform_tile_set.connected_ordered_platform_tile_positions(train_position, train_position, track_set)
 	var vector2i_point_path: Array[Vector2i] = []
 	for pos in _get_new_point_path_from_platform(point_path, platform_tile_positions):
 		vector2i_point_path.append(Vector2i(pos))
@@ -363,14 +363,14 @@ func _load_and_unload() -> bool:
 	var train_position = get_train_position().snapped(Global.TILE)
 	var wagons_at_platform: Array[Wagon] = []
 	for wagon in wagons:
-		if Vector2i(wagon.get_wagon_position().snapped(Global.TILE)) in platform_tile_set.connected_platform_tile_positions(train_position):
+		if Vector2i(wagon.get_wagon_position().snapped(Global.TILE)) in platform_tile_set.connected_platform_tile_positions(train_position, track_set):
 			wagons_at_platform.append(wagon)
 	var reversed_wagons_at_platform: Array[Wagon] = []
 	for i in wagon_count:
 		var wagon = wagons[-i - 1]
-		if Vector2i(wagon.get_wagon_position().snapped(Global.TILE)) in platform_tile_set.connected_platform_tile_positions(train_position):
+		if Vector2i(wagon.get_wagon_position().snapped(Global.TILE)) in platform_tile_set.connected_platform_tile_positions(train_position, track_set):
 			reversed_wagons_at_platform.append(wagon)
-	for station in platform_tile_set.stations_connected_to_platform(train_position, _get_stations()):
+	for station in platform_tile_set.stations_connected_to_platform(train_position, _get_stations(), track_set):
 		for wagon in reversed_wagons_at_platform:
 			for resource_type in station.accepts():
 				var resource_count = wagon.get_resource_count_not_picked_up_from(resource_type, Vector2i(station.position))
@@ -391,7 +391,7 @@ func _resources_accepted_at_other_destinations(this_destination_index: int) -> A
 	for i in len(destinations):
 		if i == this_destination_index:
 			continue
-		for station in platform_tile_set.stations_connected_to_platform(destinations[i], _get_stations()):
+		for station in platform_tile_set.stations_connected_to_platform(destinations[i], _get_stations(), track_set):
 			for resource_type in station.accepts():
 				resource_types_dict[resource_type] = 0
 	return resource_types_dict.keys()

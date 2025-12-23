@@ -30,11 +30,11 @@ var astar = Astar.new()
 @onready var gui: Gui = $Gui
 @onready var track_marker_confirm := $TrackMarkerConfirm
 @onready var track_set = TrackSet.new()
-@onready var platform_tile_set = PlatformTileSet.new(track_set)
+@onready var platform_tile_set = PlatformTileSet.new()
 @onready var track_reservations = TrackReservations.new()
 @onready var track_creator = TrackCreator.new(_create_tracks_from_ghost_tracks, $".".add_child, _illegal_track_positions)
 
-var selected_platform_tile: PlatformTile = null
+var train_start_position: Vector2i
 var selected_station: Station = null
 var selected_train: Train = null
 
@@ -47,6 +47,8 @@ var show_reservation_markers := false
 var current_tile_marker: Line2D
 
 var destination_markers: Array[Line2D]
+
+var previous_snapped_mouse_position := Vector2i(Global.MAX_INT, Global.MAX_INT)
 
 func _process(delta: float) -> void:
 	if follow_train:
@@ -151,24 +153,41 @@ func _unhandled_input(event: InputEvent) -> void:
 				_change_gui_state(Gui.State.DESTROY1)
 	
 	elif event is InputEventMouseMotion:
-		var snapped_mouse_position = _get_snapped_mouse_position(event)
-		ghost_station.position = snapped_mouse_position
-		ghost_light.position = snapped_mouse_position
-
-		if gui_state == Gui.State.TRACK:
-			current_tile_marker.visible = true
-			_show_current_tile_marker(snapped_mouse_position)
-			track_creator.mouse_move(snapped_mouse_position)
-		if gui_state == Gui.State.STATION:
-			ghost_station.set_color(true, _is_legal_station_position(snapped_mouse_position))
-		if gui_state == Gui.State.DESTROY1:
-			_show_destroy_markers(snapped_mouse_position, snapped_mouse_position)
-		if gui_state == Gui.State.DESTROY2:
-			_show_destroy_markers(mouse_down_position, snapped_mouse_position)
 		if is_right_mouse_button_held_down:
 			follow_train = null
 			camera.position -= event.get_relative() / camera.zoom.x
 			_restrict_camera()
+
+		var snapped_mouse_position = _get_snapped_mouse_position(event)
+		if snapped_mouse_position == previous_snapped_mouse_position:
+			return
+		previous_snapped_mouse_position = snapped_mouse_position
+
+		ghost_station.position = snapped_mouse_position
+		ghost_light.position = snapped_mouse_position
+
+		match gui_state:
+			Gui.State.TRACK:
+				current_tile_marker.visible = true
+				_show_current_tile_marker(snapped_mouse_position)
+				var ghost_tracks = track_creator.mouse_move(snapped_mouse_position)
+				var all_track_set = TrackSet.new()
+				for track in track_set.get_all_tracks():
+					all_track_set.add(track)
+				for track in ghost_tracks:
+					all_track_set.add(track)
+				_recreate_platform_tiles(all_track_set)
+			Gui.State.STATION:
+				var is_legal_station_position = _is_legal_station_position(snapped_mouse_position)
+				ghost_station.set_color(true, is_legal_station_position)
+				var stations = _get_stations()
+				if is_legal_station_position:
+					stations.append(ghost_station)
+				_recreate_platform_tiles(track_set, stations)
+			Gui.State.DESTROY1:
+				_show_destroy_markers(snapped_mouse_position, snapped_mouse_position)
+			Gui.State.DESTROY2:
+				_show_destroy_markers(mouse_down_position, snapped_mouse_position)
 
 	elif event is InputEventKey and event.pressed and not event.is_echo():
 		match event.keycode:
@@ -277,11 +296,6 @@ func _create_tracks_from_ghost_tracks(ghost_tracks: Array[Track]):
 		# astar point will be created at the position, and the position will be
 		# evaluated for platforms, etc.
 		return
-	var positions_dict: Dictionary[Vector2i, int] = {}
-	for track in ghost_tracks:
-		positions_dict[track.pos1] = 0
-		positions_dict[track.pos2] = 0
-	var positions = positions_dict.keys()
 	
 	var new_track_count = 0
 	for track in ghost_tracks:
@@ -296,24 +310,18 @@ func _create_tracks_from_ghost_tracks(ghost_tracks: Array[Track]):
 			astar.connect_positions(track.pos1, track.pos2)
 		track.track_clicked.connect(_on_track_clicked)
 	GlobalBank.buy(Global.Asset.TRACK, new_track_count, ghost_tracks[-1].global_position)
-	var platform_tiles = platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(positions, _get_stations())
-	_add_platform_tiles_to_tree(platform_tiles)
+	_recreate_platform_tiles()
 	# Makes trains waiting for reservations to change find new paths
 	# TODO: Find a more elegant way to do this, or at least better naming.
 	track_reservations.reservation_number += 1
 
 func _destroy_track(positions: Array[Vector2i]):
-	var track_positions: Dictionary[Vector2i, int] = {}
 	for pos in positions:
 		for track in track_set.tracks_at_position(pos).duplicate():
 			astar.disconnect_positions(track.pos1, track.pos2)
 			GlobalBank.destroy(Global.Asset.TRACK)
-			track_positions[track.pos1] = 0
-			track_positions[track.pos2] = 0
 			track_set.erase(track)
-	# Might not work, since we have already removed the tracks?
-	var platform_tiles = platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(track_positions.keys(), _get_stations())
-	_add_platform_tiles_to_tree(platform_tiles)
+	_recreate_platform_tiles()
 	# Makes trains waiting for reservations to change find new paths
 	# TODO: Find a more elegant way to do this, or at least better naming.
 	track_reservations.reservation_number += 1
@@ -404,6 +412,9 @@ func _change_gui_state(new_state: Gui.State):
 
 	if new_state != Gui.State.DESTROY1:
 		_hide_destroy_markers()
+	if gui_state in [Gui.State.TRACK, Gui.State.STATION]:
+		# Remove any ghost platforms that existed in track or station creation mode
+		_recreate_platform_tiles()
 
 	gui_state = new_state
 	gui.set_pressed_no_signal(new_state)
@@ -430,21 +441,18 @@ func _try_create_station(station_position: Vector2i):
 	station.position = station_position
 	add_child(station)
 	GlobalBank.buy(Global.Asset.STATION, 1, station.global_position)
-	var platform_tiles = platform_tile_set.create_platform_tiles([station])
-	_add_platform_tiles_to_tree(platform_tiles)
+	_recreate_platform_tiles()
 
 func _destroy_stations(positions: Array[Vector2i]):
-	var stations: Array[Station] = _get_stations()
-	for station in stations:
+	var stations_to_create_platforms_for: Array[Station] = []
+	for station in _get_stations():
 		if Vector2i(station.position) in positions:
-			for adjacent_position in Global.orthogonally_adjacent(station.position):
-				if not track_set.has_track(adjacent_position):
-					continue
-				var platform_tiles = platform_tile_set.destroy_and_recreate_platform_tiles_orthogonally_linked_to(
-					[adjacent_position], stations)
-				_add_platform_tiles_to_tree(platform_tiles)
 			station.queue_free()
+			stations_to_create_platforms_for.append(station)
 			GlobalBank.destroy(Global.Asset.STATION)
+		else:
+			stations_to_create_platforms_for.append(station)
+	_recreate_platform_tiles(track_set, stations_to_create_platforms_for)
 
 func _get_stations() -> Array[Station]:
 	var stations: Array[Station] = []
@@ -455,7 +463,8 @@ func _get_stations() -> Array[Station]:
 
 ############################################################################
 
-func _add_platform_tiles_to_tree(platform_tiles: Array[PlatformTile]):
+func _recreate_platform_tiles(track_set_: TrackSet = track_set, stations = _get_stations()):
+	var platform_tiles = platform_tile_set.recreate_all_platform_tiles(stations, track_set_)
 	for platform_tile in platform_tiles:
 		platform_tile.platform_tile_clicked.connect(_platform_tile_clicked)
 		add_child(platform_tile)
@@ -465,21 +474,23 @@ func _platform_tile_clicked(platform_tile: PlatformTile):
 	if gui_state == Gui.State.TRAIN1:
 		for other_platform: PlatformTile in get_tree().get_nodes_in_group("platforms"):
 			other_platform.modulate = Color(1, 1, 1, 1)
-			if not platform_tile_set.are_connected(platform_tile, other_platform):
+			if not platform_tile_set.are_connected(platform_tile, other_platform, track_set):
 				if astar.get_point_path(Vector2i(platform_tile.position), Vector2i(other_platform.position)):
 					other_platform.modulate = Color(0, 1, 0, 1)
-		selected_platform_tile = platform_tile
+		train_start_position = Vector2i(platform_tile.position)
 		_change_gui_state(Gui.State.TRAIN2)
 	elif gui_state == Gui.State.TRAIN2:
-		_try_create_train(selected_platform_tile, platform_tile)
+		_try_create_train(train_start_position, Vector2i(platform_tile.position))
 		_change_gui_state(Gui.State.TRAIN1)
 
 ############################################################################
 
-func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
+func _try_create_train(pos1: Vector2i, pos2: Vector2i):
+	var platform1 = platform_tile_set.get_platform_tile_at(pos1)
+	var platform2 = platform_tile_set.get_platform_tile_at(pos2)
 	if not GlobalBank.can_afford(Global.Asset.TRAIN):
 		return
-	if platform_tile_set.are_connected(platform1, platform2):
+	if platform_tile_set.are_connected(platform1, platform2, track_set):
 		return
 	if track_reservations.is_reserved(Vector2i(platform1.position)):
 		Global.show_popup("Track reserved!", platform1.position, self)
@@ -493,7 +504,7 @@ func _try_create_train(platform1: PlatformTile, platform2: PlatformTile):
 		return
 
 	var train_number = len(get_tree().get_nodes_in_group("trains")) + 1
-	var wagon_count = min(platform_tile_set.platform_size(platform1.position), platform_tile_set.platform_size(platform2.position)) - 1
+	var wagon_count = min(platform_tile_set.platform_size(platform1.position, track_set), platform_tile_set.platform_size(platform2.position, track_set)) - 1
 	var train = Train.create("Train %s" % train_number, wagon_count, point_path, platform_tile_set, track_set, track_reservations, astar)
 
 	train.train_clicked.connect(_on_train_clicked)
@@ -569,8 +580,8 @@ func _on_train_state_changed(train: Train):
 func _get_point_path_between_platforms(platform_pos1: Vector2i,
 									   platform_pos2: Vector2i) -> PackedVector2Array:
 	var point_paths: Array[PackedVector2Array] = []
-	for p1 in platform_tile_set.platform_endpoints(platform_pos1):
-		for p2 in platform_tile_set.platform_endpoints(platform_pos2):
+	for p1 in platform_tile_set.platform_endpoints(platform_pos1, track_set):
+		for p2 in platform_tile_set.platform_endpoints(platform_pos2, track_set):
 			point_paths.append(astar.get_point_path(p1, p2))
 	point_paths.sort_custom(func(a, b): return len(a) < len(b))
 	return point_paths[-1]
@@ -822,9 +833,7 @@ func _load_game_from_path(file_path: String):
 	for station_dict in data.stations:
 		_try_create_station(station_dict["position"])
 	for train_dict in data.trains:
-		var platform1 = platform_tile_set.get_platform_tile_at(train_dict.destinations[0])
-		var platform2 = platform_tile_set.get_platform_tile_at(train_dict.destinations[1])
-		_try_create_train(platform1, platform2)
+		_try_create_train(train_dict.destinations[0], train_dict.destinations[1])
 	GlobalBank.set_money(data.money)
 	GlobalBank.is_loading_game = false
 	_change_gui_state(Gui.State.SELECT) # To clear track creating mode
