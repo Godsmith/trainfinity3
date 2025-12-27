@@ -42,8 +42,6 @@
 ## TODO
 
 - Make the train destinations stations, not single tiles.
-- Support two-finger panning and zooming
-- cancel button when laying track
 - Missions
   	- Deliver first of each cargo
   	- Something that requires actually working production lines:
@@ -55,23 +53,30 @@
 - different production rate for different goods
 - temporary subsidies
 - different production rates for different individual industries
-- cities consume only OTHER cities' mail, and mail is priced accordingly
-- train should mark the tile it wants to go to when it cannot find path
-  - either when you select the train, or it can create a red line to the taget
+- cities consume only OTHER cities' mail, and mail is priced accordingly (today always
+  $1)
 - change graphics for end of platform, so it can't look like two stations are one
   large platform
 - heavier trains should have slower acceleration
 - change train paths when changing length of starting or ending station
 
+#### Mobile version
+
+- Support two-finger panning and zooming
+
+#### HTML version
+
+- Unicode emojis do not work
+
 ### Issues
 
+- Track pricing is unpredictable and not refunded.
 - When two stations are four tiles apart on the same rail, increasing the 
   platform length to 5 removes the platform for one of the stations
 - Sometimes the initial map is created without any iron ore, for example
 - Test the case where removal of a bit of train track makes two stations become one
 - If there are multiple stations accepting the same thing adjacent to a platform, the
   train will be paid twice
-- Mail is always worth $1; not worth transporting
 - Music does not loop seamlessly
 - When an industry is selected and a new chunk is bought, any changed prices will
   not be reflected in the description label until industry is reselected
@@ -93,6 +98,7 @@
 	   problem, try it out.
 - When creating and removing rail, sometimes existing stations will be unexpectedly 
   rejigged.
+
 
 ### Thinking about it
 
