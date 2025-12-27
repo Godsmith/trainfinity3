@@ -69,7 +69,9 @@ func click(snapped_mouse_position: Vector2i, boundaries: Rect2i) -> Vector2i:
 	elif _placed_ghost_track_tile_positions and snapped_mouse_position == _placed_ghost_track_tile_positions[-1]:
 		# Click last position again: build
 		if not GlobalBank.can_afford(Global.Asset.TRACK, len(_ghost_tracks)):
-			Global.show_popup("Cannot afford!", snapped_mouse_position, self)
+			# TrackCreator is not part of the tree, so we need to have some global object
+			# as the parent, such as GlobalBank.
+			Global.show_popup("Cannot afford!", snapped_mouse_position, GlobalBank)
 		else:
 			create_tracks()
 	elif _placed_ghost_track_tile_positions and snapped_mouse_position in _placed_ghost_track_tile_positions:
@@ -84,7 +86,9 @@ func click(snapped_mouse_position: Vector2i, boundaries: Rect2i) -> Vector2i:
 	else:
 		# Click other position: move candidate ghost track to placed ghost track
 		if not GlobalBank.can_afford(Global.Asset.TRACK, len(_ghost_tracks)):
-			Global.show_popup("Cannot afford!", snapped_mouse_position, self)
+			# TrackCreator is not part of the tree, so we need to have some global object
+			# as the parent, such as GlobalBank.
+			Global.show_popup("Cannot afford!", snapped_mouse_position, GlobalBank)
 		elif _ghost_tracks.all(func(x): return x.is_allowed):
 			_placed_ghost_track_tile_positions.append_array(_candidate_ghost_track_tile_positions)
 
