@@ -26,3 +26,7 @@ signal mouse_exits_track(track: Track)
 
 # Expand button clicked
 signal expand_button_clicked
+
+
+# Upgrade bought
+signal upgrade_bought(upgrade: UpgradeManager.UpgradeType)

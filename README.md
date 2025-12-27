@@ -51,7 +51,6 @@
   		- Deliver X of each cargo in Y minutes 
   	- Missions should give a large chunk of money, or an upgrade point
 - Show N/A instead of MAX_INT as price of a resource when no industry is producing it
-- Automatically extend platforms when upgrading maximum platform length
 - more sound effects and music
 - different production rate for different goods
 - temporary subsidies
@@ -66,6 +65,8 @@
 
 ### Issues
 
+- When two stations are four tiles apart on the same rail, increasing the 
+  platform length to 5 removes the platform for one of the stations
 - Sometimes the initial map is created without any iron ore, for example
 - Test the case where removal of a bit of train track makes two stations become one
 - If there are multiple stations accepting the same thing adjacent to a platform, the

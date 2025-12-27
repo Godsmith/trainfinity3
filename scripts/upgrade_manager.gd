@@ -33,6 +33,7 @@ class Upgrade:
 
 	func upgrade():
 		current_level += 1
+		Events.upgrade_bought.emit(self.type)
 
 
 var upgrades: Dictionary[UpgradeType, Upgrade] = {

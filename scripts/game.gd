@@ -111,6 +111,7 @@ func _ready():
 	Events.mouse_enters_track.connect(_on_mouse_enters_track)
 	Events.mouse_exits_track.connect(_on_mouse_exits_track)
 	Events.expand_button_clicked.connect(_on_expand_button_clicked)
+	Events.upgrade_bought.connect(_on_upgrade_bought)
 
 	track_marker_confirm.visible = false
 
@@ -764,6 +765,11 @@ func _on_expand_button_clicked():
 	# The main purpose of this is to exit Track state,
 	# since boundaries will need to be recalculated
 	_change_gui_state(Gui.State.SELECT)
+
+
+func _on_upgrade_bought(upgrade: UpgradeManager.UpgradeType):
+	if upgrade == UpgradeManager.UpgradeType.PLATFORM_LENGTH:
+		_recreate_platform_tiles()
 
 ######################################################################
 
