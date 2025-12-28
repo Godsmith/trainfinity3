@@ -185,8 +185,7 @@ func _change_state(new_state: State):
 			absolute_speed = 0.0
 			_get_money_for_cargo()
 		State.WAITING_FOR_MISSING_PLATFORM:
-			var current_tile = Vector2i(get_train_position().snapped(Global.TILE))
-			Global.show_popup("No platform at destination!", current_tile, self)
+			Global.show_popup("No platform at destination!", _get_snapped_train_position(), self)
 			no_route_timer.start()
 			target_speed = 0.0
 			absolute_speed = 0.0
@@ -229,8 +228,16 @@ func get_train_position() -> Vector2:
 	return path_follow.global_position if curve.point_count > 1 else curve.get_point_position(0)
 
 
+func _get_snapped_train_position() -> Vector2i:
+	return Vector2i(get_train_position().snapped(Global.TILE))
+
+
 func _get_wagon_positions() -> Array[Vector2i]:
 	return Array(wagons.map(func(w): return Vector2i(w.path_follow.global_position.snapped(Global.TILE))), TYPE_VECTOR2I, "", null)
+
+
+func _get_snapped_train_and_wagon_positions() -> Array[Vector2i]:
+	return [_get_snapped_train_position()] as Array[Vector2i] + _get_wagon_positions()
 
 
 func select(is_selected: bool):
@@ -246,8 +253,7 @@ func mark_for_destruction(is_marked: bool):
 
 
 func is_train_or_wagon_at_position(pos: Vector2i):
-	var train_position = Vector2i(get_train_position().snapped(Global.TILE))
-	if train_position == pos:
+	if _get_snapped_train_position() == pos:
 		return true
 	for wagon_position in _get_wagon_positions():
 		if wagon_position == pos:
@@ -257,7 +263,7 @@ func is_train_or_wagon_at_position(pos: Vector2i):
 
 func _get_new_state_at_end_of_curve() -> State:
 	var destination_tile = destinations[destination_index]
-	var current_tile = Vector2i(get_train_position().snapped(Global.TILE))
+	var current_tile = _get_snapped_train_position()
 	var target_tile = (
 		_furthest_in_at_platform(destination_tile)
 		if current_tile in platform_tile_set.connected_platform_tile_positions(destination_tile, track_set)
@@ -305,16 +311,16 @@ func _set_new_curve_from_platform(point_path: PackedVector2Array, train_position
 	# point_path:              - - - - - - - >
 	# Train, platform, track: [T W W . .] . . .
 	# curve:                   - - >
-	var platform_tile_positions = platform_tile_set.connected_ordered_platform_tile_positions(train_position, train_position, track_set)
 	var vector2i_point_path: Array[Vector2i] = []
-	for pos in _get_new_point_path_from_platform(point_path, platform_tile_positions):
+	for pos in _get_new_point_path_from_platform(point_path):
 		vector2i_point_path.append(Vector2i(pos))
 
 	# Make the initial curve as long as the train
+	# This depends on [curve], and must be retrieved before [curve] is reset
+	var positions = _get_snapped_train_and_wagon_positions()
 	curve = Curve2D.new()
-	for pos: Vector2i in vector2i_point_path:
-		if pos in platform_tile_positions and pos.distance_to(train_position) <= len(wagons) * Global.TILE_SIZE:
-			curve.add_point(pos)
+	for pos: Vector2i in positions:
+		curve.add_point(pos)
 	_set_progress_from_platform()
 
 
@@ -331,9 +337,10 @@ func _set_progress_from_platform():
 		wagon.path_follow.progress = path_follow.progress - (i + 1) * Global.TILE_SIZE
 
 
-func _get_new_point_path_from_platform(old_point_path: PackedVector2Array, platform_tile_positions: Array[Vector2i]):
+func _get_new_point_path_from_platform(old_point_path: PackedVector2Array):
 	var vector2i_point_path = Array(old_point_path).map(func(x): return Vector2i(x))
-	var other_end = platform_tile_positions[-1]
+	var train_and_wagon_positions = _get_snapped_train_and_wagon_positions()
+	var last_wagon_position = train_and_wagon_positions[-1]
 	# Two cases: either the next stop lies forward, or the next stop lies backwards.
 	#       [W W W W T]
 	#        A       B
@@ -341,21 +348,18 @@ func _get_new_point_path_from_platform(old_point_path: PackedVector2Array, platf
 	#                ----->   1. Next stop lies forward, only B overlaps point_path
 	# <---------------        2. Next stop lies backward, A and B overlap point_path
 	# 1. Next stop lies forward
-	if other_end not in vector2i_point_path:
-		platform_tile_positions.reverse()
-		return PackedVector2Array(platform_tile_positions) + old_point_path.slice(1)
+	if last_wagon_position not in vector2i_point_path:
+		train_and_wagon_positions.reverse()
+		return PackedVector2Array(train_and_wagon_positions) + old_point_path.slice(1)
 	# 2. Next stop lies backwards
 	# do nothing, we have entire path already
 	else:
 		return old_point_path
-	# Result: point_path goes from opposite end of platform to destination
+	# Result: point_path starts at end of train furthest from destination
 
 
 func _adjust_reservations_to_where_train_is():
-	var positions_to_reserve: Array[Vector2i] = [Vector2i(get_train_position().snapped(Global.TILE))]
-	for pos in _get_wagon_positions():
-		positions_to_reserve.append(pos)
-	positions_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
+	var positions_to_reserve = track_set.get_segments_connected_to_positions(_get_snapped_train_and_wagon_positions())
 	track_reservations.reserve_train_positions(positions_to_reserve, self)
 
 ## Only load and unload from wagons that are actually at the platform
@@ -474,8 +478,6 @@ func _get_first_position_reserved_by_other_train(positions: Array[Vector2i]) -> 
 
 func _reserve_forward_positions(forward_positions: Array[Vector2i]) -> Global.Vector2iOrNone:
 	var positions_to_reserve = forward_positions.duplicate()
-	positions_to_reserve.append(Vector2i(get_train_position().snapped(Global.TILE)))
-	for pos in _get_wagon_positions():
-		positions_to_reserve.append(pos)
+	positions_to_reserve.append_array(_get_snapped_train_and_wagon_positions())
 	var segments_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
 	return track_reservations.reserve_train_positions(segments_to_reserve, self)
