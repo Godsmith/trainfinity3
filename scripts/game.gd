@@ -450,7 +450,6 @@ func _destroy_stations(positions: Array[Vector2i]):
 	for station in _get_stations():
 		if Vector2i(station.position) in positions:
 			station.queue_free()
-			stations_to_create_platforms_for.append(station)
 			GlobalBank.destroy(Global.Asset.STATION)
 		else:
 			stations_to_create_platforms_for.append(station)
