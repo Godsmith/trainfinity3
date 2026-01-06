@@ -307,7 +307,7 @@ func set_initial_curve(point_path: PackedVector2Array):
 ## Sets a new path from the station, possibly turning train around
 ## [br][point_path] is a path that goes from either end of the platform to the next destination.
 ## [br][train_position] is the current train engine position
-func _set_new_curve_from_platform(point_path: PackedVector2Array, train_position: Vector2i):
+func _set_new_curve_from_platform(point_path: PackedVector2Array):
 	# point_path:              - - - - - - - >
 	# Train, platform, track: [T W W . .] . . .
 	# curve:                   - - >
@@ -447,7 +447,7 @@ func _try_set_new_curve_and_return_new_state(target_position: Vector2i) -> State
 		var position_that_could_not_be_reserved_or_none = _reserve_forward_positions(upcoming_positions_until_next_non_intersection)
 		if not position_that_could_not_be_reserved_or_none.has_value:
 			if is_at_station:
-				_set_new_curve_from_platform(point_path, train_position)
+				_set_new_curve_from_platform(point_path)
 			else:
 				curve.add_point(point_path[1])
 			return State.RUNNING
