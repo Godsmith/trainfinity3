@@ -614,9 +614,12 @@ func _destroy_under_destroy_markers():
 
 	var have_trains_been_destroyed = false
 	for train in trains_marked_for_destruction_set:
-		train.queue_free()
-		GlobalBank.destroy(Global.Asset.TRAIN)
 		track_reservations.clear_reservations(train)
+		train.queue_free()
+		# Remove it from the tree, or _update might get triggered even though the
+		# train will be removed
+		train.get_parent().remove_child(train)
+		GlobalBank.destroy(Global.Asset.TRAIN)
 		have_trains_been_destroyed = true
 	trains_marked_for_destruction_set.clear()
 	if have_trains_been_destroyed:
