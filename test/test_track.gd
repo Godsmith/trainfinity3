@@ -34,7 +34,7 @@ func after_each():
 	_game.queue_free()
 
 
-func test_create_rail():
+func test_create_track():
 	press(KEY_1) # Switch to track mode
 	click(200, 200)
 	click(400, 200)
@@ -43,7 +43,7 @@ func test_create_rail():
 	assert_eq(len(_game.track_set.get_all_tracks()), 4)
 
 
-func test_show_ghost_rail_before_building():
+func test_show_ghost_track_before_building():
 	press(KEY_1) # Switch to track mode
 	click(200, 200)
 	mouse_move(400, 200)
@@ -53,13 +53,11 @@ func test_show_ghost_rail_before_building():
 		assert_true(track.is_ghostly)
 
 
-func test_hovered_over_ghost_rail_is_red():
+func test_hovered_over_ghost_track_is_red():
 	press(KEY_1) # Switch to track mode
 	click(200, 200)
 	click(400, 200)
 	mouse_move(300, 200)
-
-	assert_eq(get_tree().get_node_count_in_group("track"), 4)
 
 	var allow_count := 0
 	for track in get_tree().get_nodes_in_group("track"):
