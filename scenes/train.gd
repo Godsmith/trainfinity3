@@ -14,7 +14,6 @@ enum State {RUNNING, LOADING, WAITING_FOR_TRACK_RESERVATION_CHANGE, WAITING_FOR_
 var state: State = State.RUNNING
 # Needed because paths will be different depending on if the train is waiting
 # for reservation change at a station or not at a staton
-var is_at_station := true
 var last_known_reservation_number = 0
 var platform_tile_set: PlatformTileSet
 var track_set: TrackSet
@@ -152,11 +151,11 @@ func _process(delta):
 			else:
 				destination_index += 1
 				destination_index %= len(destinations)
-				_change_state(_try_set_new_curve_and_return_new_state(destinations[destination_index]))
+				_change_state(_try_set_new_curve_and_return_new_state(destinations[destination_index], true))
 		State.WAITING_FOR_TRACK_RESERVATION_CHANGE:
 			if track_reservations.reservation_number > last_known_reservation_number:
 				last_known_reservation_number = track_reservations.reservation_number
-				_change_state(_try_set_new_curve_and_return_new_state(destinations[destination_index]))
+				_change_state(_try_set_new_curve_and_return_new_state(destinations[destination_index], false))
 
 
 func _is_in_sharp_corner():
@@ -177,10 +176,8 @@ func _is_in_sharp_corner():
 func _change_state(new_state: State):
 	match new_state:
 		State.RUNNING:
-			is_at_station = false
 			target_speed = max_speed
 		State.LOADING:
-			is_at_station = true
 			target_speed = 0.0
 			absolute_speed = 0.0
 			_get_money_for_cargo()
@@ -273,7 +270,7 @@ func _get_new_state_at_end_of_curve() -> State:
 	elif not platform_tile_set.has_platform(target_tile):
 		return State.WAITING_FOR_MISSING_PLATFORM
 	else:
-		return _try_set_new_curve_and_return_new_state(target_tile)
+		return _try_set_new_curve_and_return_new_state(target_tile, false)
 
 
 func _furthest_in_at_platform(tile: Vector2i) -> Vector2i:
@@ -409,7 +406,7 @@ func _get_stations() -> Array[Station]:
 	return stations
 
 
-func _try_set_new_curve_and_return_new_state(target_position: Vector2i) -> State:
+func _try_set_new_curve_and_return_new_state(target_position: Vector2i, is_at_station: bool) -> State:
 	var train_position = Vector2i(get_train_position().snapped(Global.TILE))
 	var new_astar = astar.clone()
 	# Set wagon positions to disabled to prevent turnaround.
