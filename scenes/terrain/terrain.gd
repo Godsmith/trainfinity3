@@ -4,7 +4,7 @@ class_name Terrain
 
 const CHUNK_WIDTH := 11
 
-enum ChunkType {COAL, IRON, FACTORY, STEELWORKS, FOREST, CITY, EMPTY}
+enum ChunkType {COAL, IRON, FACTORY, STEELWORKS, FOREST, CITY, EMPTY, DEBUG_GRASS_ONLY}
 
 const FACTORY = preload("res://scenes/industry/factory.tscn")
 const STEELWORKS = preload("res://scenes/industry/steelworks.tscn")
@@ -118,7 +118,8 @@ func _add_chunk(chunk_x: int, chunk_y: int, chunk_type: ChunkType):
 		for y in range(chunk_y * CHUNK_WIDTH - (CHUNK_WIDTH - 1) / 2, chunk_y * CHUNK_WIDTH + (CHUNK_WIDTH - 1) / 2 + 1):
 			var grid_position = Vector2i(x, y) * Global.TILE_SIZE
 			grid_positions.append(grid_position)
-			noise_from_position[grid_position] = _noise.get_noise_2d(x, y)
+			var noise = 0.0 if chunk_type == ChunkType.DEBUG_GRASS_ONLY else _noise.get_noise_2d(x, y)
+			noise_from_position[grid_position] = noise
 	var terrain_chunk = _create_terrain(grid_positions, noise_from_position)
 	chunks[Vector2i(chunk_x, chunk_y)] = chunk_type
 
@@ -174,6 +175,8 @@ func _add_chunk(chunk_x: int, chunk_y: int, chunk_type: ChunkType):
 					new_city.position = new_city_position
 					add_child(new_city)
 			print("City extension done")
+		ChunkType.DEBUG_GRASS_ONLY:
+			pass
 
 
 func update_buttons(chunk_x: int, chunk_y: int):

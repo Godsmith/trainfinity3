@@ -9,7 +9,7 @@ shader = ExtResource("2_ur0e5")
 shader_parameter/line_colour = Color(1, 1, 1, 1)
 shader_parameter/line_thickness = 0
 
-[node name="Track" type="Node2D"]
+[node name="Track" type="Node2D" groups=["track"]]
 script = ExtResource("1_s1rm4")
 
 [node name="CanvasGroupSleeper" type="CanvasGroup" parent="."]

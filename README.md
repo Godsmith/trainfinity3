@@ -41,6 +41,7 @@
 
 ## TODO
 
+- Reverting when building rail does not work anymore
 - Circular rail does not work anymore for some reason
 - Make the train destinations stations, not single tiles.
 - Missions
