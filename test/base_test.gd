@@ -16,11 +16,21 @@ func mouse_move(x: float, y: float):
 	move_event.position = Vector2(x, y)
 	_game._unhandled_input(move_event)
 
+func mouse_down(x: float, y: float):
+	var mouse_down_event = InputEventMouseButton.new()
+	mouse_down_event.pressed = true
+	mouse_down_event.button_index = MOUSE_BUTTON_LEFT
+	mouse_down_event.position = Vector2(x, y)
+	_game._unhandled_input(mouse_down_event)
+
+func mouse_up(x: float, y: float):
+	var mouse_up_event = InputEventMouseButton.new()
+	mouse_up_event.pressed = false
+	mouse_up_event.button_index = MOUSE_BUTTON_LEFT
+	mouse_up_event.position = Vector2(x, y)
+	_game._unhandled_input(mouse_up_event)
+
 func click(x: float, y: float):
 	mouse_move(x, y)
-
-	var click_event = InputEventMouseButton.new()
-	click_event.pressed = true
-	click_event.button_index = MOUSE_BUTTON_LEFT
-	click_event.position = Vector2(x, y)
-	_game._unhandled_input(click_event)
+	mouse_down(x, y)
+	mouse_up(x, y)
