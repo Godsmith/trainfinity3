@@ -41,6 +41,8 @@
 
 ## TODO
 
+- Switching to train mode does not mark platforms green, only after switching a second
+  consecutive time do they turn green
 - Making a platform disappear by hovering over it in track mode makes trains stop going
   there
 - Circular rail does not work anymore for some reason
