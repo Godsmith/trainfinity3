@@ -41,6 +41,9 @@ func mouse_move(snapped_mouse_position: Vector2i) -> Array[Track]:
 
 func create_ghost_track(ghost_track_tile_positions: Array[Vector2i]) -> Array[Track]:
 	var illegal_positions = _illegal_track_positions_method.call(ghost_track_tile_positions)
+	# TODO: I believe the ghost track is freed elsewhere as well, so probably not needed
+	# here. Perhaps have the ghost track under this node and delete the entire node
+	# to make sure they are removed?
 	for track in _ghost_tracks:
 		track.queue_free()
 	_ghost_tracks.clear()
@@ -80,6 +83,10 @@ func click(snapped_mouse_position: Vector2i, boundaries: Rect2i) -> Vector2i:
 			if snapped_mouse_position == _placed_ghost_track_tile_positions[i]:
 				_placed_ghost_track_tile_positions = _placed_ghost_track_tile_positions.slice(0, i + 1)
 				break
+		for track in _ghost_tracks.duplicate():
+			if track.pos1 not in _placed_ghost_track_tile_positions or track.pos2 not in _placed_ghost_track_tile_positions:
+				track.queue_free()
+				_ghost_tracks.erase(track)
 		if len(_placed_ghost_track_tile_positions) == 1:
 			# If we are back at the starting position, abort track laying mode
 			reset_ghost_tracks()

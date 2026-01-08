@@ -124,6 +124,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 			match gui_state:
 				Gui.State.TRACK:
+					# TODO: create ghost track here also, since a click can lead to
+					# a change in the number of ghost track? Needs to be removed.
 					var track_marker_confirm_position = track_creator.click(snapped_mouse_position, terrain.boundaries)
 					if track_marker_confirm_position != Vector2i.MAX:
 						track_marker_confirm.visible = true

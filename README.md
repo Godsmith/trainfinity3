@@ -43,7 +43,6 @@
 
 - Making a platform disappear by hovering over it in track mode makes trains stop going
   there
-- Reverting when building rail does not work anymore
 - Circular rail does not work anymore for some reason
 - Make the train destinations stations, not single tiles.
 - Missions
