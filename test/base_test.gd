@@ -3,34 +3,15 @@ extends GutTest
 class_name BaseTest
 
 var _game: Game
+var _sender: GutInputSender
 
 
-func press(keycode):
-	var press_event = InputEventKey.new()
-	press_event.keycode = keycode
-	press_event.pressed = true
-	_game._unhandled_input(press_event)
+func before_each():
+	_game = load("res://scenes/overground.tscn").instantiate()
+	add_child_autofree(_game)
+	_game.terrain.set_seed_and_add_chunks(0, {Vector2i(0, 0): Terrain.ChunkType.DEBUG_GRASS_ONLY} as Dictionary[Vector2i, Terrain.ChunkType])
+	_sender = InputSender.new(_game)
 
-func mouse_move(x: float, y: float):
-	var move_event = InputEventMouseMotion.new()
-	move_event.position = Vector2(x, y)
-	_game._unhandled_input(move_event)
-
-func mouse_down(x: float, y: float):
-	var mouse_down_event = InputEventMouseButton.new()
-	mouse_down_event.pressed = true
-	mouse_down_event.button_index = MOUSE_BUTTON_LEFT
-	mouse_down_event.position = Vector2(x, y)
-	_game._unhandled_input(mouse_down_event)
-
-func mouse_up(x: float, y: float):
-	var mouse_up_event = InputEventMouseButton.new()
-	mouse_up_event.pressed = false
-	mouse_up_event.button_index = MOUSE_BUTTON_LEFT
-	mouse_up_event.position = Vector2(x, y)
-	_game._unhandled_input(mouse_up_event)
-
-func click(x: float, y: float):
-	mouse_move(x, y)
-	mouse_down(x, y)
-	mouse_up(x, y)
+func after_each():
+	_sender.release_all()
+	_sender.clear()

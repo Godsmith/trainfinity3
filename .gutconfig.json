@@ -2,5 +2,6 @@
     "dirs": [
         "res://test/"
     ],
-    "include_subdirs": true
+    "include_subdirs": true,
+    "compact_mode": true
 }
