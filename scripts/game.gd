@@ -34,9 +34,6 @@ var astar = Astar.new()
 @onready var track_reservations = TrackReservations.new()
 @onready var track_creator = TrackCreator.new(_create_tracks_from_ghost_tracks, _illegal_track_positions)
 
-# Need to keep track of ghost_tracks so that we can remove them
-var ghost_tracks: Array[Track] = []
-
 var train_start_position: Vector2i
 var selected_station: Station = null
 var selected_train: Train = null
@@ -176,10 +173,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			Gui.State.TRACK:
 				current_tile_marker.visible = true
 				_show_current_tile_marker(snapped_mouse_position)
-				for ghost_track in ghost_tracks:
-					remove_child(ghost_track)
-					ghost_track.queue_free()
-				ghost_tracks = track_creator.mouse_move(snapped_mouse_position)
+				var ghost_tracks = track_creator.mouse_move(snapped_mouse_position)
 				var all_track_set = TrackSet.new()
 				for track in track_set.get_all_tracks():
 					all_track_set.add(track)
