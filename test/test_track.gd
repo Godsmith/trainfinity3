@@ -54,7 +54,7 @@ func test_hovered_over_ghost_track_is_red():
 	click(200, 200)
 	click(400, 200) # Construct a length of ghost track
 	mouse_move(300, 200)
-	await wait_frames(1) # Wait for queue_free()
+	await wait_idle_frames(1) # Wait for queue_free()
 
 	var allow_count := 0
 	for track in get_tree().get_nodes_in_group("track"):
@@ -68,6 +68,6 @@ func test_undo_ghost_track_removes_red_rail_immediately():
 	click(200, 200)
 	click(400, 200) # Construct a length of ghost track
 	click(300, 200) # Click halfway back, to remove half of the ghost track
-	await wait_frames(1) # Wait for queue_free()
+	await wait_idle_frames(1) # Wait for queue_free()
 
 	assert_eq(get_tree().get_node_count_in_group("track"), 2)
