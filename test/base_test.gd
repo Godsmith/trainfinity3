@@ -10,7 +10,7 @@ func before_each():
 	_game = load("res://scenes/overground.tscn").instantiate()
 	add_child_autofree(_game)
 	_game.terrain.set_seed_and_add_chunks(0, {Vector2i(0, 0): Terrain.ChunkType.DEBUG_GRASS_ONLY} as Dictionary[Vector2i, Terrain.ChunkType])
-	_sender = InputSender.new(_game)
+	_sender = InputSender.new(Input)
 
 func after_each():
 	_sender.release_all()
