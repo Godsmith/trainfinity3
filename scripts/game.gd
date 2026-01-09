@@ -210,17 +210,20 @@ func _unhandled_input(event: InputEvent) -> void:
 				_change_gui_state(Gui.State.DESTROY1)
 			
 
-	if OS.is_debug_build() and event is InputEventKey and event.is_pressed() and event.keycode == KEY_X:
-		GlobalBank.earn(10000)
-
-	if OS.is_debug_build() and event is InputEventKey and event.is_pressed() and event.keycode == KEY_C:
-		show_reservation_markers = !show_reservation_markers
-		for track in track_set.get_all_tracks():
-			for pos in [track.pos1, track.pos2]:
-				var coordinates = DEBUG_COORDINATES.instantiate()
-				coordinates.position = pos - Vector2i(Global.TILE) / 3
-				coordinates.text = "%s,%s" % [pos.x, pos.y]
-				add_child(coordinates)
+	if OS.is_debug_build() and event is InputEventKey and event.is_pressed() and not event.is_echo():
+		match event.keycode:
+			KEY_X:
+				GlobalBank.earn(10000)
+			KEY_C:
+				show_reservation_markers = !show_reservation_markers
+				for track in track_set.get_all_tracks():
+					for pos in [track.pos1, track.pos2]:
+						var coordinates = DEBUG_COORDINATES.instantiate()
+						coordinates.position = pos - Vector2i(Global.TILE) / 3
+						coordinates.text = "%s,%s" % [pos.x, pos.y]
+						add_child(coordinates)
+			KEY_V:
+				print(JSON.stringify(_get_save_data(), "  "))
 
 
 func _show_current_tile_marker(pos: Vector2i):
@@ -830,6 +833,10 @@ func _load_game_from_path(file_path: String):
 	#var file_path = "res://savegames/2025-11-16_19-35-32.save"
 	var save_file = FileAccess.open(file_path, FileAccess.READ)
 	var data = save_file.get_var()
+	_load_game_from_data(data)
+
+
+func _load_game_from_data(data: Dictionary):
 	randomizer_seed = data.randomizer_seed
 	seed(randomizer_seed)
 	# Remember that water, sand and mountain level also have to be the same
