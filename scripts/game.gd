@@ -31,6 +31,7 @@ var astar = Astar.new()
 @onready var track_marker_confirm := $TrackMarkerConfirm
 @onready var track_set = TrackSet.new()
 @onready var platform_tile_set = PlatformTileSet.new()
+@onready var ghost_platform_tile_set = PlatformTileSet.new()
 @onready var track_reservations = TrackReservations.new()
 @onready var track_creator = TrackCreator.new(_create_tracks_from_ghost_tracks, _illegal_track_positions)
 
@@ -180,14 +181,14 @@ func _unhandled_input(event: InputEvent) -> void:
 				for track in ghost_tracks:
 					add_child(track)
 					all_track_set.add(track)
-				_recreate_platform_tiles(all_track_set)
+				_show_ghost_platform_tiles(all_track_set, _get_stations())
 			Gui.State.STATION:
 				var is_legal_station_position = _is_legal_station_position(snapped_mouse_position)
 				ghost_station.set_color(true, is_legal_station_position)
 				var stations = _get_stations()
 				if is_legal_station_position:
 					stations.append(ghost_station)
-				_recreate_platform_tiles(track_set, stations)
+				_show_ghost_platform_tiles(track_set, stations)
 			Gui.State.DESTROY1:
 				_show_destroy_markers(snapped_mouse_position, snapped_mouse_position)
 			Gui.State.DESTROY2:
@@ -467,7 +468,16 @@ func _get_stations() -> Array[Station]:
 ############################################################################
 
 func _recreate_platform_tiles(track_set_: TrackSet = track_set, stations = _get_stations()):
+	ghost_platform_tile_set.clear()
 	var platform_tiles = platform_tile_set.recreate_all_platform_tiles(stations, track_set_)
+	for platform_tile in platform_tiles:
+		platform_tile.platform_tile_clicked.connect(_platform_tile_clicked)
+		add_child(platform_tile)
+
+
+func _show_ghost_platform_tiles(track_set_: TrackSet, stations: Array[Station]):
+	var platform_tiles = ghost_platform_tile_set.recreate_all_platform_tiles(stations, track_set_)
+	platform_tile_set.mark_platform_tiles_for_deletion(platform_tile_set.difference(ghost_platform_tile_set))
 	for platform_tile in platform_tiles:
 		platform_tile.platform_tile_clicked.connect(_platform_tile_clicked)
 		add_child(platform_tile)

@@ -9,9 +9,7 @@ var _platform_tiles: Dictionary[Vector2i, Node2D] = {}
 
 ## track_set_ must be provided so that it is not out of sync.
 func recreate_all_platform_tiles(stations: Array[Station], track_set: TrackSet) -> Array[PlatformTile]:
-	for platform_tile in _platform_tiles.values():
-		platform_tile.queue_free()
-	_platform_tiles.clear()
+	clear()
 	var positions_with_track_suitable_for_platform_tiles = _get_positions_with_track_suitable_for_platform_tiles(track_set)
 	var evaluated_platform_tile_positions = []
 	for station in stations:
@@ -141,3 +139,22 @@ func is_new_track_in_legal_position(track: Track):
 
 func has_platform(pos: Vector2i):
 	return pos in _platform_tiles
+
+func clear():
+	for platform_tile in _platform_tiles.values():
+		platform_tile.queue_free()
+	_platform_tiles.clear()
+
+## Returns all positions in this set that do not exist in the other set
+func difference(other: PlatformTileSet) -> Array[Vector2i]:
+	var positions: Array[Vector2i] = []
+	for pos in _platform_tiles:
+		if pos not in other._platform_tiles:
+			positions.append(pos)
+	return positions
+
+func mark_platform_tiles_for_deletion(positions: Array[Vector2i]):
+	for pos in _platform_tiles:
+		_platform_tiles[pos].mark_for_deletion(false)
+	for pos in positions:
+		_platform_tiles[pos].mark_for_deletion(true)
