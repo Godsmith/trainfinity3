@@ -397,17 +397,6 @@ func _change_gui_state(new_state: Gui.State):
 	gui.selection_description_label.text = ""
 	selected_station = null
 	_deselect_all_trains()
-
-	# Set platform colors
-	if new_state == Gui.State.TRAIN1:
-		for platform: PlatformTile in get_tree().get_nodes_in_group("platforms"):
-			platform.modulate = Color(0, 1, 0, 1)
-	elif new_state == Gui.State.TRAIN2:
-		# PlatformTile colors handled elsewhere
-		pass
-	else:
-		for platform: PlatformTile in get_tree().get_nodes_in_group("platforms"):
-			platform.modulate = Color(1, 1, 1, 1)
 		
 	if new_state == Gui.State.STATION:
 		ghost_station.visible = true
@@ -419,6 +408,17 @@ func _change_gui_state(new_state: Gui.State):
 	if gui_state in [Gui.State.TRACK, Gui.State.STATION]:
 		# Remove any ghost platforms that existed in track or station creation mode
 		_recreate_platform_tiles()
+
+	# Set platform colors
+	if new_state == Gui.State.TRAIN1:
+		for platform: PlatformTile in get_tree().get_nodes_in_group("platforms"):
+			platform.modulate = Color(0, 1, 0, 1)
+	elif new_state == Gui.State.TRAIN2:
+		# PlatformTile colors handled elsewhere
+		pass
+	else:
+		for platform: PlatformTile in get_tree().get_nodes_in_group("platforms"):
+			platform.modulate = Color(1, 1, 1, 1)
 
 	gui_state = new_state
 	gui.set_pressed_no_signal(new_state)
