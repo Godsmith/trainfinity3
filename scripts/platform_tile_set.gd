@@ -95,10 +95,14 @@ func connected_platform_tile_positions(pos: Vector2i, track_set: TrackSet) -> Ar
 func platform_size(pos: Vector2i, track_set: TrackSet) -> int:
 	return len(connected_platform_tile_positions(pos, track_set))
 
-func platform_endpoints(pos: Vector2i, track_set: TrackSet) -> Array[Vector2i]:
+func ordered_platform_tile_positions(pos: Vector2i, track_set: TrackSet) -> Array[Vector2i]:
 	var platform_tile_positions = connected_platform_tile_positions(pos, track_set)
 	# Sort by x if x are different else sort by y
 	platform_tile_positions.sort_custom(func(a: Vector2i, b: Vector2i): return a.x < b.x if a.y == b.y else a.y < b.y)
+	return platform_tile_positions
+
+func platform_endpoints(pos: Vector2i, track_set: TrackSet) -> Array[Vector2i]:
+	var platform_tile_positions = ordered_platform_tile_positions(pos, track_set)
 	return [platform_tile_positions[0], platform_tile_positions[-1]]
 
 func _positions_orthogonally_linked_to(positions: Array[Vector2i], track_set: TrackSet) -> Dictionary[Vector2i, int]:

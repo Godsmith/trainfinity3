@@ -41,7 +41,6 @@
 
 ## TODO
 
-- Circular rail does not work anymore for some reason
 - Make the train destinations stations, not single tiles.
 - Missions
   	- Deliver first of each cargo
