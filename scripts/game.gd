@@ -603,21 +603,27 @@ func _get_point_path_between_platforms(platform_pos1: Vector2i,
 	var platform2_positions = platform_tile_set.ordered_platform_tile_positions(platform_pos2, track_set)
 	var platform1_endpoints = [platform1_positions[0], platform1_positions[-1]]
 	var platform2_endpoints = [platform2_positions[0], platform2_positions[-1]]
+
 	for p1 in platform1_endpoints:
 		for p2 in platform2_endpoints:
 			point_paths.append(astar.get_point_path(p1, p2))
 	point_paths.sort_custom(func(a, b): return len(a) < len(b))
 	var shortest_path = point_paths[0]
+
 	if Vector2i(shortest_path[0]) == platform1_endpoints[0]:
 		platform1_positions.reverse()
 	if Vector2i(shortest_path[-1]) == platform2_endpoints[-1]:
 		platform2_positions.reverse()
+
+	var out = PackedVector2Array()
+	for pos in platform1_positions:
+		out.append(pos)
 	# Remove ends so that we just have the positions between the platforms
-	shortest_path.remove_at(0)
-	shortest_path.remove_at(len(shortest_path) - 1)
-	platform1_positions.append_array(shortest_path)
-	platform1_positions.append_array(platform2_positions)
-	return platform1_positions
+	for pos in shortest_path.slice(1, -1):
+		out.append(pos)
+	for pos in platform2_positions:
+		out.append(pos)
+	return out
 	
 
 ######################################################################
