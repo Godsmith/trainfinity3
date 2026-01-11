@@ -29,6 +29,8 @@ static func create(p1: Vector2i, p2: Vector2i) -> Track:
 	track.pos1 = positions[0]
 	track.pos2 = positions[1]
 	track.rotation = atan2(p2.y - p1.y, p2.x - p1.x)
+	if track.rotation > 0:
+		track.rotation -= PI
 	# If diagonal, extend length
 	if is_equal_approx(fposmod(track.rotation, PI / 2), PI / 4):
 		track._set_length_extended()
