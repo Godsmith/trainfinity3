@@ -10,6 +10,10 @@ func before_each():
 	_game = load("res://scenes/overground.tscn").instantiate()
 	add_child_autofree(_game)
 	_game.terrain.set_seed_and_add_chunks(0, {Vector2i(0, 0): Terrain.ChunkType.DEBUG_GRASS_ONLY} as Dictionary[Vector2i, Terrain.ChunkType])
+	# Disable needless sound effects by default
+	GlobalBank.is_effects_enabled = false
+	# Give infinite money by default, so that track building etc is not hindered
+	GlobalBank.set_money(Global.MAX_INT)
 	_sender = InputSender.new(Input)
 
 func after_each():

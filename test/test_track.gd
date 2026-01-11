@@ -18,6 +18,7 @@ func test_show_ghost_track_before_building():
 	_sender.mouse_left_click_at(Vector2(200, 200))
 	_sender.mouse_motion(Vector2(400, 200))
 	await _sender.idle
+	await wait_idle_frames(1) # Wait for queue_free().
 
 	assert_eq(get_tree().get_node_count_in_group("track"), 4)
 	for track in get_tree().get_nodes_in_group("track"):
@@ -31,7 +32,7 @@ func test_hovered_over_ghost_track_is_red():
 	_sender.mouse_left_click_at(Vector2(400, 200)) # Construct a length of ghost track
 	_sender.mouse_motion(Vector2(300, 200))
 	await _sender.idle
-	await wait_idle_frames(1) # Wait for queue_free()
+	await wait_idle_frames(2) # Wait for queue_free(). Not sure why I have to wait 2.
 
 	var allow_count := 0
 	for track in get_tree().get_nodes_in_group("track"):

@@ -32,7 +32,7 @@ const _INCREASE_FACTOR := 1.5
 
 var money := 200
 var gui: Gui
-var is_loading_game := false
+var is_effects_enabled := true
 
 func update_gui():
 	gui.update_prices(_current_price)
@@ -61,7 +61,7 @@ func buy(asset: Global.Asset, amount: int, pos: Vector2):
 	money_changed.emit()
 
 func _show_popup_and_play_sound(cost_: int, pos: Vector2):
-	if is_loading_game:
+	if not is_effects_enabled:
 		# If the game is loading, we just want everything to be restored
 		# silently, without any popups
 		return

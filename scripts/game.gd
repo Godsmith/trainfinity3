@@ -865,7 +865,7 @@ func _load_game_from_data(data: Dictionary):
 	Upgrades.load(data.upgrades)
 	# Disable popups and sound effect when buying, and
 	# ensure that the bank has enough money to recreate everything
-	GlobalBank.is_loading_game = true
+	GlobalBank.is_effects_enabled = false
 	GlobalBank.set_money(Global.MAX_INT)
 	for track_dict in data.tracks:
 		var tracks = track_creator.create_ghost_track([track_dict.pos1, track_dict.pos2])
@@ -883,5 +883,5 @@ func _load_game_from_data(data: Dictionary):
 	for train_dict in data.trains:
 		_try_create_train(train_dict.destinations[0], train_dict.destinations[1])
 	GlobalBank.set_money(data.money)
-	GlobalBank.is_loading_game = false
+	GlobalBank.is_effects_enabled = true
 	_change_gui_state(Gui.State.SELECT) # To clear track creating mode

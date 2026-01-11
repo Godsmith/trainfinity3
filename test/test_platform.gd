@@ -12,4 +12,6 @@ func test_hovering_in_station_mode_creates_ghost_platform_tiles():
 	_sender.mouse_motion(Vector2i(150, 200))
 	await _sender.idle
 
+	await wait_idle_frames(1)
+
 	assert_eq(get_tree().get_node_count_in_group("platforms"), 2)
