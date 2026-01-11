@@ -128,7 +128,7 @@ func test_train_starts_when_circular_rail():
 	for track_dict in track_dicts:
 		var tracks = _game.track_creator.create_ghost_track([vector2_from_string(track_dict.pos1), vector2_from_string(track_dict.pos2)])
 		for track in tracks:
-			add_child(track)
+			_game.add_child(track)
 		_game.track_creator.create_tracks()
 	for train_dict in trains:
 		_game._try_create_train(vector2_from_string(train_dict.destinations[0]), vector2_from_string(train_dict.destinations[1]))
