@@ -137,11 +137,7 @@ func _process(delta):
 					_change_state(new_state)
 		State.WAITING_FOR_MISSING_PLATFORM:
 			if no_route_timer.is_stopped():
-				var target_tile = destinations[destination_index]
-				if platform_tile_set.has_platform(target_tile):
-					_change_state(State.RUNNING)
-				else:
-					_change_state(State.WAITING_FOR_MISSING_PLATFORM)
+				_change_state(_try_set_new_curve_and_return_new_state(destinations[destination_index], false))
 		State.LOADING:
 			if not ore_timer.is_stopped():
 				return
@@ -267,8 +263,6 @@ func _get_new_state_at_end_of_curve() -> State:
 		else destination_tile)
 	if current_tile == target_tile:
 		return State.LOADING
-	elif not platform_tile_set.has_platform(target_tile):
-		return State.WAITING_FOR_MISSING_PLATFORM
 	else:
 		return _try_set_new_curve_and_return_new_state(target_tile, false)
 
@@ -407,6 +401,9 @@ func _get_stations() -> Array[Station]:
 
 
 func _try_set_new_curve_and_return_new_state(target_position: Vector2i, is_at_station: bool) -> State:
+	var target_tile = destinations[destination_index]
+	if not platform_tile_set.has_platform(target_tile):
+		return State.WAITING_FOR_MISSING_PLATFORM
 	var train_position = Vector2i(get_train_position().snapped(Global.TILE))
 	var new_astar = astar.clone()
 	# Set wagon positions to disabled to prevent turnaround.
