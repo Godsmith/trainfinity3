@@ -137,7 +137,7 @@ func _process(delta):
 					_change_state(new_state)
 		State.WAITING_FOR_MISSING_PLATFORM:
 			if no_route_timer.is_stopped():
-				_change_state(_try_set_new_curve_and_return_new_state(destinations[destination_index], false))
+				_change_state(_try_set_new_curve_and_return_new_state(destinations[destination_index]))
 		State.LOADING:
 			if not ore_timer.is_stopped():
 				return
@@ -147,11 +147,11 @@ func _process(delta):
 			else:
 				destination_index += 1
 				destination_index %= len(destinations)
-				_change_state(_try_set_new_curve_and_return_new_state(destinations[destination_index], true))
+				_change_state(_try_set_new_curve_and_return_new_state(destinations[destination_index]))
 		State.WAITING_FOR_TRACK_RESERVATION_CHANGE:
 			if track_reservations.reservation_number > last_known_reservation_number:
 				last_known_reservation_number = track_reservations.reservation_number
-				_change_state(_try_set_new_curve_and_return_new_state(destinations[destination_index], false))
+				_change_state(_try_set_new_curve_and_return_new_state(destinations[destination_index]))
 
 
 func _is_in_sharp_corner():
@@ -264,7 +264,7 @@ func _get_new_state_at_end_of_curve() -> State:
 	if current_tile == target_tile:
 		return State.LOADING
 	else:
-		return _try_set_new_curve_and_return_new_state(target_tile, false)
+		return _try_set_new_curve_and_return_new_state(target_tile)
 
 
 func _furthest_in_at_platform(tile: Vector2i) -> Vector2i:
@@ -285,6 +285,7 @@ func _furthest_in_at_platform(tile: Vector2i) -> Vector2i:
 
 
 func set_initial_curve(point_path: PackedVector2Array):
+	# TODO: check if this can be replaced with the below
 	# point_path:              - - - - - - - >
 	# Train, platform, track: [T W W . .] . . .
 	# curve:                   < - -
@@ -295,24 +296,26 @@ func set_initial_curve(point_path: PackedVector2Array):
 		curve.add_point(pos)
 	_set_progress_from_platform()
 
-## Sets a new path from the station, possibly turning train around
+
+## Sets a new curve from the station, possibly turning train around
 ## [br][point_path] is a path that goes from either end of the platform to the next destination.
 ## [br][train_position] is the current train engine position
 func _set_new_curve_from_platform(point_path: PackedVector2Array):
-	# point_path:              - - - - - - - >
-	# Train, platform, track: [T W W . .] . . .
-	# curve:                   - - >
-	var vector2i_point_path: Array[Vector2i] = []
-	for pos in _get_new_point_path_from_platform(point_path):
-		vector2i_point_path.append(Vector2i(pos))
-
-	# Make the initial curve as long as the train
-	# This depends on [curve], and must be retrieved before [curve] is reset
-	var positions = _get_snapped_train_and_wagon_positions()
+	# Two cases: either the next stop lies forward, or the next stop lies backwards.
+	# 1. point_path:               - - - - - - - >
+	#    Train, platform, track: [T W W . .] . . .
+	#    returned curve:          - - >
+	# 2. point_path:        < - - -
+	#    Train, platform, track: [T W W . .]
+	#    returned curve:          < - -
+	var vector2i_point_path = Array(point_path).map(func(x): return Vector2i(x))
+	var train_and_wagon_positions = _get_snapped_train_and_wagon_positions()
+	var last_wagon_position = train_and_wagon_positions[-1]
+	if last_wagon_position not in vector2i_point_path:
+		train_and_wagon_positions.reverse()
 	curve = Curve2D.new()
-	for pos: Vector2i in positions:
+	for pos in train_and_wagon_positions:
 		curve.add_point(pos)
-	print("_set_new_curve_from_platform: added %s" % str(positions))
 	_set_progress_from_platform()
 
 
@@ -329,30 +332,10 @@ func _set_progress_from_platform():
 		wagon.path_follow.progress = path_follow.progress - (i + 1) * Global.TILE_SIZE
 
 
-func _get_new_point_path_from_platform(old_point_path: PackedVector2Array):
-	var vector2i_point_path = Array(old_point_path).map(func(x): return Vector2i(x))
-	var train_and_wagon_positions = _get_snapped_train_and_wagon_positions()
-	var last_wagon_position = train_and_wagon_positions[-1]
-	# Two cases: either the next stop lies forward, or the next stop lies backwards.
-	#       [W W W W T]
-	#        A       B
-	# A = other_end, B = train_end
-	#                ----->   1. Next stop lies forward, only B overlaps point_path
-	# <---------------        2. Next stop lies backward, A and B overlap point_path
-	# 1. Next stop lies forward
-	if last_wagon_position not in vector2i_point_path:
-		train_and_wagon_positions.reverse()
-		return PackedVector2Array(train_and_wagon_positions) + old_point_path.slice(1)
-	# 2. Next stop lies backwards
-	# do nothing, we have entire path already
-	else:
-		return old_point_path
-	# Result: point_path starts at end of train furthest from destination
-
-
 func _adjust_reservations_to_where_train_is():
 	var positions_to_reserve = track_set.get_segments_connected_to_positions(_get_snapped_train_and_wagon_positions())
 	track_reservations.reserve_train_positions(positions_to_reserve, self)
+
 
 ## Only load and unload from wagons that are actually at the platform
 func _load_and_unload() -> bool:
@@ -401,13 +384,15 @@ func _get_stations() -> Array[Station]:
 	return stations
 
 
-func _try_set_new_curve_and_return_new_state(target_position: Vector2i, is_at_station: bool) -> State:
+func _try_set_new_curve_and_return_new_state(target_position: Vector2i) -> State:
 	var target_tile = destinations[destination_index]
 	if not platform_tile_set.has_platform(target_tile):
 		return State.WAITING_FOR_MISSING_PLATFORM
 	var train_position = Vector2i(get_train_position().snapped(Global.TILE))
 	var new_astar = astar.clone()
 	# Set wagon positions to disabled to prevent turnaround.
+
+	var is_at_station = _is_at_station()
 	var is_turnaround_allowed = is_at_station
 	while true:
 		if not is_turnaround_allowed:
@@ -443,9 +428,7 @@ func _try_set_new_curve_and_return_new_state(target_position: Vector2i, is_at_st
 		if not position_that_could_not_be_reserved_or_none.has_value:
 			if is_at_station:
 				_set_new_curve_from_platform(point_path)
-			else:
-				curve.add_point(point_path[1])
-				print("try_set_new_curve: added %s" % point_path[1])
+			curve.add_point(point_path[1])
 			return State.RUNNING
 		else:
 			# I think: the train is before an intersection and the next position after intersection is reserved by a train
@@ -453,6 +436,24 @@ func _try_set_new_curve_and_return_new_state(target_position: Vector2i, is_at_st
 			return State.WAITING_FOR_TRACK_RESERVATION_CHANGE
 	# Just to appease the type checker
 	return State.RUNNING
+
+
+## Returns true if the train (engine) is at the end of a platform.
+## Only works at the end of a curve.
+## Might behave unexpectedly if the train has length 0, since then 
+func _is_at_station() -> bool:
+	var train_position = _get_snapped_train_position()
+	if not platform_tile_set.has_platform(train_position):
+		return false
+	var platform_tiles = platform_tile_set.ordered_platform_tile_positions(_get_snapped_train_position(), track_set)
+	if len(platform_tiles) == 1:
+		return true
+	if train_position not in [platform_tiles[0], platform_tiles[-1]]:
+		return false
+	var wagon_positions = _get_wagon_positions()
+	if not wagon_positions:
+		return true
+	return wagon_positions[0] in platform_tiles
 
 
 func _get_positions_until_next_non_intersection(positions: PackedVector2Array) -> Array[Vector2i]:

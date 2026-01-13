@@ -95,6 +95,8 @@ func connected_platform_tile_positions(pos: Vector2i, track_set: TrackSet) -> Ar
 func platform_size(pos: Vector2i, track_set: TrackSet) -> int:
 	return len(connected_platform_tile_positions(pos, track_set))
 
+## Returns an [b]ordered[/b] list of platform tiles that are on the same platform as [pos].
+## [br]Returns an empty array if the positions does not have a platform.
 func ordered_platform_tile_positions(pos: Vector2i, track_set: TrackSet) -> Array[Vector2i]:
 	var platform_tile_positions = connected_platform_tile_positions(pos, track_set)
 	# Sort by x if x are different else sort by y
