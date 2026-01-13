@@ -312,6 +312,7 @@ func _set_new_curve_from_platform(point_path: PackedVector2Array):
 	curve = Curve2D.new()
 	for pos: Vector2i in positions:
 		curve.add_point(pos)
+	print("_set_new_curve_from_platform: added %s" % str(positions))
 	_set_progress_from_platform()
 
 
@@ -444,6 +445,7 @@ func _try_set_new_curve_and_return_new_state(target_position: Vector2i, is_at_st
 				_set_new_curve_from_platform(point_path)
 			else:
 				curve.add_point(point_path[1])
+				print("try_set_new_curve: added %s" % point_path[1])
 			return State.RUNNING
 		else:
 			# I think: the train is before an intersection and the next position after intersection is reserved by a train
