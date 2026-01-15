@@ -28,6 +28,7 @@ var astar = Astar.new()
 
 @onready var camera = $Camera2D
 @onready var gui: Gui = $Gui
+@onready var ore_timer := $OreTimer
 @onready var track_marker_confirm := $TrackMarkerConfirm
 @onready var track_set = TrackSet.new()
 @onready var platform_tile_set = PlatformTileSet.new()
@@ -35,7 +36,7 @@ var astar = Astar.new()
 @onready var track_reservations = TrackReservations.new()
 @onready var track_creator = TrackCreator.new(_create_tracks_from_ghost_tracks, _illegal_track_positions)
 
-var train_start_position: Vector2i
+var train_start_station: Station
 var selected_station: Station = null
 var selected_train: Train = null
 
@@ -95,7 +96,8 @@ func _ready():
 	gui.follow_train_button.connect("pressed", _on_followtrainbutton_pressed)
 	gui.save_button.connect("pressed", _on_savebutton_pressed)
 
-	$Timer.connect("timeout", _on_timer_timeout)
+	ore_timer.connect("timeout", _on_ore_timer_timeout)
+
 	# Remove ghost station from groups so that it does begin to gather resources etc
 	ghost_station.remove_from_group("stations")
 	ghost_station.remove_from_group("buildings")
@@ -401,6 +403,17 @@ func _change_gui_state(new_state: Gui.State):
 	gui.selection_description_label.text = ""
 	selected_station = null
 	_deselect_all_trains()
+
+	# Set station colors
+	if new_state == Gui.State.TRAIN1:
+		for station: Station in get_tree().get_nodes_in_group("stations"):
+			station.modulate = Color(0, 1, 0, 1)
+	elif new_state == Gui.State.TRAIN2:
+		# Station colors handled elsewhere
+		pass
+	else:
+		for station: Station in get_tree().get_nodes_in_group("stations"):
+			station.modulate = Color(1, 1, 1, 1)
 		
 	if new_state == Gui.State.STATION:
 		ghost_station.visible = true
@@ -412,17 +425,6 @@ func _change_gui_state(new_state: Gui.State):
 	if gui_state in [Gui.State.TRACK, Gui.State.STATION]:
 		# Remove any ghost platforms that existed in track or station creation mode
 		_recreate_platform_tiles()
-
-	# Set platform colors
-	if new_state == Gui.State.TRAIN1:
-		for platform: PlatformTile in get_tree().get_nodes_in_group("platforms"):
-			platform.modulate = Color(0, 1, 0, 1)
-	elif new_state == Gui.State.TRAIN2:
-		# PlatformTile colors handled elsewhere
-		pass
-	else:
-		for platform: PlatformTile in get_tree().get_nodes_in_group("platforms"):
-			platform.modulate = Color(1, 1, 1, 1)
 
 	gui_state = new_state
 	gui.set_pressed_no_signal(new_state)
@@ -474,7 +476,6 @@ func _recreate_platform_tiles(track_set_: TrackSet = track_set, stations = _get_
 	ghost_platform_tile_set.clear()
 	var platform_tiles = platform_tile_set.recreate_all_platform_tiles(stations, track_set_)
 	for platform_tile in platform_tiles:
-		platform_tile.platform_tile_clicked.connect(_platform_tile_clicked)
 		add_child(platform_tile)
 
 
@@ -482,53 +483,19 @@ func _show_ghost_platform_tiles(track_set_: TrackSet, stations: Array[Station]):
 	var platform_tiles = ghost_platform_tile_set.recreate_all_platform_tiles(stations, track_set_)
 	platform_tile_set.mark_platform_tiles_for_deletion(platform_tile_set.difference(ghost_platform_tile_set))
 	for platform_tile in platform_tiles:
-		platform_tile.platform_tile_clicked.connect(_platform_tile_clicked)
 		add_child(platform_tile)
-
-
-func _platform_tile_clicked(platform_tile: PlatformTile):
-	if gui_state == Gui.State.TRAIN1:
-		for other_platform: PlatformTile in get_tree().get_nodes_in_group("platforms"):
-			other_platform.modulate = Color(1, 1, 1, 1)
-			if not platform_tile_set.are_connected(platform_tile, other_platform, track_set):
-				if astar.get_point_path(Vector2i(platform_tile.position), Vector2i(other_platform.position)):
-					other_platform.modulate = Color(0, 1, 0, 1)
-		train_start_position = Vector2i(platform_tile.position)
-		_change_gui_state(Gui.State.TRAIN2)
-	elif gui_state == Gui.State.TRAIN2:
-		_try_create_train(train_start_position, Vector2i(platform_tile.position))
-		_change_gui_state(Gui.State.TRAIN1)
 
 ############################################################################
 
-func _try_create_train(pos1: Vector2i, pos2: Vector2i):
-	var platform1 = platform_tile_set.get_platform_tile_at(pos1)
-	var platform2 = platform_tile_set.get_platform_tile_at(pos2)
-	if not GlobalBank.can_afford(Global.Asset.TRAIN):
-		return
-	if platform_tile_set.are_connected(platform1, platform2, track_set):
-		return
-	if track_reservations.is_reserved(Vector2i(platform1.position)):
-		Global.show_popup("Track reserved!", platform1.position, self)
-		Global.show_popup("Track reserved!", platform2.position, self)
-		return
-
-	# Get path from the beginning of the first tile of the source platform
-	# to the last tile of the target platform
-	var point_path = _get_point_path_between_platforms(platform1.position, platform2.position)
-	if not point_path:
-		return
-
+func _try_create_train(station1: Station, station2: Station):
 	var train_number = len(get_tree().get_nodes_in_group("trains")) + 1
-	var wagon_count = min(platform_tile_set.platform_size(platform1.position, track_set), platform_tile_set.platform_size(platform2.position, track_set)) - 1
-	var train = Train.create("Train %s" % train_number, wagon_count, point_path, platform_tile_set, track_set, track_reservations, astar)
+	var train = Train.try_create("Train %s" % train_number, station1, station2, platform_tile_set, track_set, track_reservations, astar, add_child)
+	if train == null:
+		return
 
 	train.train_clicked.connect(_on_train_clicked)
 	train.train_content_changed.connect(_on_train_content_changed)
 	train.train_state_changed.connect(_on_train_state_changed)
-	add_child(train)
-
-	train.set_initial_curve(point_path)
 
 	# Need to do this after curve has been set, or it will be in the wrong position
 	GlobalBank.buy(Global.Asset.TRAIN, 1, train.get_train_position())
@@ -587,45 +554,7 @@ func _on_train_state_changed(train: Train):
 	if train == selected_train:
 		_update_selected_train_info()
 
-###################################################################################
-
-## Returns the point path between two platforms. [br]
-## The path included includes the two platforms. [br]
-## A previous variant returned the longest possible path between the ends of the
-## stations. However, this does not work in the edge case of a circular track. [br]
-## Instead, compute the shortest paths between any two platform endpoints, and then
-## add the platforms at the ends. [br]
-## Returns an empty path if there is no path.
-func _get_point_path_between_platforms(platform_pos1: Vector2i,
-									   platform_pos2: Vector2i) -> PackedVector2Array:
-	var point_paths: Array[PackedVector2Array] = []
-	var platform1_positions = platform_tile_set.ordered_platform_tile_positions(platform_pos1, track_set)
-	var platform2_positions = platform_tile_set.ordered_platform_tile_positions(platform_pos2, track_set)
-	var platform1_endpoints = [platform1_positions[0], platform1_positions[-1]]
-	var platform2_endpoints = [platform2_positions[0], platform2_positions[-1]]
-
-	for p1 in platform1_endpoints:
-		for p2 in platform2_endpoints:
-			point_paths.append(astar.get_point_path(p1, p2))
-	point_paths.sort_custom(func(a, b): return len(a) < len(b))
-	var shortest_path = point_paths[0]
-
-	if Vector2i(shortest_path[0]) == platform1_endpoints[0]:
-		platform1_positions.reverse()
-	if Vector2i(shortest_path[-1]) == platform2_endpoints[-1]:
-		platform2_positions.reverse()
-
-	var out = PackedVector2Array()
-	for pos in platform1_positions:
-		out.append(pos)
-	# Remove ends so that we just have the positions between the platforms
-	for pos in shortest_path.slice(1, -1):
-		out.append(pos)
-	for pos in platform2_positions:
-		out.append(pos)
-	return out
 	
-
 ######################################################################
 
 func _show_destroy_markers(start_pos: Vector2i, end_pos: Vector2i):
@@ -684,7 +613,7 @@ func _light_clicked(light: Light):
 
 ######################################################################
 	
-func _on_timer_timeout():
+func _on_ore_timer_timeout():
 	var stations = _get_stations()
 	for industry: Industry in get_tree().get_nodes_in_group("industries"):
 		var adjacent_stations = _adjacent_stations(industry, stations)
@@ -746,13 +675,28 @@ func _on_industry_clicked(industry: Industry):
 	gui.selection_description_label.text = description
 
 func _on_station_clicked(station: Station):
-	if gui_state != Gui.State.SELECT:
-		return
-	_deselect_all_trains()
-	selected_station = station
-	current_tile_marker.visible = true
-	_show_current_tile_marker(station.global_position)
-	_update_selected_station_info()
+	if gui_state == Gui.State.TRAIN1:
+		for other_station: Station in get_tree().get_nodes_in_group("stations"):
+			if other_station == station:
+				other_station.modulate = Color(1, 1, 1, 1)
+			elif _are_stations_connected(station, other_station):
+				other_station.modulate = Color(0, 1, 0, 1)
+			else:
+				other_station.modulate = Color(1, 1, 1, 1)
+		train_start_station = station
+		_change_gui_state(Gui.State.TRAIN2)
+	elif gui_state == Gui.State.TRAIN2:
+		_try_create_train(train_start_station, station)
+		_change_gui_state(Gui.State.TRAIN1)
+	elif gui_state == Gui.State.SELECT:
+		_deselect_all_trains()
+		selected_station = station
+		current_tile_marker.visible = true
+		_show_current_tile_marker(station.global_position)
+		_update_selected_station_info()
+
+func _are_stations_connected(station1: Station, station2: Station):
+	return len(platform_tile_set.get_connected_platform_positions_adjacent_to(station1, station2, astar)) > 0
 
 func _on_station_content_updated(station: Station):
 	if station == selected_station:

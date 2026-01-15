@@ -9,7 +9,8 @@ signal train_clicked(train: Train)
 signal train_content_changed(train: Train)
 signal train_state_changed(train: Train)
 
-enum State {RUNNING, LOADING, WAITING_FOR_TRACK_RESERVATION_CHANGE, WAITING_FOR_MISSING_PLATFORM, STARTING_FROM_PLATFORM}
+enum State {RUNNING, LOADING, WAITING_FOR_TRACK_RESERVATION_CHANGE, WAITING_FOR_MISSING_PLATFORM,
+			WAITING_FOR_MISSING_STATION, STARTING_FROM_PLATFORM, WAITING_SINCE_DESTINATIONS_AT_SAME_PLATFORM}
 
 var state: State = State.RUNNING
 # Needed because paths will be different depending on if the train is waiting
@@ -40,27 +41,95 @@ var last_delta = 0.0
 @onready var canvas_group := $RigidBody2D/CanvasGroup
 @onready var ore_timer := $OreTimer
 
+# Position of stations between which the train runs
 var destinations: Array[Vector2i] = []
 var destination_index := 0
 
 var reservation_color: Color
 
-static func create(name_: String,
-				   wagon_count_: int,
-				   point_path: PackedVector2Array,
+static func try_create(name_: String,
+				   station1: Station,
+				   station2: Station,
 				   platform_tile_set_: PlatformTileSet,
 				   track_set_: TrackSet,
 				   track_reservations_: TrackReservations,
-				   astar_: Astar) -> Train:
+				   astar_: Astar,
+				   add_child_callback: Callable):
+	if station1 == station2:
+		return
+	var positions = platform_tile_set_.get_connected_platform_positions_adjacent_to(station1, station2, astar_)
+	if len(positions) == 0:
+		return
+	var pos1 = positions[0]
+	var pos2 = positions[1]
+	if not GlobalBank.can_afford(Global.Asset.TRAIN):
+		return
+	if track_reservations_.is_reserved(pos1):
+		# TODO: test that globalbank can be used here
+		Global.show_popup("Track reserved!", pos1, GlobalBank)
+		Global.show_popup("Track reserved!", pos2, GlobalBank)
+		return
+
+	# Get path from the beginning of the first tile of the source platform
+	# to the last tile of the target platform
+	var point_path = _get_point_path_between_platforms(pos1, pos2, platform_tile_set_, track_set_, astar_)
+	if not point_path:
+		return
+
+	var wagon_count_ = min(platform_tile_set_.platform_size(pos1, track_set_), platform_tile_set_.platform_size(pos2, track_set_)) - 1
+
 	var train = TRAIN.instantiate()
 	train.name = name_
 	train.wagon_count = wagon_count_
-	train.destinations = [point_path[0], point_path[-1]] as Array[Vector2i]
+	train.destinations = [Vector2i(station1.position), Vector2i(station2.position)] as Array[Vector2i]
 	train.platform_tile_set = platform_tile_set_
 	train.track_set = track_set_
 	train.track_reservations = track_reservations_
 	train.astar = astar_
+
+	add_child_callback.call(train)
+
+	train.set_initial_curve(point_path)
+
 	return train
+
+
+## Returns the point path between two platforms. [br]
+## The path included includes the two platforms. [br]
+## A previous variant returned the longest possible path between the ends of the
+## stations. However, this does not work in the edge case of a circular track. [br]
+## Instead, compute the shortest paths between any two platform endpoints, and then
+## add the platforms at the ends. [br]
+## Returns an empty path if there is no path.
+static func _get_point_path_between_platforms(platform_pos1: Vector2i,
+									   platform_pos2: Vector2i, platform_tile_set_: PlatformTileSet, track_set_: TrackSet, astar_: Astar) -> PackedVector2Array:
+	var point_paths: Array[PackedVector2Array] = []
+	var platform1_positions = platform_tile_set_.ordered_platform_tile_positions(platform_pos1, track_set_)
+	var platform2_positions = platform_tile_set_.ordered_platform_tile_positions(platform_pos2, track_set_)
+	var platform1_endpoints = [platform1_positions[0], platform1_positions[-1]]
+	var platform2_endpoints = [platform2_positions[0], platform2_positions[-1]]
+
+	for p1 in platform1_endpoints:
+		for p2 in platform2_endpoints:
+			point_paths.append(astar_.get_point_path(p1, p2))
+	point_paths.sort_custom(func(a, b): return len(a) < len(b))
+	var shortest_path = point_paths[0]
+
+	if Vector2i(shortest_path[0]) == platform1_endpoints[0]:
+		platform1_positions.reverse()
+	if Vector2i(shortest_path[-1]) == platform2_endpoints[-1]:
+		platform2_positions.reverse()
+
+	var out = PackedVector2Array()
+	for pos in platform1_positions:
+		out.append(pos)
+	# Remove ends so that we just have the positions between the platforms
+	for pos in shortest_path.slice(1, -1):
+		out.append(pos)
+	for pos in platform2_positions:
+		out.append(pos)
+	return out
+
 
 func _ready() -> void:
 	reservation_color = _random_color()
@@ -132,12 +201,15 @@ func _process(delta):
 			# stop-start behavior. This makes the train jump forward slightly though, so it is
 			# still not ideal.
 			if path_follow.progress + delta * absolute_speed >= curve.get_baked_length():
-				var new_state = _get_new_state_at_end_of_curve()
+				var new_state = _try_set_new_curve_and_return_new_state()
 				if new_state != State.RUNNING:
 					_change_state(new_state)
-		State.WAITING_FOR_MISSING_PLATFORM:
+		State.WAITING_FOR_MISSING_PLATFORM, State.WAITING_FOR_MISSING_STATION:
 			if no_route_timer.is_stopped():
-				_change_state(_try_set_new_curve_and_return_new_state(destinations[destination_index]))
+				_change_state(_try_set_new_curve_and_return_new_state())
+		State.WAITING_SINCE_DESTINATIONS_AT_SAME_PLATFORM:
+			if no_route_timer.is_stopped():
+				_change_state(State.RUNNING)
 		State.LOADING:
 			if not ore_timer.is_stopped():
 				return
@@ -145,13 +217,11 @@ func _process(delta):
 			if has_loaded_or_unloaded:
 				ore_timer.start()
 			else:
-				destination_index += 1
-				destination_index %= len(destinations)
-				_change_state(_try_set_new_curve_and_return_new_state(destinations[destination_index]))
+				_change_state(_try_set_new_curve_and_return_new_state(true))
 		State.WAITING_FOR_TRACK_RESERVATION_CHANGE:
 			if track_reservations.reservation_number > last_known_reservation_number:
 				last_known_reservation_number = track_reservations.reservation_number
-				_change_state(_try_set_new_curve_and_return_new_state(destinations[destination_index]))
+				_change_state(_try_set_new_curve_and_return_new_state())
 
 
 func _is_in_sharp_corner():
@@ -178,7 +248,12 @@ func _change_state(new_state: State):
 			absolute_speed = 0.0
 			_get_money_for_cargo()
 		State.WAITING_FOR_MISSING_PLATFORM:
-			Global.show_popup("No platform at destination!", _get_snapped_train_position(), self)
+			Global.show_popup("No platform adjacent to destination station!", _get_snapped_train_position(), self)
+			no_route_timer.start()
+			target_speed = 0.0
+			absolute_speed = 0.0
+		State.WAITING_FOR_MISSING_STATION:
+			Global.show_popup("No station at destination!", _get_snapped_train_position(), self)
 			no_route_timer.start()
 			target_speed = 0.0
 			absolute_speed = 0.0
@@ -188,6 +263,11 @@ func _change_state(new_state: State):
 				target_speed = 0.0
 				absolute_speed = 0.0
 				last_known_reservation_number = track_reservations.reservation_number
+		State.WAITING_SINCE_DESTINATIONS_AT_SAME_PLATFORM:
+			Global.show_popup("Both destinations at same platform!", _get_snapped_train_position(), self)
+			no_route_timer.start()
+			target_speed = 0.0
+			absolute_speed = 0.0
 	state = new_state
 	print("%s %s" % [name, State.keys()[state]])
 	train_state_changed.emit(self)
@@ -252,19 +332,6 @@ func is_train_or_wagon_at_position(pos: Vector2i):
 		if wagon_position == pos:
 			return true
 	return false
-
-
-func _get_new_state_at_end_of_curve() -> State:
-	var destination_tile = destinations[destination_index]
-	var current_tile = _get_snapped_train_position()
-	var target_tile = (
-		_furthest_in_at_platform(destination_tile)
-		if current_tile in platform_tile_set.connected_platform_tile_positions(destination_tile, track_set)
-		else destination_tile)
-	if current_tile == target_tile:
-		return State.LOADING
-	else:
-		return _try_set_new_curve_and_return_new_state(target_tile)
 
 
 func _furthest_in_at_platform(tile: Vector2i) -> Vector2i:
@@ -367,12 +434,17 @@ func _load_and_unload() -> bool:
 
 func _resources_accepted_at_other_destinations(this_destination_index: int) -> Array[Global.ResourceType]:
 	var resource_types_dict: Dictionary[Global.ResourceType, int] = {}
+	var stations_from_position: Dictionary[Vector2i, Station] = {}
+	for station in _get_stations():
+		stations_from_position[Vector2i(station.position)] = station
 	for i in len(destinations):
 		if i == this_destination_index:
 			continue
-		for station in platform_tile_set.stations_connected_to_platform(destinations[i], _get_stations(), track_set):
-			for resource_type in station.accepts():
-				resource_types_dict[resource_type] = 0
+		# Check so that destination station has not been removed in the middle of loading
+		if destinations[i] not in stations_from_position:
+			continue
+		for resource_type in stations_from_position[destinations[i]].accepts():
+			resource_types_dict[resource_type] = 0
 	return resource_types_dict.keys()
 
 
@@ -384,10 +456,14 @@ func _get_stations() -> Array[Station]:
 	return stations
 
 
-func _try_set_new_curve_and_return_new_state(target_position: Vector2i) -> State:
-	var target_tile = destinations[destination_index]
-	if not platform_tile_set.has_platform(target_tile):
-		return State.WAITING_FOR_MISSING_PLATFORM
+func _try_set_new_curve_and_return_new_state(go_to_next_destination := false) -> State:
+	if go_to_next_destination:
+		destination_index += 1
+		destination_index %= len(destinations)
+	var target_station_position = destinations[destination_index]
+	var station_positions = _get_stations().map(func(station): return Vector2i(station.position))
+	if not target_station_position in station_positions:
+		return State.WAITING_FOR_MISSING_STATION
 	var train_position = Vector2i(get_train_position().snapped(Global.TILE))
 	var new_astar = astar.clone()
 	# Set wagon positions to disabled to prevent turnaround.
@@ -399,10 +475,34 @@ func _try_set_new_curve_and_return_new_state(target_position: Vector2i) -> State
 			for wagon_position in _get_wagon_positions():
 				new_astar.set_position_disabled(wagon_position)
 
-		var point_path = new_astar.get_point_path(train_position, target_position)
+		var platform_positions_adjacent_to_target_station = platform_tile_set.adjacent_platform_positions(target_station_position)
+		if not platform_positions_adjacent_to_target_station:
+			return State.WAITING_FOR_MISSING_PLATFORM
+		var platforms = platform_positions_adjacent_to_target_station.map(func(pos): return platform_tile_set.ordered_platform_tile_positions(pos, track_set))
+		var point_furthest_in_at_platform := Vector2i.MAX
+		for platform in platforms:
+			if train_position in platform:
+				if go_to_next_destination:
+					# We are already at the destination platform, but we have just
+					# switched destination. This means that both destinations are on
+					# the same platform.
+					# Having the train go from a station to itself violates a lot of assumptions in
+					# other parts of the code, so explicitly disallow this
+					return State.WAITING_SINCE_DESTINATIONS_AT_SAME_PLATFORM
+				point_furthest_in_at_platform = _furthest_in_at_platform(train_position)
+				break
+		var point_path: PackedVector2Array
+		if point_furthest_in_at_platform != Vector2i.MAX:
+			if train_position == point_furthest_in_at_platform:
+				return State.LOADING
+			point_path = new_astar.get_point_path(train_position, point_furthest_in_at_platform)
+		else:
+			var point_paths = platform_positions_adjacent_to_target_station.map(func(pos): return new_astar.get_point_path(train_position, pos)).filter(func(path): return len(path) > 0)
+			if not point_paths:
+				return State.WAITING_FOR_TRACK_RESERVATION_CHANGE
 
-		if not point_path:
-			return State.WAITING_FOR_TRACK_RESERVATION_CHANGE
+			point_paths.sort_custom(func(path1, path2): return len(path1) < len(path2))
+			point_path = point_paths[0]
 
 		# point_path goes from the position of the train engine, but we want to start
 		# reserving at the position ahead of the train.
@@ -462,7 +562,7 @@ func _get_positions_until_next_non_intersection(positions: PackedVector2Array) -
 		return_value.append(Vector2i(pos))
 		if not track_set.is_intersection(Vector2i(pos)):
 			return return_value
-	assert(false, "train path ends at intersection, this should not happen")
+	#assert(false, "train path ends at intersection, this should not happen")
 	return []
 
 

@@ -58,3 +58,7 @@ func save() -> Dictionary[String, int]:
 func load(save_data: Dictionary[String, int]) -> void:
 	for upgrade in upgrades.values():
 		upgrade.current_level = save_data[upgrade.name]
+
+func reset():
+	for upgrade in upgrades.values():
+		upgrade.current_level = 0

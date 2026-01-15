@@ -41,13 +41,14 @@
 
 ## TODO
 
-- Make the train destinations stations, not single tiles.
 - Missions
   	- Deliver first of each cargo
   	- Something that requires actually working production lines:
   	  	- Deliver 100 of each cargo
   		- Deliver X of each cargo in Y minutes 
   	- Missions should give a large chunk of money, or an upgrade point
+- Prevent resources and consumers to be closer than max possible station length to
+  another, so that it does not become trivial
 - Show N/A instead of MAX_INT as price of a resource when no industry is producing it
 - more sound effects and music
 - different production rate for different goods
@@ -71,33 +72,13 @@
 ### Issues
 
 - Track pricing is unpredictable and not refunded.
-- When two stations are four tiles apart on the same rail, increasing the 
-  platform length to 5 removes the platform for one of the stations
 - Sometimes the initial map is created without any iron ore, for example
-- Test the case where removal of a bit of train track makes two stations become one
 - If there are multiple stations accepting the same thing adjacent to a platform, the
   train will be paid twice
 - Music does not loop seamlessly
 - When an industry is selected and a new chunk is bought, any changed prices will
   not be reflected in the description label until industry is reselected
 - Newly created trains without wagons will be invisible until they start moving
-- How to prevent the situation when, if a mine and the factory aligns, just create one
-  long station that connects them both?
-	1. In map generation, make sure that related resources aren't spawning less than X
-	   tiles from each other, where X is the maximum platform length
-	   - puts restrictions on map generation
-	   + this might be wanted anyway; regardless of solution, not much fun if source
-		 and target are too close to each other. Also unrealistic to even consider
-		 transferring wares via train if that is the case.
-- If there is a platform max length, 
-  1. what to do if placing a station just outside the station max length?
-	1. Create a new platform there. If so, has to make sure that we visualize the end
-	   of platforms.
-  2. what to do if connecting two stations of length X-2 with a new rail?
-	1. Extend one of them. Might lead to platforms changing length. Perhaps not a big
-	   problem, try it out.
-- When creating and removing rail, sometimes existing stations will be unexpectedly 
-  rejigged.
 
 
 ### Thinking about it

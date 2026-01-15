@@ -39,7 +39,7 @@ visible = false
 z_index = -200
 position = Vector2(-96, -64)
 
-[node name="Timer" type="Timer" parent="."]
+[node name="OreTimer" type="Timer" parent="."]
 autostart = true
 
 [node name="NextToYou" type="AudioStreamPlayer" parent="."]
