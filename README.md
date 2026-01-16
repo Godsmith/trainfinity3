@@ -71,6 +71,7 @@
 
 ### Issues
 
+- Windows in cities do not show up
 - Track pricing is unpredictable and not refunded.
 - Sometimes the initial map is created without any iron ore, for example
 - If there are multiple stations accepting the same thing adjacent to a platform, the
@@ -148,7 +149,5 @@ they will always be in front.
 	-650 Factory
 	-700 Ore
 	-725 City
-	-750 Wall
-	-800 Water
-	-850 Sand
+	-800 Terrain
 	-900 Background

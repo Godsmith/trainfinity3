@@ -46,6 +46,12 @@ var boundaries = Rect2i()
 # Used when saving the game
 var chunks: Dictionary[Vector2i, ChunkType] = {}
 
+# Persistent storage for all baked data
+# Structure: { Color: {"vertices": PackedVector2Array, "indices": PackedInt32Array} }
+var persistent_mesh_data = {}
+# Keep track of the actual MeshInstance2D nodes
+var mesh_nodes = {}
+
 class TerrainChunk:
 	var buildable_positions: Array[Vector2i] = []
 	var exterior_wall_positions: Array[Vector2i] = []
@@ -82,10 +88,87 @@ func _ready() -> void:
 	_on_money_changed()
 
 
+## SINGLE ENTRY POINT: Call this whenever you want to 'absorb' new Polygon2Ds
+func bake_polygons() -> void:
+	var nodes = find_children("*", "Polygon2D", true, false)
+	
+	if nodes.is_empty():
+		return
+
+	var colors_to_update = []
+
+	# 1. Process new nodes and append to persistent storage
+	for poly in nodes:
+		if poly is Polygon2D:
+			var color = poly.color
+			_append_polygon_to_storage(poly)
+			
+			if not colors_to_update.has(color):
+				colors_to_update.append(color)
+				
+			poly.queue_free()
+
+	# 2. Only rebuild the meshes that actually changed
+	for color in colors_to_update:
+		_update_mesh_instance(color)
+
+
+func _append_polygon_to_storage(poly: Polygon2D):
+	var color = poly.color
+	
+	# Transform points to THIS manager's local space
+	var xform = get_global_transform().affine_inverse() * poly.get_global_transform()
+	var local_points = xform * poly.polygon
+	
+	var triangles = Geometry2D.triangulate_polygon(local_points)
+	if triangles.size() == 0:
+		return
+
+	# Initialize storage for this color if it's the first time seeing it
+	if not persistent_mesh_data.has(color):
+		persistent_mesh_data[color] = {
+			"vertices": PackedVector2Array(), 
+			"indices": PackedInt32Array()
+		}
+	
+	var bundle = persistent_mesh_data[color]
+	var index_offset = bundle.vertices.size()
+	
+	# Append the new geometry to the existing data
+	bundle.vertices.append_array(local_points)
+	for index in triangles:
+		bundle.indices.append(index + index_offset)
+
+
+func _update_mesh_instance(color: Color):
+	# Create the node if it doesn't exist yet
+	if not mesh_nodes.has(color):
+		var mi = MeshInstance2D.new()
+		mi.name = "BakedMesh_" + str(color.to_html())
+		mi.modulate = color
+		add_child(mi)
+		mesh_nodes[color] = mi
+	
+	var mesh_instance = mesh_nodes[color]
+	var bundle = persistent_mesh_data[color]
+	
+	# We must create a new ArrayMesh (or clear the old one) to update the GPU memory
+	var arr_mesh = ArrayMesh.new()
+	var arrays = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = bundle.vertices
+	arrays[Mesh.ARRAY_INDEX] = bundle.indices
+	
+	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	mesh_instance.mesh = arr_mesh
+
+
 func set_seed_and_add_chunks(randomizer_seed: int, chunks_: Dictionary[Vector2i, ChunkType]):
 	_noise.seed = randomizer_seed
 	for pos in chunks_:
 		_add_chunk(pos.x, pos.y, chunks_[pos])
+	
+	bake_polygons()
 
 
 func set_seed_and_add_starting_chunks(randomizer_seed: int):
@@ -104,10 +187,13 @@ func set_seed_and_add_starting_chunks(randomizer_seed: int):
 	_add_chunk(-1, 1, ChunkType.IRON)
 	_add_chunk(0, 1, ChunkType.FOREST)
 	_add_chunk(1, 1, ChunkType.CITY)
+	
+	bake_polygons()
 
 
 func add_random_chunk(chunk_x: int, chunk_y: int):
 	_add_chunk(chunk_x, chunk_y, ChunkType.values().pick_random())
+	bake_polygons()
 
 
 func _add_chunk(chunk_x: int, chunk_y: int, chunk_type: ChunkType):
