@@ -1,5 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://b4se1re7wa6d0"]
+[gd_scene load_steps=3 format=3 uid="uid://b4se1re7wa6d0"]
 
+[ext_resource type="Theme" uid="uid://8gvugwv2dc6j" path="res://theme.tres" id="1_ekxnf"]
 [ext_resource type="Script" uid="uid://bl6mjvwbi3qio" path="res://scenes/main_menu.gd" id="1_l6cm7"]
 
 [node name="MainMenu" type="MarginContainer"]
@@ -8,6 +9,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("1_ekxnf")
 theme_override_constants/margin_left = 120
 theme_override_constants/margin_top = 80
 theme_override_constants/margin_right = 120
