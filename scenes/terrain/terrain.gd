@@ -46,11 +46,9 @@ var boundaries = Rect2i()
 # Used when saving the game
 var chunks: Dictionary[Vector2i, ChunkType] = {}
 
-# Persistent storage for all baked data
-# Structure: { Color: {"vertices": PackedVector2Array, "indices": PackedInt32Array} }
-var persistent_mesh_data = {}
-# Keep track of the actual MeshInstance2D nodes
-var mesh_nodes = {}
+# Storage: { ShapeHash: { "mesh": ArrayMesh, "transforms": Array, "colors": Array } }
+var library = {}
+var multimesh_nodes = {}
 
 class TerrainChunk:
 	var buildable_positions: Array[Vector2i] = []
@@ -88,79 +86,72 @@ func _ready() -> void:
 	_on_money_changed()
 
 
-## SINGLE ENTRY POINT: Call this whenever you want to 'absorb' new Polygon2Ds
 func bake_polygons() -> void:
 	var nodes = find_children("*", "Polygon2D", true, false)
 	
-	if nodes.is_empty():
-		return
-
-	var colors_to_update = []
-
-	# 1. Process new nodes and append to persistent storage
 	for poly in nodes:
-		if poly is Polygon2D:
-			var color = poly.color
-			_append_polygon_to_storage(poly)
+		if not poly is Polygon2D: continue
+
+		if poly.visible:
+			print(poly.name)
+	
+			# 1. Create a unique ID based on the vertex points (Deduplication Key)
+			var shape_hash = hash(poly.polygon)
 			
-			if not colors_to_update.has(color):
-				colors_to_update.append(color)
-				
-			poly.queue_free()
+			if not library.has(shape_hash):
+				library[shape_hash] = {
+					"mesh": _create_mesh_from_polygon(poly.polygon),
+					"transforms": [],
+					"colors": []
+				}
 
-	# 2. Only rebuild the meshes that actually changed
-	for color in colors_to_update:
-		_update_mesh_instance(color)
+			# 2. Store the instance data
+			# We use the global transform so it stays exactly where it was in the world
+			var xform = get_global_transform().affine_inverse() * poly.get_global_transform()
+			library[shape_hash]["transforms"].append(xform)
+			library[shape_hash]["colors"].append(poly.color)
+	
+		poly.queue_free()
+	print("removed %s polygons" % len(nodes))
 
+	# 3. Build/Update MultiMesh nodes
+	_apply_to_multimeshes()
 
-func _append_polygon_to_storage(poly: Polygon2D):
-	var color = poly.color
-	
-	# Transform points to THIS manager's local space
-	var xform = get_global_transform().affine_inverse() * poly.get_global_transform()
-	var local_points = xform * poly.polygon
-	
-	var triangles = Geometry2D.triangulate_polygon(local_points)
-	if triangles.size() == 0:
-		return
-
-	# Initialize storage for this color if it's the first time seeing it
-	if not persistent_mesh_data.has(color):
-		persistent_mesh_data[color] = {
-			"vertices": PackedVector2Array(), 
-			"indices": PackedInt32Array()
-		}
-	
-	var bundle = persistent_mesh_data[color]
-	var index_offset = bundle.vertices.size()
-	
-	# Append the new geometry to the existing data
-	bundle.vertices.append_array(local_points)
-	for index in triangles:
-		bundle.indices.append(index + index_offset)
-
-
-func _update_mesh_instance(color: Color):
-	# Create the node if it doesn't exist yet
-	if not mesh_nodes.has(color):
-		var mi = MeshInstance2D.new()
-		mi.name = "BakedMesh_" + str(color.to_html())
-		mi.modulate = color
-		add_child(mi)
-		mesh_nodes[color] = mi
-	
-	var mesh_instance = mesh_nodes[color]
-	var bundle = persistent_mesh_data[color]
-	
-	# We must create a new ArrayMesh (or clear the old one) to update the GPU memory
-	var arr_mesh = ArrayMesh.new()
+func _create_mesh_from_polygon(points: PackedVector2Array) -> ArrayMesh:
+	var mesh = ArrayMesh.new()
+	var triangles = Geometry2D.triangulate_polygon(points)
 	var arrays = []
 	arrays.resize(Mesh.ARRAY_MAX)
-	arrays[Mesh.ARRAY_VERTEX] = bundle.vertices
-	arrays[Mesh.ARRAY_INDEX] = bundle.indices
+	arrays[Mesh.ARRAY_VERTEX] = points
+	arrays[Mesh.ARRAY_INDEX] = triangles
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return mesh
+
+func _apply_to_multimeshes():
+	for shape_hash in library:
+		var data = library[shape_hash]
+		var instance_count = data["transforms"].size()
 	
-	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-	mesh_instance.mesh = arr_mesh
+		var mm: MultiMesh
+		# Create node if it doesn't exist
+		if not multimesh_nodes.has(shape_hash):
+			var mm_node = MultiMeshInstance2D.new()
+			mm = MultiMesh.new()
+			mm.transform_format = MultiMesh.TRANSFORM_2D
+			mm.use_colors = true
+			mm.mesh = data["mesh"]
+	
+			mm_node.multimesh = mm
+			add_child(mm_node)
+			multimesh_nodes[shape_hash] = mm_node
+
+		# Update the MultiMesh data
+		mm = multimesh_nodes[shape_hash].multimesh
+		mm.instance_count = instance_count
+	
+		for i in range(instance_count):
+			mm.set_instance_transform_2d(i, data["transforms"][i])
+			mm.set_instance_color(i, data["colors"][i])
 
 
 func set_seed_and_add_chunks(randomizer_seed: int, chunks_: Dictionary[Vector2i, ChunkType]):

@@ -3,6 +3,6 @@
 [node name="Water" type="Node2D"]
 z_index = -800
 
-[node name="Node2D3" type="Polygon2D" parent="."]
+[node name="WaterPolygon" type="Polygon2D" parent="."]
 color = Color(0.156863, 0.337255, 0.435294, 1)
 polygon = PackedVector2Array(8, -8, 8, 8, -8, 8, -8, -8)

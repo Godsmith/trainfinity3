@@ -3,6 +3,6 @@
 [node name="Sand" type="Node2D"]
 z_index = -850
 
-[node name="Node2D3" type="Polygon2D" parent="."]
+[node name="SandPolygon" type="Polygon2D" parent="."]
 color = Color(0.611765, 0.580392, 0.419608, 1)
 polygon = PackedVector2Array(8, -8, 8, 8, -8, 8, -8, -8)

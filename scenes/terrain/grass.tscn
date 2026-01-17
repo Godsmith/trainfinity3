@@ -3,6 +3,6 @@
 [node name="Grass" type="Node2D"]
 z_index = -850
 
-[node name="Node2D3" type="Polygon2D" parent="."]
+[node name="GrassPolygon" type="Polygon2D" parent="."]
 color = Color(0.337255, 0.490196, 0.27451, 1)
 polygon = PackedVector2Array(8, -8, 8, 8, -8, 8, -8, -8)

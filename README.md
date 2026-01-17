@@ -75,8 +75,7 @@
 
 ### Issues
 
-- Windows in cities do not show up
-- Mountain edges always visible, even when no connected mountain on that side
+- Mountain edges show up in front of others
 - Track pricing is unpredictable and not refunded.
 - Sometimes the initial map is created without any iron ore, for example
 - If there are multiple stations accepting the same thing adjacent to a platform, the
