@@ -46,9 +46,11 @@ var boundaries = Rect2i()
 # Used when saving the game
 var chunks: Dictionary[Vector2i, ChunkType] = {}
 
-# Storage: { ShapeHash: { "mesh": ArrayMesh, "transforms": Array, "colors": Array } }
+# Persistent storage for shape data
+# { ShapeHash: { "mesh": ArrayMesh, "transforms": Array[Transform2D], "colors": Array[Color] } }
 var library = {}
 var multimesh_nodes = {}
+var shape_discovery_order = []
 
 class TerrainChunk:
 	var buildable_positions: Array[Vector2i] = []
@@ -86,72 +88,101 @@ func _ready() -> void:
 	_on_money_changed()
 
 
+## The main entry point
 func bake_polygons() -> void:
 	var nodes = find_children("*", "Polygon2D", true, false)
 	
-	for poly in nodes:
-		if not poly is Polygon2D: continue
+	if nodes.is_empty():
+		return
 
+	# 1. SORT NODES: Ensures background nodes are processed before foreground
+	# We check Z-Index first, then the position in the Scene Tree (Index)
+	nodes.sort_custom(func(a, b):
+		if a.z_index != b.z_index:
+			return a.z_index < b.z_index
+		return a.get_index() < b.get_index()
+	)
+
+	# 2. BAKE: Group unique shapes and store their transforms
+	for poly in nodes:
+		if not poly is Polygon2D:
+			continue
 		if poly.visible:
-			print(poly.name)
-	
-			# 1. Create a unique ID based on the vertex points (Deduplication Key)
 			var shape_hash = hash(poly.polygon)
-			
+
+			# If this is a new unique shape, initialize the library entry
 			if not library.has(shape_hash):
 				library[shape_hash] = {
 					"mesh": _create_mesh_from_polygon(poly.polygon),
 					"transforms": [],
 					"colors": []
 				}
+				shape_discovery_order.append(shape_hash)
 
-			# 2. Store the instance data
-			# We use the global transform so it stays exactly where it was in the world
+			# Calculate transform relative to THIS manager node
 			var xform = get_global_transform().affine_inverse() * poly.get_global_transform()
+
 			library[shape_hash]["transforms"].append(xform)
 			library[shape_hash]["colors"].append(poly.color)
-	
-		poly.queue_free()
-	print("removed %s polygons" % len(nodes))
 
-	# 3. Build/Update MultiMesh nodes
+		# Remove the original node to free up memory/overhead
+		poly.queue_free()
+
+	# 3. RENDER: Sync the library data to MultiMeshInstance2D nodes
 	_apply_to_multimeshes()
 
+## Helper: Turns a Polygon2D's points into a Mesh the GPU understands
 func _create_mesh_from_polygon(points: PackedVector2Array) -> ArrayMesh:
 	var mesh = ArrayMesh.new()
 	var triangles = Geometry2D.triangulate_polygon(points)
+
+	if triangles.size() == 0:
+		push_warning("Attempted to bake an invalid or self-intersecting polygon.")
+		return null
+
 	var arrays = []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = points
 	arrays[Mesh.ARRAY_INDEX] = triangles
+
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return mesh
 
+## Helper: Creates or updates MultiMeshInstance2D nodes in the correct order
 func _apply_to_multimeshes():
-	for shape_hash in library:
+	for shape_hash in shape_discovery_order:
 		var data = library[shape_hash]
-		var instance_count = data["transforms"].size()
-	
+		if data["mesh"] == null: continue
+
 		var mm: MultiMesh
-		# Create node if it doesn't exist
+		# Create the node if it doesn't exist
 		if not multimesh_nodes.has(shape_hash):
 			var mm_node = MultiMeshInstance2D.new()
 			mm = MultiMesh.new()
+
 			mm.transform_format = MultiMesh.TRANSFORM_2D
 			mm.use_colors = true
 			mm.mesh = data["mesh"]
-	
+
 			mm_node.multimesh = mm
+
 			add_child(mm_node)
 			multimesh_nodes[shape_hash] = mm_node
 
-		# Update the MultiMesh data
-		mm = multimesh_nodes[shape_hash].multimesh
+		# Update the MultiMesh Instance data
+		var mm_instance = multimesh_nodes[shape_hash]
+		mm = mm_instance.multimesh
+
+		var instance_count = data["transforms"].size()
 		mm.instance_count = instance_count
-	
+
 		for i in range(instance_count):
 			mm.set_instance_transform_2d(i, data["transforms"][i])
 			mm.set_instance_color(i, data["colors"][i])
+
+		# FORCE ORDER: Move this child to the bottom of the list
+		# so later discovered shapes (foreground) draw last (on top)
+		move_child(mm_instance, get_child_count() - 1)
 
 
 func set_seed_and_add_chunks(randomizer_seed: int, chunks_: Dictionary[Vector2i, ChunkType]):

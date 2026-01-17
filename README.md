@@ -75,7 +75,6 @@
 
 ### Issues
 
-- Mountain edges show up in front of others
 - Track pricing is unpredictable and not refunded.
 - Sometimes the initial map is created without any iron ore, for example
 - If there are multiple stations accepting the same thing adjacent to a platform, the
