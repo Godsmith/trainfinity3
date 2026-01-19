@@ -47,6 +47,7 @@
   	  	- Deliver 100 of each cargo
   		- Deliver X of each cargo in Y minutes 
   	- Missions should give a large chunk of money, or an upgrade point
+- Bridges
 - Prevent resources and consumers to be closer than max possible station length to
   another, so that it does not become trivial
 - Show N/A instead of MAX_INT as price of a resource when no industry is producing it
@@ -75,8 +76,11 @@
 
 ### Issues
 
+
 - Track pricing is unpredictable and not refunded.
-- Sometimes the initial map is created without any iron ore, for example
+- Sometimes the initial map is bad:
+	- created without resources like iron ore
+	- factory not reachable
 - If there are multiple stations accepting the same thing adjacent to a platform, the
   train will be paid twice
 - Music does not loop seamlessly
@@ -97,8 +101,8 @@
 - Move from upgrades costing money to upgrades costing upgrade points gained from achievements?
   	- The issues with having them cost money is that you could just let everything run to earn
   	  an infinite amount of money.
-    - Upgrades should probably cost one point for the first one, two for the second etc, since that
-      is an established pattern.
+	- Upgrades should probably cost one point for the first one, two for the second etc, since that
+	  is an established pattern.
 - Production rates for individual industries could vary a bit, to encourage exploration
 - Production rates for individual industries could vary over time, either based on usage
   or randomly
