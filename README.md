@@ -71,7 +71,6 @@
 
 #### HTML version
 
-- Unicode emojis do not work
 
 ### Issues
 

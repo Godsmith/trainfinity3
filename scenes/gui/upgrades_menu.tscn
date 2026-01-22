@@ -1,5 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://cy1ncg05prhjg"]
+[gd_scene load_steps=3 format=3 uid="uid://cy1ncg05prhjg"]
 
+[ext_resource type="Theme" uid="uid://8gvugwv2dc6j" path="res://theme.tres" id="1_ge53q"]
 [ext_resource type="Script" uid="uid://d1pwk035t8f7t" path="res://scenes/gui/upgrades_menu.gd" id="1_kvh6k"]
 
 [node name="UpgradesMenu" type="MarginContainer"]
@@ -10,6 +11,7 @@ offset_right = -625.0
 offset_bottom = -461.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("1_ge53q")
 script = ExtResource("1_kvh6k")
 
 [node name="Panel" type="Panel" parent="."]
