@@ -60,7 +60,6 @@
 - change graphics for end of platform, so it can't look like two stations are one
   large platform
 - heavier trains should have slower acceleration
-- change train paths when changing length of starting or ending station
 
 #### Mobile version
 
