@@ -220,12 +220,21 @@ func _unhandled_input(event: InputEvent) -> void:
 				GlobalBank.earn(10000)
 			KEY_C:
 				show_reservation_markers = !show_reservation_markers
-				for track in track_set.get_all_tracks():
-					for pos in [track.pos1, track.pos2]:
-						var coordinates = DEBUG_COORDINATES.instantiate()
-						coordinates.position = pos - Vector2i(Global.TILE) / 3
-						coordinates.text = "%s,%s" % [pos.x, pos.y]
-						add_child(coordinates)
+				for node in get_tree().get_nodes_in_group("debug_coordinates"):
+					node.queue_free()
+				var positions: Array[Vector2i] = []
+				if show_reservation_markers:
+					for track in track_set.get_all_tracks():
+						for pos in [track.pos1, track.pos2]:
+							positions.append(pos)
+					for industry in get_tree().get_nodes_in_group("industries"):
+						positions.append(Vector2i(industry.position))
+				for pos in positions:
+					var coordinates = DEBUG_COORDINATES.instantiate()
+					coordinates.position = pos - Vector2i(Global.TILE) / 3
+					coordinates.text = "%s,%s" % [pos.x, pos.y]
+					add_child(coordinates)
+
 			KEY_V:
 				print(JSON.stringify(_get_save_data(), "  "))
 

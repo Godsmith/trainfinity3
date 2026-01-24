@@ -4,7 +4,7 @@
 font_size = 48
 shadow_size = 0
 
-[node name="DebugCoordinates" type="Label"]
+[node name="DebugCoordinates" type="Label" groups=["debug_coordinates"]]
 texture_filter = 1
 offset_left = -6.0
 offset_top = -3.0
