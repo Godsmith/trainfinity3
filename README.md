@@ -41,6 +41,9 @@
 
 ## TODO
 
+- Prevent focusing on expand buttons
+- Music and sound effect volume/toggle
+- Terrain tiles are sometimes blank when created
 - Missions
   	- Deliver first of each cargo
   	- Something that requires actually working production lines:
@@ -76,9 +79,6 @@
 
 
 - Track pricing is unpredictable and not refunded.
-- Sometimes the initial map is bad:
-	- created without resources like iron ore
-	- factory not reachable
 - If there are multiple stations accepting the same thing adjacent to a platform, the
   train will be paid twice
 - Music does not loop seamlessly

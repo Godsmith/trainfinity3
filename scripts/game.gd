@@ -14,7 +14,7 @@ const DEBUG_COORDINATES = preload("res://debug/debug_coordinates.tscn")
 @onready var ghost_station := $GhostStation
 @onready var ghost_light := $GhostLight
 
-var randomizer_seed = randi()
+var randomizer_seed
 
 var gui_state := Gui.State.SELECT
 var is_right_mouse_button_held_down := false
@@ -82,9 +82,6 @@ func _show_reservations(delta):
 
 
 func _ready():
-	print("randomizer_seed: %s" % randomizer_seed)
-	seed(randomizer_seed)
-
 	GlobalBank.gui = gui
 	GlobalBank.update_gui()
 
@@ -796,9 +793,36 @@ func _on_upgrade_bought(upgrade: UpgradeManager.UpgradeType):
 ######################################################################
 
 func start_new_game():
-	terrain.set_seed_and_add_starting_chunks(randomizer_seed)
+	while true:
+		randomizer_seed = randi()
+		print("randomizer_seed: %s" % randomizer_seed)
+		seed(randomizer_seed)
+		terrain.set_seed_and_add_starting_chunks(randomizer_seed)
+		var industries: Array[Industry]
+		industries.assign(get_tree().get_nodes_in_group("industries"))
+		if TerrainVerifier.verify_starting_terrain(industries, _create_astar_terrain()):
+			break
+		print("Resetting terrain and starting over.")
+		_reset_terrain()
 	$Gui/Help.visible = true
 
+
+func _reset_terrain():
+	var parent = terrain.get_parent()
+	var index = terrain.get_index()
+
+	# 1. Create the fresh version
+	var new_terrain = Terrain.new()
+
+	# 2. Put it in the same spot
+	parent.add_child(new_terrain)
+	parent.move_child(new_terrain, index)
+	new_terrain.z_index = terrain.z_index
+
+	# 3. Delete the old one (and all its children)
+	terrain.queue_free()
+
+	terrain = new_terrain
 
 func _save_game():
 	var save_file = FileAccess.open(Global.SAVE_PATH, FileAccess.WRITE)
@@ -843,6 +867,7 @@ func _load_game_from_path(file_path: String):
 
 func _load_game_from_data(data: Dictionary):
 	randomizer_seed = data.randomizer_seed
+	print("randomizer_seed: %s" % randomizer_seed)
 	seed(randomizer_seed)
 	# Remember that water, sand and mountain level also have to be the same
 	terrain.set_seed_and_add_chunks(randomizer_seed, data.chunks)

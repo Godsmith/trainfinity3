@@ -237,24 +237,24 @@ func _add_chunk(chunk_x: int, chunk_y: int, chunk_type: ChunkType):
 			if terrain_chunk.exterior_wall_positions:
 				var ore = Ore.create(Global.ResourceType.COAL)
 				ore.position = terrain_chunk.exterior_wall_positions.pick_random()
-				add_child(ore)
+				add_child(ore, true)
 		ChunkType.IRON:
 			if terrain_chunk.exterior_wall_positions:
 				var ore = Ore.create(Global.ResourceType.IRON)
 				ore.position = terrain_chunk.exterior_wall_positions.pick_random()
-				add_child(ore)
+				add_child(ore, true)
 		ChunkType.FACTORY:
 			var factory = FACTORY.instantiate()
 			factory.position = terrain_chunk.buildable_positions.pick_random()
-			add_child(factory)
+			add_child(factory, true)
 		ChunkType.STEELWORKS:
 			var steelworks = STEELWORKS.instantiate()
 			steelworks.position = terrain_chunk.buildable_positions.pick_random()
-			add_child(steelworks)
+			add_child(steelworks, true)
 		ChunkType.FOREST:
 			var forest = FOREST.instantiate()
 			forest.position = terrain_chunk.buildable_positions.pick_random()
-			forest_node.add_child(forest)
+			forest_node.add_child(forest, true)
 		ChunkType.CITY:
 			var possible_city_positions: Array[Vector2i] = []
 			for pos in grid_positions:
@@ -264,7 +264,7 @@ func _add_chunk(chunk_x: int, chunk_y: int, chunk_type: ChunkType):
 			possible_city_positions.erase(city_position)
 			var city = CITY.instantiate()
 			city.position = city_position
-			city_node.add_child(city)
+			city_node.add_child(city, true)
 			
 			print("Starting city extension")
 			var target_size = randi_range(3, 10)
@@ -280,7 +280,7 @@ func _add_chunk(chunk_x: int, chunk_y: int, chunk_type: ChunkType):
 					possible_new_city_positions.append_array(Global.orthogonally_adjacent(new_city_position))
 					var new_city = CITY.instantiate()
 					new_city.position = new_city_position
-					add_child(new_city)
+					add_child(new_city, true)
 			print("City extension done")
 		ChunkType.DEBUG_GRASS_ONLY:
 			pass
