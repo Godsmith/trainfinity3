@@ -72,7 +72,6 @@ func _ready() -> void:
 	# TODO: Consider checking so that factories etc are accessible 
 	# - either no mountains or water around them, or not too much, or unbroken path
 	#   from them to a corresponding consumer/producer
-	print("Starting terrain generation")
 	_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
 	_noise.frequency = 0.05
 

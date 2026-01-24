@@ -82,6 +82,7 @@ func _show_reservations(delta):
 
 
 func _ready():
+	print("randomizer_seed: %s" % randomizer_seed)
 	seed(randomizer_seed)
 
 	GlobalBank.gui = gui
