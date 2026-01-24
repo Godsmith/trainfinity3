@@ -24,7 +24,8 @@ var mouse_down_position := Vector2i()
 var destroy_markers: Array[Polygon2D] = []
 var trains_marked_for_destruction_set: Dictionary[Train, int] = {}
 
-var astar = Astar.new()
+var astar_track = Astar.new()
+var astar_terrain: AStarGrid2D
 
 @onready var camera = $Camera2D
 @onready var gui: Gui = $Gui
@@ -124,14 +125,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 			match gui_state:
 				Gui.State.TRACK:
-					# TODO: create ghost track here also, since a click can lead to
-					# a change in the number of ghost track? Needs to be removed.
-					var track_marker_confirm_position = track_creator.click(snapped_mouse_position, terrain.boundaries)
+					var track_marker_confirm_position = track_creator.click(snapped_mouse_position)
 					if track_marker_confirm_position != Vector2i.MAX:
 						track_marker_confirm.visible = true
 						track_marker_confirm.position = track_marker_confirm_position
 					else:
 						track_marker_confirm.visible = false
+						# This means that creating tracks has just begun, so create
+						# astar_terrain, which is used later when calling track_creator.mouse_move
+						astar_terrain = _create_astar_terrain()
 				Gui.State.DESTROY1:
 					mouse_down_position = snapped_mouse_position
 					_change_gui_state(Gui.State.DESTROY2)
@@ -176,7 +178,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			Gui.State.TRACK:
 				current_tile_marker.visible = true
 				_show_current_tile_marker(snapped_mouse_position)
-				var ghost_tracks = track_creator.mouse_move(snapped_mouse_position)
+				var ghost_tracks = track_creator.mouse_move(snapped_mouse_position, astar_terrain)
 				var all_track_set = TrackSet.new()
 				for track in track_set.get_all_tracks():
 					all_track_set.add(track)
@@ -227,6 +229,31 @@ func _unhandled_input(event: InputEvent) -> void:
 			KEY_V:
 				print(JSON.stringify(_get_save_data(), "  "))
 
+
+func _create_astar_terrain():
+	var astar = AStarGrid2D.new()
+	astar.region = terrain.boundaries
+	astar.cell_size = Global.TILE
+	astar.default_estimate_heuristic = AStarGrid2D.HEURISTIC_MANHATTAN
+	astar.update()
+	var positions: Array[Vector2i] = []
+	# Set solid points
+	# 1. Illegal positions
+	for x in range(terrain.boundaries.position.x, terrain.boundaries.end.x + Global.TILE_SIZE, Global.TILE_SIZE):
+		for y in range(terrain.boundaries.position.y, terrain.boundaries.end.y + Global.TILE_SIZE, Global.TILE_SIZE):
+			positions.append(Vector2i(x, y))
+	var illegal_positions = _illegal_track_positions(positions)
+	for pos in illegal_positions:
+		astar.set_point_solid(pos / Global.TILE_SIZE)
+	# 2. West and east edges
+	for x in [terrain.boundaries.position.x - Global.TILE_SIZE, terrain.boundaries.end.x + Global.TILE_SIZE]:
+		for y in range(terrain.boundaries.position.y - Global.TILE_SIZE, terrain.boundaries.end.y + Global.TILE_SIZE * 2, Global.TILE_SIZE):
+			astar.set_point_solid(Vector2i(x, y) / Global.TILE_SIZE)
+	# 3. North and south edges
+	for y in [terrain.boundaries.position.y - Global.TILE_SIZE, terrain.boundaries.end.y + Global.TILE_SIZE]:
+		for x in range(terrain.boundaries.position.x - Global.TILE_SIZE, terrain.boundaries.end.x + Global.TILE_SIZE * 2, Global.TILE_SIZE):
+			astar.set_point_solid(Vector2i(x, y) / Global.TILE_SIZE)
+	return astar
 
 func _show_current_tile_marker(pos: Vector2i):
 	_show_marker(current_tile_marker, pos)
@@ -303,7 +330,7 @@ func _illegal_track_positions(positions: Array[Vector2i]) -> Array[Vector2i]:
 func _create_tracks_from_ghost_tracks(ghost_tracks: Array[Track]):
 	if len(ghost_tracks) == 0:
 		# Creating 0 tracks can have some strange consequences, for example an
-		# astar point will be created at the position, and the position will be
+		# astar_track point will be created at the position, and the position will be
 		# evaluated for platforms, etc.
 		return
 	
@@ -315,9 +342,9 @@ func _create_tracks_from_ghost_tracks(ghost_tracks: Array[Track]):
 			track_set.add(track)
 			track.set_ghostly(false)
 			new_track_count += 1
-			astar.add_position(track.pos1)
-			astar.add_position(track.pos2)
-			astar.connect_positions(track.pos1, track.pos2)
+			astar_track.add_position(track.pos1)
+			astar_track.add_position(track.pos2)
+			astar_track.connect_positions(track.pos1, track.pos2)
 		track.track_clicked.connect(_on_track_clicked)
 	GlobalBank.buy(Global.Asset.TRACK, new_track_count, ghost_tracks[-1].global_position)
 	_recreate_platform_tiles()
@@ -328,7 +355,7 @@ func _create_tracks_from_ghost_tracks(ghost_tracks: Array[Track]):
 func _destroy_track(positions: Array[Vector2i]):
 	for pos in positions:
 		for track in track_set.tracks_at_position(pos).duplicate():
-			astar.disconnect_positions(track.pos1, track.pos2)
+			astar_track.disconnect_positions(track.pos1, track.pos2)
 			GlobalBank.destroy(Global.Asset.TRACK)
 			track_set.erase(track)
 	_recreate_platform_tiles()
@@ -345,14 +372,14 @@ func _on_track_clicked(track: Track):
 
 func _rotate_one_way_direction(track: Track):
 	track.rotate_one_way_direction()
-	astar.disconnect_positions(track.pos1, track.pos2)
+	astar_track.disconnect_positions(track.pos1, track.pos2)
 	match track.direction:
 		track.Direction.BOTH:
-			astar.connect_positions(track.pos1, track.pos2)
+			astar_track.connect_positions(track.pos1, track.pos2)
 		track.Direction.POS1_TO_POS2:
-			astar.connect_positions(track.pos1, track.pos2, false)
+			astar_track.connect_positions(track.pos1, track.pos2, false)
 		track.Direction.POS2_TO_POS1:
-			astar.connect_positions(track.pos2, track.pos1, false)
+			astar_track.connect_positions(track.pos2, track.pos1, false)
 	# Makes trains waiting for reservations to change find new paths
 	# TODO: Find a more elegant way to do this, or at least better naming.
 	track_reservations.reservation_number += 1
@@ -489,7 +516,7 @@ func _show_ghost_platform_tiles(track_set_: TrackSet, stations: Array[Station]):
 
 func _try_create_train(station1: Station, station2: Station):
 	var train_number = len(get_tree().get_nodes_in_group("trains")) + 1
-	var train = Train.try_create("Train %s" % train_number, station1, station2, platform_tile_set, track_set, track_reservations, astar, add_child)
+	var train = Train.try_create("Train %s" % train_number, station1, station2, platform_tile_set, track_set, track_reservations, astar_track, add_child)
 	if train == null:
 		return
 
@@ -696,7 +723,7 @@ func _on_station_clicked(station: Station):
 		_update_selected_station_info()
 
 func _are_stations_connected(station1: Station, station2: Station):
-	return len(platform_tile_set.get_connected_platform_positions_adjacent_to(station1, station2, astar)) > 0
+	return len(platform_tile_set.get_connected_platform_positions_adjacent_to(station1, station2, astar_track)) > 0
 
 func _on_station_content_updated(station: Station):
 	if station == selected_station:
