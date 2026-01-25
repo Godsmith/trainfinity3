@@ -58,6 +58,8 @@ func _process(delta: float) -> void:
 		camera.position = follow_train.get_train_position()
 
 	if gui_state == Gui.State.DESTROY2:
+		# TODO: this is likely very expensive to have here, since it runs
+		# get_nodes_in_group every frame.
 		_mark_trains_for_destruction()
 	else:
 		trains_marked_for_destruction_set.clear()

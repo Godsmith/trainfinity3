@@ -41,6 +41,8 @@
 
 ## TODO
 
+- one way track still shows in the wrong direction
+- make camera movement less jerky
 - Prevent focusing on expand buttons
 - Music and sound effect volume/toggle
 - Terrain tiles are sometimes blank when created
