@@ -271,6 +271,7 @@ func test_train_loading_resource():
 	assert_eq(train.wagons[0].get_total_resource_count(), 1)
 
 
+## This previously caused a crash
 func test_station_removed_when_loading_resource():
 	Engine.set_time_scale(10.0)
 	create_two_stations()
@@ -283,13 +284,18 @@ func test_station_removed_when_loading_resource():
 	_game._try_create_train(stations[0], stations[1])
 	var train: Train = get_tree().get_nodes_in_group("trains")[0]
 
-	await wait_seconds(0.5)
+	# wait_seconds(0.5) here for some reason destroyed the station immediately,
+	# so wait a number of frames instead
+	await wait_frames(10)
+	# To be sure that we have waited enough, ensure that the wagon has loaded some cargo
+	assert_gt(train.wagons[0].get_total_resource_count(), 0)
 	_game._destroy_stations([Vector2i(-48.0, 0.0)])
 	await wait_frames(10)
 
-	# Waiting for track reservation change is correct here, because the train is no
-	# longer at a station and therefore is not permitted to turn around.
-	assert_eq(train.state, Train.State.WAITING_FOR_TRACK_RESERVATION_CHANGE)
+	# Currently, the train will go to RUNNING because in the logic it is allowed to turn
+	# around since when it comes from state LOADING. If this logic changes in the 
+	# future, this assertion might fail.
+	assert_eq(train.state, Train.State.RUNNING)
 
 
 func test_other_station_removed_when_loading_resource():
@@ -310,3 +316,82 @@ func test_other_station_removed_when_loading_resource():
 	await wait_frames(10)
 
 	assert_eq(train.state, Train.State.WAITING_FOR_MISSING_STATION)
+
+
+func test_go_between_two_stations():
+	Engine.set_time_scale(10.0)
+	create_two_stations()
+
+	var stations = _game._get_stations()
+	_game._try_create_train(stations[0], stations[1])
+	var train: Train = get_tree().get_nodes_in_group("trains")[0]
+
+	# Assert that the train is close to the other station
+	assert_true(await wait_until(func(): return Vector2i(train.get_train_position().snapped(Global.TILE)) == Vector2i(32, 0), 10.0))
+
+func test_go_between_two_stations_and_back():
+	Engine.set_time_scale(10.0)
+	create_two_stations()
+
+	var stations = _game._get_stations()
+	_game._try_create_train(stations[0], stations[1])
+	var train: Train = get_tree().get_nodes_in_group("trains")[0]
+
+	# Assert that the train is close to the other station
+	assert_true(await wait_until(func(): return Vector2i(train.get_train_position().snapped(Global.TILE)) == Vector2i(32, 0), 10.0))
+	assert_true(await wait_until(func(): return Vector2i(train.get_train_position().snapped(Global.TILE)) == Vector2i(-32, 0), 10.0))
+
+func create_two_stations_length_3():
+	Upgrades.upgrades[Upgrades.UpgradeType.PLATFORM_LENGTH].current_level = 3
+	var station_dicts: Array[Dictionary] = [
+	{"position": "(-64.0, 0.0)"},
+	{"position": "(64.0, 0.0)"}
+	]
+	var track_dicts: Array[Dictionary] = [
+	{"pos1": "(-48, 0)", "pos2": "(-32, 0)"},
+	{"pos1": "(-32, 0)", "pos2": "(-16, 0)"},
+	{"pos1": "(-16, 0)", "pos2": "(0, 0)"},
+	{"pos1": "(0, 0)", "pos2": "(16, 0)"},
+	{"pos1": "(16, 0)", "pos2": "(32, 0)"},
+	{"pos1": "(32, 0)", "pos2": "(48, 0)"},
+	]
+	create(station_dicts, track_dicts)
+
+func test_go_between_two_stations_of_length_3():
+	Engine.set_time_scale(10.0)
+	create_two_stations_length_3()
+
+	var stations = _game._get_stations()
+	_game._try_create_train(stations[0], stations[1])
+	var train: Train = get_tree().get_nodes_in_group("trains")[0]
+
+	# Assert that the train is close to the other station
+	assert_true(await wait_until(func(): return Vector2i(train.get_train_position().snapped(Global.TILE)) == Vector2i(32, 0), 10.0))
+
+
+func test_go_between_two_stations_of_length_3_and_back():
+	Engine.set_time_scale(10.0)
+	create_two_stations_length_3()
+
+	var stations = _game._get_stations()
+	_game._try_create_train(stations[0], stations[1])
+	var train: Train = get_tree().get_nodes_in_group("trains")[0]
+
+	# Assert that the train is close to the other station
+	assert_true(await wait_until(func(): return Vector2i(train.get_train_position().snapped(Global.TILE)) == Vector2i(48, 0), 10.0))
+	assert_true(await wait_until(func(): return Vector2i(train.get_train_position().snapped(Global.TILE)) == Vector2i(-48, 0), 10.0))
+
+
+#      ╷
+# S━━━─┴━━S
+func test_go_from_length_3_station_to_length_2_station():
+	Engine.set_time_scale(10.0)
+	create_two_stations_length_3()
+	create([], [ {"pos1": "(16, -16)", "pos2": "(16, 0)"}])
+
+	var stations = _game._get_stations()
+	_game._try_create_train(stations[0], stations[1])
+	var train: Train = get_tree().get_nodes_in_group("trains")[0]
+
+	# Assert that the train gets close to the other station
+	assert_true(await wait_until(func(): return Vector2i(train.get_train_position().snapped(Global.TILE)) == Vector2i(48, 0), 10.0))
