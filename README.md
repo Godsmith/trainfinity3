@@ -41,7 +41,7 @@
 
 ## TODO
 
-- one way track still shows in the wrong direction
+- cities do not consume goods, left at station
 - make camera movement less jerky
 - Prevent focusing on expand buttons
 - Music and sound effect volume/toggle
@@ -79,7 +79,8 @@
 
 ### Issues
 
-
+- map generated with inaccessible coal, but with one grass adjacent. see saved game.
+- crash when building a one-way in the middle of the station while the train is halfway
 - Track pricing is unpredictable and not refunded.
 - If there are multiple stations accepting the same thing adjacent to a platform, the
   train will be paid twice

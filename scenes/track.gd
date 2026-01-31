@@ -29,8 +29,8 @@ static func create(p1: Vector2i, p2: Vector2i) -> Track:
 	track.pos1 = positions[0]
 	track.pos2 = positions[1]
 	track.rotation = atan2(p2.y - p1.y, p2.x - p1.x)
-	if track.rotation > 0:
-		track.rotation -= PI
+	if positions == [p2, p1]:
+		track.rotation += PI
 	# If diagonal, extend length
 	if is_equal_approx(fposmod(track.rotation, PI / 2), PI / 4):
 		track._set_length_extended()
@@ -70,13 +70,13 @@ func _set_color():
 		
 func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		track_clicked.emit(self)
+		track_clicked.emit(self )
 
 func _on_mouse_entered() -> void:
-	Events.mouse_enters_track.emit(self)
+	Events.mouse_enters_track.emit(self )
 
 func _on_mouse_exited() -> void:
-	Events.mouse_exits_track.emit(self)
+	Events.mouse_exits_track.emit(self )
 
 func other_position(pos: Vector2i) -> Vector2i:
 	if pos == pos1:
