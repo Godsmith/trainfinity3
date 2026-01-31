@@ -79,7 +79,8 @@
 
 ### Issues
 
-- crash when building a one-way in the middle of the station while the train is halfway
+- train might get stuck in WAITING_FOR_TRACK_RESERVATION_CHANGE when starting from
+  station
 - Track pricing is unpredictable and not refunded.
 - If there are multiple stations accepting the same thing adjacent to a platform, the
   train will be paid twice

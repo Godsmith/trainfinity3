@@ -139,8 +139,8 @@ func _ready() -> void:
 		var wagon = WAGON.instantiate()
 		wagons.append(wagon)
 		add_child(wagon)
-		wagon.wagon_clicked.connect(func(): train_clicked.emit(self))
-		wagon.wagon_content_changed.connect(func(): train_content_changed.emit(self))
+		wagon.wagon_clicked.connect(func(): train_clicked.emit(self ))
+		wagon.wagon_content_changed.connect(func(): train_content_changed.emit(self ))
 
 func _random_color() -> Color:
 	var r = 0.0
@@ -155,7 +155,7 @@ func _random_color() -> Color:
 
 func _on_input_event(_viewport: Node, event: InputEvent, _shape_idx: int) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
-		train_clicked.emit(self)
+		train_clicked.emit(self )
 
 func _get_linear_velocity(path_follow_: PathFollow2D):
 	var current_pos = path_follow_.global_position
@@ -248,12 +248,12 @@ func _change_state(new_state: State):
 			absolute_speed = 0.0
 			_get_money_for_cargo()
 		State.WAITING_FOR_MISSING_PLATFORM:
-			Global.show_popup("No platform adjacent to destination station!", _get_snapped_train_position(), self)
+			Global.show_popup("No platform adjacent to destination station!", _get_snapped_train_position(), self )
 			no_route_timer.start()
 			target_speed = 0.0
 			absolute_speed = 0.0
 		State.WAITING_FOR_MISSING_STATION:
-			Global.show_popup("No station at destination!", _get_snapped_train_position(), self)
+			Global.show_popup("No station at destination!", _get_snapped_train_position(), self )
 			no_route_timer.start()
 			target_speed = 0.0
 			absolute_speed = 0.0
@@ -264,13 +264,13 @@ func _change_state(new_state: State):
 				absolute_speed = 0.0
 				last_known_reservation_number = track_reservations.reservation_number
 		State.WAITING_SINCE_DESTINATIONS_AT_SAME_PLATFORM:
-			Global.show_popup("Both destinations at same platform!", _get_snapped_train_position(), self)
+			Global.show_popup("Both destinations at same platform!", _get_snapped_train_position(), self )
 			no_route_timer.start()
 			target_speed = 0.0
 			absolute_speed = 0.0
 	state = new_state
 	print("%s %s" % [name, State.keys()[state]])
-	train_state_changed.emit(self)
+	train_state_changed.emit(self )
 
 
 func _get_money_for_cargo():
@@ -284,7 +284,7 @@ func _get_money_for_cargo():
 				var resource_count = wagon.get_resource_count_not_picked_up_from(resource_type, Vector2i(station.position))
 				money_earned += station.get_price(resource_type) * resource_count
 	if money_earned > 0:
-		Global.show_popup("$%s" % money_earned, train_position, self)
+		Global.show_popup("$%s" % money_earned, train_position, self )
 		AudioManager.play(AudioManager.COIN_SPLASH, global_position)
 		GlobalBank.earn(money_earned)
 
@@ -402,7 +402,7 @@ func _set_progress_from_platform():
 
 func _adjust_reservations_to_where_train_is():
 	var positions_to_reserve = track_set.get_segments_connected_to_positions(_get_snapped_train_and_wagon_positions())
-	track_reservations.reserve_train_positions(positions_to_reserve, self)
+	track_reservations.reserve_train_positions(positions_to_reserve, self )
 
 
 ## Only load and unload from wagons that are actually at the platform
@@ -496,6 +496,10 @@ func _try_set_new_curve_and_return_new_state(go_to_next_destination := false, is
 			if train_position == point_furthest_in_at_platform:
 				return State.LOADING
 			point_path = new_astar.get_point_path(train_position, point_furthest_in_at_platform)
+			# Check for the case where there suddenly is no path, such as when a one-way has
+			# suddenly been created in front of the train
+			if not point_path:
+				return State.WAITING_FOR_TRACK_RESERVATION_CHANGE
 		else:
 			var point_paths = platform_positions_adjacent_to_target_station.map(func(pos): return new_astar.get_point_path(train_position, pos)).filter(func(path): return len(path) > 0)
 			if not point_paths:
@@ -555,7 +559,7 @@ func _get_positions_until_next_non_intersection(positions: PackedVector2Array) -
 
 func _get_first_position_reserved_by_other_train(positions: Array[Vector2i]) -> Global.Vector2iOrNone:
 	for pos in positions:
-		if track_reservations.is_reserved_by_another_train(pos, self):
+		if track_reservations.is_reserved_by_another_train(pos, self ):
 			return Global.Vector2iOrNone.new(true, pos)
 	return Global.Vector2iOrNone.new(false)
 
@@ -564,4 +568,4 @@ func _reserve_forward_positions(forward_positions: Array[Vector2i]) -> Global.Ve
 	var positions_to_reserve = forward_positions.duplicate()
 	positions_to_reserve.append_array(_get_snapped_train_and_wagon_positions())
 	var segments_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
-	return track_reservations.reserve_train_positions(segments_to_reserve, self)
+	return track_reservations.reserve_train_positions(segments_to_reserve, self )
