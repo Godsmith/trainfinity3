@@ -79,7 +79,6 @@
 
 ### Issues
 
-- map generated with inaccessible coal, but with one grass adjacent. see saved game.
 - crash when building a one-way in the middle of the station while the train is halfway
 - Track pricing is unpredictable and not refunded.
 - If there are multiple stations accepting the same thing adjacent to a platform, the
@@ -88,6 +87,7 @@
 - When an industry is selected and a new chunk is bought, any changed prices will
   not be reflected in the description label until industry is reselected
 - Newly created trains without wagons will be invisible until they start moving
+- chunks can generate with resources inside mountain ranges, but with grass adjacent
 
 
 ### Thinking about it
