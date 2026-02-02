@@ -27,6 +27,10 @@ var max_speed := 20.0
 @export var acceleration := 6.0
 @export var wagons: Array = []
 
+# Set to true when train goes to LOADING and false when it goes to RUNNING.
+# Checked when setting new path, to determine if the train is allowed to turn around.
+var is_at_station := false
+
 var on_rails := true
 # TODO: consider changing to "starting wagon count"
 # and retrieving the number of wagons dynamically instead
@@ -197,6 +201,7 @@ func _process(delta):
 
 	match state:
 		State.RUNNING:
+			is_at_station = false
 			# Check if we are reaching the end of curve the NEXT frame, in order to not get
 			# stop-start behavior. This makes the train jump forward slightly though, so it is
 			# still not ideal.
@@ -211,13 +216,14 @@ func _process(delta):
 			if no_route_timer.is_stopped():
 				_change_state(State.RUNNING)
 		State.LOADING:
+			is_at_station = true
 			if not ore_timer.is_stopped():
 				return
 			var has_loaded_or_unloaded = _load_and_unload()
 			if has_loaded_or_unloaded:
 				ore_timer.start()
 			else:
-				_change_state(_try_set_new_curve_and_return_new_state(true, true))
+				_change_state(_try_set_new_curve_and_return_new_state(true))
 		State.WAITING_FOR_TRACK_RESERVATION_CHANGE:
 			if track_reservations.reservation_number > last_known_reservation_number:
 				last_known_reservation_number = track_reservations.reservation_number
@@ -457,7 +463,7 @@ func _get_stations() -> Array[Station]:
 	return stations
 
 
-func _try_set_new_curve_and_return_new_state(go_to_next_destination := false, is_at_station := false) -> State:
+func _try_set_new_curve_and_return_new_state(go_to_next_destination := false) -> State:
 	if go_to_next_destination:
 		destination_index += 1
 		destination_index %= len(destinations)

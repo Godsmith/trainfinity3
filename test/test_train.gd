@@ -395,3 +395,24 @@ func test_go_from_length_3_station_to_length_2_station():
 
 	# Assert that the train gets close to the other station
 	assert_true(await wait_until(func(): return Vector2i(train.get_train_position().snapped(Global.TILE)) == Vector2i(48, 0), 10.0))
+
+
+func test_train_can_start_from_platform():
+	Engine.set_time_scale(10.0)
+	create_two_stations_and_train()
+	var train: Train = get_tree().get_nodes_in_group("trains")[0]
+
+	# 1. When train has arrived at station 2, create one-way
+	await wait_until(func(): return Vector2i(train.get_train_position().snapped(Global.TILE)) == Vector2i(32, 0), 10.0)
+	var track = _game.track_set.tracks_at_position(Vector2i(0, 0))[0]
+	_game._rotate_one_way_direction(track)
+
+	# 2. Wait until train is in waiting for reservation change
+	await wait_until(func(): return train.state == Train.State.WAITING_FOR_TRACK_RESERVATION_CHANGE, 10.0)
+
+	# 3. Remove one-way
+	_game._rotate_one_way_direction(track)
+	_game._rotate_one_way_direction(track)
+
+	# Assert that the train starts running again
+	assert_true(await wait_until(func(): return train.state == Train.State.RUNNING, 10.0))
