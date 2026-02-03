@@ -6,7 +6,7 @@ var reservations: Dictionary[Vector2i, Train] = {}
 var reservation_number := 0
 
 ## Returns the first blocked position if the reservation was unsuccessful
-func reserve_train_positions(new_positions: Array[Vector2i], train: Train) -> Global.Vector2iOrNone:
+func try_reserve_train_positions(new_positions: Array[Vector2i], train: Train) -> Global.Vector2iOrNone:
 	# TODO: remove the Train class here. Circular dependency, and also makes it impossible
 	# to unreserve after a train is freed. Use train name + randomly generated string?
 	# check first

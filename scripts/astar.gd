@@ -17,7 +17,7 @@ func disconnect_positions(pos1: Vector2i, pos2: Vector2i):
 func connect_positions(pos1: Vector2i, pos2: Vector2i, bidirectional: bool = true):
 	astar.connect_points(astar_id_from_position[pos1], astar_id_from_position[pos2], bidirectional)
 
-func get_point_path(pos1: Vector2i, pos2: Vector2i):
+func get_point_path(pos1: Vector2i, pos2: Vector2i) -> PackedVector2Array:
 	return astar.get_point_path(astar_id_from_position[pos1], astar_id_from_position[pos2])
 
 func set_position_disabled(pos: Vector2i, disabled: bool = true):

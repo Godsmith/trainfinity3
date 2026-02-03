@@ -104,7 +104,10 @@ func ordered_platform_tile_positions(pos: Vector2i, track_set: TrackSet) -> Arra
 	platform_tile_positions.sort_custom(func(a: Vector2i, b: Vector2i): return a.x < b.x if a.y == b.y else a.y < b.y)
 	return platform_tile_positions
 
+## Returns the endpoints of the platform, or an empty list if [pos] is not a platform tile
 func platform_endpoints(pos: Vector2i, track_set: TrackSet) -> Array[Vector2i]:
+	if pos not in _platform_tiles:
+		return []
 	var platform_tile_positions = ordered_platform_tile_positions(pos, track_set)
 	return [platform_tile_positions[0], platform_tile_positions[-1]]
 

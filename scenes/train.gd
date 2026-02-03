@@ -340,8 +340,12 @@ func is_train_or_wagon_at_position(pos: Vector2i):
 	return false
 
 
+## Returns the tile furthest in at the platform the train currently is on. [br]
+## Returns [Vector2i.MAX] if [tile] is not in a platform_tile
 func _furthest_in_at_platform(tile: Vector2i) -> Vector2i:
 	var endpoints = platform_tile_set.platform_endpoints(tile, track_set)
+	if not endpoints:
+		return Vector2i.MAX
 	var degrees = posmod(path_follow.rotation_degrees, 360)
 	match degrees:
 		0:
@@ -408,7 +412,7 @@ func _set_progress_from_platform():
 
 func _adjust_reservations_to_where_train_is():
 	var positions_to_reserve = track_set.get_segments_connected_to_positions(_get_snapped_train_and_wagon_positions())
-	track_reservations.reserve_train_positions(positions_to_reserve, self )
+	track_reservations.try_reserve_train_positions(positions_to_reserve, self )
 
 
 ## Only load and unload from wagons that are actually at the platform
@@ -467,98 +471,119 @@ func _try_set_new_curve_and_return_new_state(go_to_next_destination := false) ->
 	if go_to_next_destination:
 		destination_index += 1
 		destination_index %= len(destinations)
+
+	# 1. Validate target station
 	var target_station_position = destinations[destination_index]
-	var station_positions = _get_stations().map(func(station): return Vector2i(station.position))
-	if not target_station_position in station_positions:
+	if not _is_station_at_position(target_station_position):
 		return State.WAITING_FOR_MISSING_STATION
-	var train_position = Vector2i(get_train_position().snapped(Global.TILE))
+
+	var platform_positions_adjacent_to_target_station = platform_tile_set.adjacent_platform_positions(target_station_position)
+	if not platform_positions_adjacent_to_target_station:
+		return State.WAITING_FOR_MISSING_PLATFORM
+
+	# 2. Check for "same platform" conflict
+	if _is_at_destination_platform() and go_to_next_destination:
+		# We are already at the destination platform, but we have just
+		# switched destination. This means that both destinations are on
+		# the same platform.
+		# Having the train go from a station to itself violates a lot of assumptions in
+		# other parts of the code, so explicitly disallow this
+		return State.WAITING_SINCE_DESTINATIONS_AT_SAME_PLATFORM
+
+	# 3. Check if arrived
+	var point_furthest_in_at_platform = _furthest_in_at_platform(_get_snapped_train_position())
+	if _is_at_destination_platform() and _get_snapped_train_position() == point_furthest_in_at_platform:
+		return State.LOADING
+
+	# 4. Create initial astar for pathfinding
 	var new_astar = astar.clone()
-	# Set wagon positions to disabled to prevent turnaround.
+	# If not at a station, set wagon positions to disabled to prevent turnaround
+	if not is_at_station:
+		for wagon_position in _get_wagon_positions():
+			new_astar.set_position_disabled(wagon_position)
 
-	var is_turnaround_allowed = is_at_station
+	# 5. Try to find a path to the destination. If the first segment of the path is
+	#    reserved, find a new path. If no new path can be found, abort.
+	var point_path: PackedVector2Array
 	while true:
-		if not is_turnaround_allowed:
-			for wagon_position in _get_wagon_positions():
-				new_astar.set_position_disabled(wagon_position)
+		point_path = _get_point_path_to_destination(new_astar, point_furthest_in_at_platform, platform_positions_adjacent_to_target_station)
 
-		var platform_positions_adjacent_to_target_station = platform_tile_set.adjacent_platform_positions(target_station_position)
-		if not platform_positions_adjacent_to_target_station:
-			return State.WAITING_FOR_MISSING_PLATFORM
-		var platforms = platform_positions_adjacent_to_target_station.map(func(pos): return platform_tile_set.ordered_platform_tile_positions(pos, track_set))
-		var point_furthest_in_at_platform := Vector2i.MAX
-		for platform in platforms:
-			if train_position in platform:
-				if go_to_next_destination:
-					# We are already at the destination platform, but we have just
-					# switched destination. This means that both destinations are on
-					# the same platform.
-					# Having the train go from a station to itself violates a lot of assumptions in
-					# other parts of the code, so explicitly disallow this
-					return State.WAITING_SINCE_DESTINATIONS_AT_SAME_PLATFORM
-				point_furthest_in_at_platform = _furthest_in_at_platform(train_position)
-				break
-		var point_path: PackedVector2Array
-		if point_furthest_in_at_platform != Vector2i.MAX:
-			if train_position == point_furthest_in_at_platform:
-				return State.LOADING
-			point_path = new_astar.get_point_path(train_position, point_furthest_in_at_platform)
-			# Check for the case where there suddenly is no path, such as when a one-way has
-			# suddenly been created in front of the train
-			if not point_path:
-				return State.WAITING_FOR_TRACK_RESERVATION_CHANGE
-		else:
-			var point_paths = platform_positions_adjacent_to_target_station.map(func(pos): return new_astar.get_point_path(train_position, pos)).filter(func(path): return len(path) > 0)
-			if not point_paths:
-				return State.WAITING_FOR_TRACK_RESERVATION_CHANGE
-
-			point_paths.sort_custom(func(path1, path2): return len(path1) < len(path2))
-			point_path = point_paths[0]
-
-		# point_path goes from the position of the train engine, but we want to start
-		# reserving at the position ahead of the train.
-		var reservation_point_path = point_path.slice(1)
-		# When starting from a platform, the point_path goes from the end of the platform,
-		# so we have to skip all the platform tiles before we can start reserving tiles.
-		# However (and this might be a bug) this was triggered when the train was
-		# just created, and crashing since the path was just until the end of the current
-		# station. So to avoid this, do not skip the platform tiles if the path does
-		# not extend beyond the platform tiles.
-		if is_at_station:
-			while len(reservation_point_path) > 1 and platform_tile_set.has_platform(reservation_point_path[0]):
-				reservation_point_path = reservation_point_path.slice(1)
-
-		var upcoming_positions_until_next_non_intersection := _get_positions_until_next_non_intersection(reservation_point_path)
-		var pos_reserved_by_other_train_or_none = _get_first_position_reserved_by_other_train(upcoming_positions_until_next_non_intersection)
-		if pos_reserved_by_other_train_or_none.has_value:
-			# Current shortest route is blocked by another train, go back and try to find another route
-			new_astar.set_position_disabled(pos_reserved_by_other_train_or_none.value)
-			continue
-		# No intersections or reserved track directly ahead, reserve and continue
-		var position_that_could_not_be_reserved_or_none = _reserve_forward_positions(upcoming_positions_until_next_non_intersection)
-		if not position_that_could_not_be_reserved_or_none.has_value:
-			if is_at_station:
-				_set_new_curve_from_platform(point_path)
-				# Remove points from the path as necessary until the first point in
-				# point_path is the train engine
-				train_position = Vector2i(get_train_position().snapped(Global.TILE))
-				while Vector2i(point_path[0]) != train_position:
-					point_path = point_path.slice(1)
-			curve.add_point(point_path[1])
-			return State.RUNNING
-		else:
-			# I think: the train is before an intersection and the next position after intersection is reserved by a train
-			# TODO: if this is true, it can probably be made clearer.
+		if not point_path:
 			return State.WAITING_FOR_TRACK_RESERVATION_CHANGE
-	# Just to appease the type checker
+		
+		var segment := _get_positions_until_next_non_intersection(point_path)
+
+		# Try to reserve first segment of shortest route
+		var blocked_position = _try_reserve_forward_positions(segment)
+		if not blocked_position.has_value:
+			break
+
+		# First segment of shortest route is blocked by another train, go back and try to find another route
+		new_astar.set_position_disabled(blocked_position.value)
+
+	if is_at_station:
+		_set_new_curve_from_platform(point_path)
+		# Remove points from the path as necessary until the first point in
+		# point_path is the train engine
+		while Vector2i(point_path[0]) != _get_snapped_train_position():
+			point_path = point_path.slice(1)
+	curve.add_point(point_path[1])
+
 	return State.RUNNING
 
 
-func _get_positions_until_next_non_intersection(positions: PackedVector2Array) -> Array[Vector2i]:
-	var return_value: Array[Vector2i] = []
-	for pos in positions:
-		return_value.append(Vector2i(pos))
+func _is_station_at_position(station_position: Vector2i):
+	var station_positions = _get_stations().map(func(station): return Vector2i(station.position))
+	return station_position in station_positions
+
+
+func _is_at_destination_platform():
+	var target_station_position = destinations[destination_index]
+	var platform_positions_adjacent_to_target_station = platform_tile_set.adjacent_platform_positions(target_station_position)
+	var platforms = platform_positions_adjacent_to_target_station.map(func(pos): return platform_tile_set.ordered_platform_tile_positions(pos, track_set))
+	var train_position = _get_snapped_train_position()
+	for platform in platforms:
+		if train_position in platform:
+			return true
+	return false
+
+
+func _get_point_path_to_destination(new_astar: Astar, point_furthest_in_at_platform: Vector2i,
+									platform_positions_adjacent_to_target_station: Array[Vector2i]) -> PackedVector2Array:
+	var point_paths: Array[PackedVector2Array]
+	if _is_at_destination_platform():
+		point_paths = [new_astar.get_point_path(_get_snapped_train_position(), point_furthest_in_at_platform)]
+	else:
+		point_paths.assign(platform_positions_adjacent_to_target_station.map(func(pos): return new_astar.get_point_path(_get_snapped_train_position(), pos)))
+
+	point_paths = point_paths.filter(func(path): return len(path) > 0)
+	if not point_paths:
+		return PackedVector2Array()
+
+	point_paths.sort_custom(func(path1, path2): return len(path1) < len(path2))
+	return point_paths[0]
+
+
+func _get_positions_until_next_non_intersection(point_path: PackedVector2Array) -> Array[Vector2i]:
+	# point_path goes from the position of the train engine, but we want to start
+	# reserving at the position ahead of the train.
+	var reservation_point_path = point_path.slice(1)
+	# When starting from a platform, point_path starts at the far end of the platform,
+	# so we have to skip all the platform tiles before we can start reserving tiles,
+	# otherwise if there is an intersection just after the platform we will only reserve
+	# the tiles on the platform and nothing more.
+	# However (and this might be a bug) this was triggered when the train was
+	# just created, and crashing since the path was just until the end of the current
+	# station. So to avoid this, do not skip the platform tiles if the path does
+	# not extend beyond the platform tiles.
+	if is_at_station:
+		while len(reservation_point_path) > 1 and platform_tile_set.has_platform(reservation_point_path[0]):
+			reservation_point_path = reservation_point_path.slice(1)
+	var segment: Array[Vector2i] = []
+	for pos in reservation_point_path:
+		segment.append(Vector2i(pos))
 		if not track_set.is_intersection(Vector2i(pos)):
-			return return_value
+			return segment
 	#assert(false, "train path ends at intersection, this should not happen")
 	return []
 
@@ -570,8 +595,8 @@ func _get_first_position_reserved_by_other_train(positions: Array[Vector2i]) -> 
 	return Global.Vector2iOrNone.new(false)
 
 
-func _reserve_forward_positions(forward_positions: Array[Vector2i]) -> Global.Vector2iOrNone:
+func _try_reserve_forward_positions(forward_positions: Array[Vector2i]) -> Global.Vector2iOrNone:
 	var positions_to_reserve = forward_positions.duplicate()
 	positions_to_reserve.append_array(_get_snapped_train_and_wagon_positions())
 	var segments_to_reserve = track_set.get_segments_connected_to_positions(positions_to_reserve)
-	return track_reservations.reserve_train_positions(segments_to_reserve, self )
+	return track_reservations.try_reserve_train_positions(segments_to_reserve, self )
