@@ -79,10 +79,8 @@
 
 ### Issues
 
-- train might get stuck in WAITING_FOR_TRACK_RESERVATION_CHANGE when starting from
-  station
-  - The problem is that is_at_station is only true after LOADING, but now it should be
-    true after WAITING_FOR_TRACK_RESERVATION_CHANGE as well.
+- When removing and then readding a train, the name will not be Train 1, but something
+  random.
 - Track pricing is unpredictable and not refunded.
 - If there are multiple stations accepting the same thing adjacent to a platform, the
   train will be paid twice
