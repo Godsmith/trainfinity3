@@ -565,23 +565,27 @@ func _get_point_path_to_destination(new_astar: Astar, point_furthest_in_at_platf
 
 
 func _get_positions_until_next_non_intersection(point_path: PackedVector2Array) -> Array[Vector2i]:
-	# point_path goes from the position of the train engine, but we want to start
-	# reserving at the position ahead of the train.
-	var reservation_point_path = point_path.slice(1)
 	# When starting from a platform, point_path starts at the far end of the platform,
-	# so we have to skip all the platform tiles before we can start reserving tiles,
+	# so we have to skip all the platform tiles before we start reserving tiles,
 	# otherwise if there is an intersection just after the platform we will only reserve
 	# the tiles on the platform and nothing more.
-	# However (and this might be a bug) this was triggered when the train was
-	# just created, and crashing since the path was just until the end of the current
-	# station. So to avoid this, do not skip the platform tiles if the path does
-	# not extend beyond the platform tiles.
+	# However, when the train is just created, that path just goes until the end of
+	# the current station, which would leave no positions to reserve. So leave one
+	# position to support this case.
+	# 1. Skip train engine position (the first position of point_path)
+	var reservation_point_path = point_path.slice(1)
+
+	# 2. If at station, skip platform positions (except if there would be none left)
 	if is_at_station:
 		while len(reservation_point_path) > 1 and platform_tile_set.has_platform(reservation_point_path[0]):
 			reservation_point_path = reservation_point_path.slice(1)
+
+	# 3. Collect tiles until we clear the intersection
 	var segment: Array[Vector2i] = []
 	for pos in reservation_point_path:
 		segment.append(Vector2i(pos))
+
+		# Once we hit a normal piece of track, the "reservation segment" is complete
 		if not track_set.is_intersection(Vector2i(pos)):
 			return segment
 	#assert(false, "train path ends at intersection, this should not happen")
