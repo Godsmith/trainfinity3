@@ -3,6 +3,7 @@
 /android/
 
 .vscode/
+.kiro/
 
 savegames/
 build/
