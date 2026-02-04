@@ -416,3 +416,22 @@ func test_train_can_start_from_platform():
 
 	# Assert that the train starts running again
 	assert_true(await wait_until(func(): return train.state == Train.State.RUNNING, 10.0))
+
+
+func test_train_name():
+	create_two_stations_and_train()
+	var train: Train = get_tree().get_nodes_in_group("trains")[0]
+	assert_eq(train.name, "Train 1")
+
+
+func test_train_names_do_not_repeat():
+	create_two_stations_and_train()
+	var train: Train = get_tree().get_nodes_in_group("trains")[0]
+
+	train.queue_free()
+	await wait_until(func(): return get_tree().get_node_count_in_group("trains") == 0, 10.0)
+	var stations = _game._get_stations()
+	_game._try_create_train(stations[0], stations[1])
+
+	train = get_tree().get_nodes_in_group("trains")[0]
+	assert_eq(train.name, "Train 2")

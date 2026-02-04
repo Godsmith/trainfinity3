@@ -43,6 +43,8 @@ var selected_train: Train = null
 
 var follow_train: Train = null
 
+var next_train_number := 1
+
 var reservation_markers: Array[Polygon2D] = []
 var time_since_last_reservation_refresh := 0.0
 var show_reservation_markers := false
@@ -524,10 +526,11 @@ func _show_ghost_platform_tiles(track_set_: TrackSet, stations: Array[Station]):
 ############################################################################
 
 func _try_create_train(station1: Station, station2: Station):
-	var train_number = len(get_tree().get_nodes_in_group("trains")) + 1
+	var train_number = next_train_number
 	var train = Train.try_create("Train %s" % train_number, station1, station2, platform_tile_set, track_set, track_reservations, astar_track, add_child)
 	if train == null:
 		return
+	next_train_number += 1
 
 	train.train_clicked.connect(_on_train_clicked)
 	train.train_content_changed.connect(_on_train_content_changed)
