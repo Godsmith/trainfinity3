@@ -57,7 +57,9 @@ var previous_snapped_mouse_position := Vector2i(Global.MAX_INT, Global.MAX_INT)
 
 func _process(delta: float) -> void:
 	if follow_train:
-		camera.position = follow_train.get_train_position()
+		camera.set_follow_target(follow_train.get_train_position())
+	else:
+		camera.stop_following()
 
 	if gui_state == Gui.State.DESTROY2:
 		# TODO: this is likely very expensive to have here, since it runs
@@ -165,7 +167,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventMouseMotion:
 		if is_right_mouse_button_held_down:
 			follow_train = null
-			camera.position -= event.get_relative() / camera.zoom.x
+			var pan_delta = - event.get_relative() / camera.zoom.x
+			camera.add_pan_velocity(pan_delta)
 			_restrict_camera()
 
 		var snapped_mouse_position = _get_snapped_mouse_position(event)
@@ -300,12 +303,7 @@ func _restrict_camera():
 	var min_y = terrain.boundaries.position.y - margin
 	var max_y = terrain.boundaries.end.y + margin
 
-	# If we have zoomed out so far that we spill over both edges, zoom in again
-	if (left < min_x and right > max_x) or (top < min_y and bottom > max_y):
-		camera.zoom_camera(1.1)
-		return
-
-	# Otherwise, bounce camera position back in-bound
+	# Calculate boundary correction and apply it smoothly
 	var dx = 0
 	var dy = 0
 	if left < min_x:
@@ -316,8 +314,11 @@ func _restrict_camera():
 		dy += min_y - top
 	if bottom > max_y:
 		dy += max_y - bottom
-	camera.global_position.x += dx
-	camera.global_position.y += dy
+	
+	# Apply boundary correction through the smooth camera system
+	if dx != 0 or dy != 0:
+		var correction = Vector2(dx, dy)
+		camera.apply_boundary_correction(correction)
 
 
 func _get_snapped_mouse_position(event: InputEventMouse) -> Vector2i:

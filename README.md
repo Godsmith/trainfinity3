@@ -42,7 +42,6 @@
 ## TODO
 
 - cities do not consume goods, left at station
-- make camera movement less jerky
 - Prevent focusing on expand buttons
 - Music and sound effect volume/toggle
 - Terrain tiles are sometimes blank when created
