@@ -65,6 +65,7 @@ class ExpandButton:
 		cost = cost_
 		text = "Expand ($%s)" % cost
 		disabled = GlobalBank.money < cost
+		focus_mode = Control.FOCUS_NONE # Disable focus on expand buttons
 
 
 # Called when the node enters the scene tree for the first time.
