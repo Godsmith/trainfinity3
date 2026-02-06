@@ -1,42 +1,69 @@
 # Trainfinity
 
-## Features
-- Stations built next to producers will be filled over time depending on the resource:
-	- Mines produce coal or iron
-	- Forests produce wood
-	- Cities produce mail
-	- Steelworks produce steel if supplied with coal and iron
-- Stations built next to consumers will accept resources:
-	- Factories accept wood and steel
-	- Cities accept mail
-	- Steelworks accept coal and iron
-- Industries pay for resources depending on
-  - how far the closest producer is
-  - the resource tier
-- Prices increase with the number of objects built
-- Trains can turn around when stopped at platforms but not elsewhere
-- Trains avoid oncoming trains by choosing sidetracks when available
+A 2D train management and logistics game built with Godot 4.5. Build railway networks to transport resources across a procedurally generated terrain.
+
+## Overview
+
+### Resource Production
+- **Mines**: Produce coal or iron
+- **Forests**: Produce wood
+- **Cities**: Produce mail
+- **Steelworks**: Produce steel (requires coal and iron)
+
+### Resource Consumption
+- **Factories**: Accept wood and steel
+- **Cities**: Accept mail
+- **Steelworks**: Accept coal and iron
+
+### Economy
+- Industries pay for resources based on distance from producer and resource tier
+- Money pays for increased track, station and train limits, as well as other upgrades
+
+### Train Operations
+- Trains transport cargo between stations via platforms
+- Can turn around at platforms but not elsewhere
+- Automatic collision avoidance using sidetracks
+- Train length matches shortest platform in route
 
 ## Controls
-- To build track, select Track and click start and then waypoint positions.
-	- Click on the same position twice to build,
-	- click a previous position to revert,
-	- or click the starting position to abort.
-- Select Station and click an empty location (preferrably next to a resource) to build a station
-- Platforms are automatically built on track next to stations
-- Select Train and click two platforms in succession to create a train and a route.
-  - Train length is equal to the shortest platform length
-- Select Destroy and either click on a location or drag to select an area to destroy
-- Modes can also be selected with the number keys, or Escape for Select mode
+
+### Building
+- **Track**: Click start position, then waypoints. Click again at last waypoint to build, click previous position to undo, or click the start position to abort
+- **Station**: Click empty location (preferably next to industry)
+- **Platforms**: Automatically built on track adjacent to stations
+- **Train**: Click two platforms in succession to create train and route
+- **Destroy**: Click location or drag to destroy all in area
+
+### Shortcuts
+- Number keys to select build modes
+- Escape for Select mode
+
+## Technical Details
+
+### Engine & Framework
+- **Godot 4.5** with Forward Plus rendering
+- **GDScript** for game logic
+- **GUT (Godot Unit Test)** framework for testing
+
+### Systems
+- A* pathfinding for track building and train routing
+- Chunk-based procedural terrain generation
+- Track reservation system for collision avoidance
+- Dynamic platform generation
+- Save/load functionality
+
+### Testing
+Run tests from command line:
+```bash
+godot -s addons/gut/gut_cmdln.gd -gexit
+```
 
 ## Credits
 
 ### Music
-
 - [Next to you - Joth](https://opengameart.org/content/next-to-you)
 
 ### Audio
-
 - [Coin Splash - LordTomorrow](https://opengameart.org/content/coin-splash)
 
 ## TODO
