@@ -105,7 +105,6 @@ godot -s addons/gut/gut_cmdln.gd -gexit
 
 ### Issues
 
-- Track pricing is unpredictable and not refunded.
 - If there are multiple stations accepting the same thing adjacent to a platform, the
   train will be paid twice
 - Music does not loop seamlessly
