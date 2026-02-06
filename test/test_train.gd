@@ -120,7 +120,7 @@ func test_train_starts_when_circular_rail():
 	for station_dict in station_dicts:
 		_game._try_create_station(vector2_from_string(station_dict.position))
 	for track_dict in track_dicts:
-		var tracks = _game.track_creator.create_ghost_track([vector2_from_string(track_dict.pos1), vector2_from_string(track_dict.pos2)])
+		var tracks = _game.track_creator.create_ghost_track([vector2_from_string(track_dict.pos1), vector2_from_string(track_dict.pos2)], _game.track_set)
 		for track in tracks:
 			_game.add_child(track)
 		_game.track_creator.create_tracks()
@@ -428,7 +428,7 @@ func test_train_names_do_not_repeat():
 	create_two_stations_and_train()
 	var train: Train = get_tree().get_nodes_in_group("trains")[0]
 
-	train.queue_free()
+	_game._destroy_train(train)
 	await wait_until(func(): return get_tree().get_node_count_in_group("trains") == 0, 10.0)
 	var stations = _game._get_stations()
 	_game._try_create_train(stations[0], stations[1])

@@ -35,7 +35,6 @@ var gui: Gui
 var is_effects_enabled := true
 
 func update_gui():
-	gui.update_prices(_current_price)
 	gui.show_money(money)
 
 func cost(asset: Global.Asset, amount := 1) -> int:
@@ -78,7 +77,6 @@ func _update_prices():
 				_current_price[asset] = 0.0
 			else:
 				_current_price[asset] = _start_price[asset] * _INCREASE_FACTOR ** _asset_count[asset]
-	gui.update_prices(_current_price)
 
 func earn(amount: int):
 	set_money(money + amount)

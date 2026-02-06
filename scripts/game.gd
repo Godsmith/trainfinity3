@@ -107,6 +107,9 @@ func _ready():
 	ghost_station.remove_from_group("stations")
 	ghost_station.remove_from_group("buildings")
 
+	# Update GUI limit display after ghost station is removed from groups
+	gui.update_limit_display()
+
 	current_tile_marker = Line2D.new()
 	current_tile_marker.width = 2
 	current_tile_marker.default_color = Color(1.0, 1.0, 1.0, 1.0)
@@ -129,7 +132,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
 			match gui_state:
 				Gui.State.TRACK:
-					var track_marker_confirm_position = track_creator.click(snapped_mouse_position)
+					var track_marker_confirm_position = track_creator.click(snapped_mouse_position, track_set)
 					if track_marker_confirm_position != Vector2i.MAX:
 						track_marker_confirm.visible = true
 						track_marker_confirm.position = track_marker_confirm_position
@@ -183,7 +186,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			Gui.State.TRACK:
 				current_tile_marker.visible = true
 				_show_current_tile_marker(snapped_mouse_position)
-				var ghost_tracks = track_creator.mouse_move(snapped_mouse_position, astar_terrain)
+				var ghost_tracks = track_creator.mouse_move(snapped_mouse_position, astar_terrain, track_set)
 				var all_track_set = TrackSet.new()
 				for track in track_set.get_all_tracks():
 					all_track_set.add(track)
@@ -326,6 +329,13 @@ func _get_snapped_mouse_position(event: InputEventMouse) -> Vector2i:
 	# mouse position from the InputEventMouse object
 	return Vector2i((camera.get_canvas_transform().affine_inverse() * event.position).snapped(Global.TILE))
 
+
+func _show_build_feedback(pos: Vector2):
+	gui.update_limit_display()
+	if not GlobalBank.is_effects_enabled:
+		return
+	AudioManager.play(AudioManager.COIN_SPLASH, pos)
+
 #######################################################################
 
 
@@ -345,20 +355,18 @@ func _create_tracks_from_ghost_tracks(ghost_tracks: Array[Track]):
 		# astar_track point will be created at the position, and the position will be
 		# evaluated for platforms, etc.
 		return
-	
-	var new_track_count = 0
+
 	for track in ghost_tracks:
 		if track_set.exists(track):
 			track.queue_free()
 		else:
 			track_set.add(track)
 			track.set_ghostly(false)
-			new_track_count += 1
 			astar_track.add_position(track.pos1)
 			astar_track.add_position(track.pos2)
 			astar_track.connect_positions(track.pos1, track.pos2)
 		track.track_clicked.connect(_on_track_clicked)
-	GlobalBank.buy(Global.Asset.TRACK, new_track_count, ghost_tracks[-1].global_position)
+	_show_build_feedback(ghost_tracks[-1].global_position)
 	_recreate_platform_tiles()
 	# Makes trains waiting for reservations to change find new paths
 	# TODO: Find a more elegant way to do this, or at least better naming.
@@ -371,6 +379,7 @@ func _destroy_track(positions: Array[Vector2i]):
 			GlobalBank.destroy(Global.Asset.TRACK)
 			track_set.erase(track)
 	_recreate_platform_tiles()
+	gui.update_limit_display()
 	# Makes trains waiting for reservations to change find new paths
 	# TODO: Find a more elegant way to do this, or at least better naming.
 	track_reservations.reservation_number += 1
@@ -483,24 +492,27 @@ func _is_legal_station_position(station_position: Vector2i):
 func _try_create_station(station_position: Vector2i):
 	if not _is_legal_station_position(station_position):
 		return
-	if not GlobalBank.can_afford(Global.Asset.STATION):
-		Global.show_popup("Cannot afford!", station_position, self)
+	if not Upgrades.can_build_asset(Global.Asset.STATION):
+		Global.show_popup("Limit reached!", station_position, self)
 		return
 	var station = STATION.instantiate()
 	station.position = station_position
 	add_child(station)
-	GlobalBank.buy(Global.Asset.STATION, 1, station.global_position)
+	_show_build_feedback(station.global_position)
 	_recreate_platform_tiles()
 
 func _destroy_stations(positions: Array[Vector2i]):
 	var stations_to_create_platforms_for: Array[Station] = []
 	for station in _get_stations():
 		if Vector2i(station.position) in positions:
+			# Remove from group immediately so that it is correctly counted
+			station.remove_from_group("stations")
 			station.queue_free()
 			GlobalBank.destroy(Global.Asset.STATION)
 		else:
 			stations_to_create_platforms_for.append(station)
 	_recreate_platform_tiles(track_set, stations_to_create_platforms_for)
+	gui.update_limit_display()
 
 func _get_stations() -> Array[Station]:
 	var stations: Array[Station] = []
@@ -527,6 +539,10 @@ func _show_ghost_platform_tiles(track_set_: TrackSet, stations: Array[Station]):
 ############################################################################
 
 func _try_create_train(station1: Station, station2: Station):
+	if not Upgrades.can_build_asset(Global.Asset.TRAIN):
+		Global.show_popup("Limit reached!", station1.global_position, self)
+		return
+
 	var train_number = next_train_number
 	var train = Train.try_create("Train %s" % train_number, station1, station2, platform_tile_set, track_set, track_reservations, astar_track, add_child)
 	if train == null:
@@ -537,8 +553,7 @@ func _try_create_train(station1: Station, station2: Station):
 	train.train_content_changed.connect(_on_train_content_changed)
 	train.train_state_changed.connect(_on_train_state_changed)
 
-	# Need to do this after curve has been set, or it will be in the wrong position
-	GlobalBank.buy(Global.Asset.TRAIN, 1, train.get_train_position())
+	_show_build_feedback(train.get_train_position())
 
 
 func _mark_trains_for_destruction():
@@ -623,19 +638,24 @@ func _destroy_under_destroy_markers():
 	var have_trains_been_destroyed = false
 	for train in trains_marked_for_destruction_set:
 		track_reservations.clear_reservations(train)
-		train.queue_free()
-		# Remove it from the tree, or _update might get triggered even though the
-		# train will be removed
-		train.get_parent().remove_child(train)
-		GlobalBank.destroy(Global.Asset.TRAIN)
+		_destroy_train(train)
 		have_trains_been_destroyed = true
 	trains_marked_for_destruction_set.clear()
+	gui.update_limit_display()
 	if have_trains_been_destroyed:
 		# Just destroy trains first
 		return
 
 	_destroy_track(positions)
 	_destroy_stations(positions)
+
+func _destroy_train(train: Train):
+	track_reservations.clear_reservations(train)
+	train.queue_free()
+	# Remove it from the tree, or _update might get triggered even though the
+	# train will be removed
+	train.get_parent().remove_child(train)
+	GlobalBank.destroy(Global.Asset.TRAIN)
 
 ###################################################################
 
@@ -886,7 +906,7 @@ func _load_game_from_data(data: Dictionary):
 	GlobalBank.is_effects_enabled = false
 	GlobalBank.set_money(Global.MAX_INT)
 	for track_dict in data.tracks:
-		var tracks = track_creator.create_ghost_track([track_dict.pos1, track_dict.pos2])
+		var tracks = track_creator.create_ghost_track([track_dict.pos1, track_dict.pos2l], track_set)
 		for track in tracks:
 			add_child(track)
 		track_creator.create_tracks()

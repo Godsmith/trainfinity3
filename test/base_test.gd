@@ -31,7 +31,7 @@ func create(station_dicts: Array[Dictionary], track_dicts: Array[Dictionary]):
 	for station_dict in station_dicts:
 		_game._try_create_station(vector2_from_string(station_dict.position))
 	for track_dict in track_dicts:
-		var tracks = _game.track_creator.create_ghost_track([vector2_from_string(track_dict.pos1), vector2_from_string(track_dict.pos2)])
+		var tracks = _game.track_creator.create_ghost_track([vector2_from_string(track_dict.pos1), vector2_from_string(track_dict.pos2)], _game.track_set)
 		for track in tracks:
 			_game.add_child(track)
 		_game.track_creator.create_tracks()

@@ -54,6 +54,9 @@ func _set_length_extended():
 	$CanvasGroupRail/Rail1/LongRail2.visible = true
 
 func set_ghostly(is_ghostly_: bool):
+	if not is_ghostly_:
+		# This is for counting how many built tracks there are
+		add_to_group("built-track")
 	is_ghostly = is_ghostly_
 	_set_color()
 

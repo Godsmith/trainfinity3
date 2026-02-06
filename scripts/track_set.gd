@@ -62,6 +62,8 @@ func erase(track: Track):
 	_tracks.erase(str(track))
 	_track_strings_from_position[track.pos1].erase(str(track))
 	_track_strings_from_position[track.pos2].erase(str(track))
+	# Remove this form the group immediately so that counts are updated
+	track.remove_from_group("built-track")
 	track.queue_free()
 
 func get_segments_connected_to_positions(positions: Array[Vector2i]) -> Array[Vector2i]:

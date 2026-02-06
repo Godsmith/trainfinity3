@@ -32,14 +32,31 @@ func _ready() -> void:
 	$Help.close_button_clicked.connect(_help_close_button_clicked)
 	selection_description_label.text = ""
 	follow_train_button.visible = false
+	Events.upgrade_bought.connect(_on_limit_upgrade_bought)
+	update_limit_display()
 
 func show_money(money: int):
 	money_label.text = "$%s" % money
 
-func update_prices(prices: Dictionary[Global.Asset, float]):
-	track_button.text = "Track $%s" % floori(prices[Global.Asset.TRACK])
-	station_button.text = "Station $%s" % floori(prices[Global.Asset.STATION])
-	train_button.text = "Train $%s" % floori(prices[Global.Asset.TRAIN])
+func update_limit_display():
+	var track_remaining = Upgrades.get_remaining_assets(Global.Asset.TRACK)
+	var station_remaining = Upgrades.get_remaining_assets(Global.Asset.STATION)
+	var train_remaining = Upgrades.get_remaining_assets(Global.Asset.TRAIN)
+
+	track_button.text = "Track (%d)" % track_remaining
+	station_button.text = "Station (%d)" % station_remaining
+	train_button.text = "Train (%d)" % train_remaining
+
+	# Disable buttons when at limit
+	track_button.disabled = (track_remaining <= 0)
+	station_button.disabled = (station_remaining <= 0)
+	train_button.disabled = (train_remaining <= 0)
+
+func _on_limit_upgrade_bought(upgrade_type: UpgradeManager.UpgradeType):
+	if upgrade_type in [UpgradeManager.UpgradeType.TRACK_LIMIT,
+					   UpgradeManager.UpgradeType.STATION_LIMIT,
+					   UpgradeManager.UpgradeType.TRAIN_LIMIT]:
+		update_limit_display()
 
 func _on_upgrades_button_toggled(toggled_on: bool) -> void:
 	$UpgradesMenu.visible = toggled_on
