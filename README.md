@@ -68,6 +68,7 @@ godot -s addons/gut/gut_cmdln.gd -gexit
 
 ## TODO
 
+- multiple waypoints for trains
 - cities do not consume goods, left at station
 - Music and sound effect volume/toggle
 - Terrain tiles are sometimes blank when created
@@ -123,6 +124,10 @@ godot -s addons/gut/gut_cmdln.gd -gexit
 - New production chain Forest -> (LOGS) -> Sawmill -> (TIMBER/PLANKS)
 - (STEEL) + (COAL) -> Smithy -> (NAILS)
 - (NAILS) + (PLANKS) -> ?
+- Sand pit -> (SAND) -> Glassworks -> (GLASS)
+- Complication: Mine -> (IRON ORE) -> Blast Furnace -> (IRON INGOT) -> ...
+- Complication: Mine -> (COAL) -> Coke Oven -> (COKE) -> ...
+- Mine -> (COPPER ORE) -> Blast Furnace -> (COPPER INGOT) -> Wire Mill -> (COPPER WIRE) -> (+ GLASS + STEEL) -> Factory -> (COMPONENTS)
 - Move from upgrades costing money to upgrades costing upgrade points gained from achievements?
   	- The issues with having them cost money is that you could just let everything run to earn
   	  an infinite amount of money.
