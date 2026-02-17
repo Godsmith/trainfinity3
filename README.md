@@ -69,6 +69,9 @@ godot -s addons/gut/gut_cmdln.gd -gexit
 ## TODO
 
 - multiple waypoints for trains
+- do not choose number of wagons automatically, build wagons
+  	- let number of wagons be an upgradeable resource
+	- handle trains longer than stations
 - cities do not consume goods, left at station
 - Music and sound effect volume/toggle
 - Terrain tiles are sometimes blank when created
@@ -147,16 +150,11 @@ godot -s addons/gut/gut_cmdln.gd -gexit
 	practical.
 
 
-### In-game upgrades
+### Possible future in-game upgrades
 - range of stations (start with 1) - though it looks ugly when they are too far from ore
-- number of trains (start with 1)
-- map size
 - the ability to tear down/build track on mountain
 - bridges
 - train loading speed
-- platform max length/train max length
-- expand map
-- station max capacity
 
 ### Between-round upgrades
 - starting everything above
