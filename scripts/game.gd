@@ -17,7 +17,7 @@ const DEBUG_COORDINATES = preload("res://debug/debug_coordinates.tscn")
 var randomizer_seed
 
 var gui_state := Gui.State.SELECT
-var is_right_mouse_button_held_down := false
+var is_any_mouse_button_held_down_for_scrolling := false
 
 var mouse_down_position := Vector2i()
 
@@ -146,8 +146,6 @@ func _unhandled_input(event: InputEvent) -> void:
 					_change_gui_state(Gui.State.DESTROY2)
 					_show_destroy_markers(mouse_down_position, snapped_mouse_position)
 
-		elif event.button_index == MOUSE_BUTTON_RIGHT:
-			is_right_mouse_button_held_down = event.is_pressed()
 		elif event.button_index == MOUSE_BUTTON_WHEEL_UP and not event.is_echo():
 			camera.zoom_camera(1.1)
 			_restrict_camera()
@@ -155,6 +153,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			camera.zoom_camera(1 / 1.1)
 			_restrict_camera()
 	
+	if event is InputEventMouseButton and gui_state != Gui.State.DESTROY2:
+		is_any_mouse_button_held_down_for_scrolling = event.is_pressed()
+
 	if event is InputEventMouseButton and event.is_released() and event.button_index == MOUSE_BUTTON_LEFT:
 		var snapped_mouse_position = _get_snapped_mouse_position(event)
 		match gui_state:
@@ -168,7 +169,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				_change_gui_state(Gui.State.DESTROY1)
 	
 	elif event is InputEventMouseMotion:
-		if is_right_mouse_button_held_down:
+		if is_any_mouse_button_held_down_for_scrolling:
 			follow_train = null
 			var pan_delta = - event.get_relative() / camera.zoom.x
 			camera.add_pan_velocity(pan_delta)
