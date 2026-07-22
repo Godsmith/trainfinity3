@@ -2,7 +2,7 @@ extends MarginContainer
 
 
 func _ready() -> void:
-	if true or OS.has_feature("web_android") or OS.has_feature("web_ios"):
+	if OS.has_feature("web_android") or OS.has_feature("web_ios"):
 		get_tree().root.content_scale_factor = 2
 
 	if not FileAccess.file_exists(Global.SAVE_PATH):
