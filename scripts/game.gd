@@ -88,6 +88,9 @@ func _show_reservations(delta):
 
 
 func _ready():
+	if true or OS.has_feature("web_android") or OS.has_feature("web_ios"):
+		get_tree().root.content_scale_factor = 2
+
 	GlobalBank.gui = gui
 	GlobalBank.update_gui()
 
